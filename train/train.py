@@ -2,12 +2,14 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-from models.vae import VAE
-from models.cvae import CVAE
-from models.sbae import SBAE
-import utils.image_saver
-import datas.datasetLoader
-import models.construct_model
+import sys
+sys.path.append('/home/valentin/Programmation/Projects/vae/models')
+sys.path.append('/home/valentin/Programmation/Projects/vae/utils')
+sys.path.append('/home/valentin/Programmation/Projects/vae/datas')
+
+import image_saver
+import datasetLoader
+import construct_model
 
 import logging
 
@@ -84,7 +86,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path):
             train_accuracy_mean.reset_states()
             test_accuracy_mean.reset_states()
             for test_x in test_dataset.take(1):
-                utils.image_saver.generate_and_save_images_compare(
+                image_saver.generate_and_save_images_compare(
                     model, epoch, test_x, 'SBAE_Lab')
         ckpt.step.assign_add(1)
         if int(ckpt.step) % 10 == 0:
@@ -92,14 +94,14 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path):
             print("Saved checkpoint for step {}: {}".format(int(ckpt.step), save_path))
             print("loss {:1.2f}".format(-test_loss_mean.result()))
 
-    utils.image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracyLab")
+    image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracyLab")
 
 # Dataset
 
 
 logging.basicConfig(filename='./training_Lab.log', level=logging.DEBUG)
 
-ds = datas.datasetLoader.get_dataset('cifar10Lab')
-model = models.construct_model.get_model('SBAE', [64, 128, 256], 1024)
+ds = datasetLoader.get_dataset('cifar10Lab')
+model = construct_model.get_model('SBAE', [64, 128, 256], 1024)
 
 train(ds, model, lr=1e-4, epochs=40, batch_size=128, ckpt_path='./ckpts_sbaeLab')

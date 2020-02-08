@@ -1,6 +1,10 @@
-import datas.cifarLoader
-import datas.DAVISLoader
-import datas.ImagenetResizedLoader
+import sys
+sys.path.append('/home/valentin/Programmation/Projects/vae/datas')
+
+
+import cifarLoader
+import DAVISLoader
+import ImagenetResizedLoader
 
 
 """
@@ -10,18 +14,18 @@ import datas.ImagenetResizedLoader
 """
 def get_dataset(dataset):
     if dataset == 'DAVIS':
-        train_ds = datas.DAVISLoader.get_dataset('/media/valentin/DATA1/Programmation/Datasets/DAVIS-2017-trainval-480p/DAVIS',
+        train_ds = DAVISLoader.get_dataset('/media/valentin/DATA1/Programmation/Datasets/DAVIS-2017-trainval-480p/DAVIS',
                                               'train')
-        test_ds = datas.DAVISLoader.get_dataset('/media/valentin/DATA1/Programmation/Datasets/DAVIS-2017-trainval-480p/DAVIS',
+        test_ds = DAVISLoader.get_dataset('/media/valentin/DATA1/Programmation/Datasets/DAVIS-2017-trainval-480p/DAVIS',
                                              'val')
     elif dataset == 'cifar10':
-        train_ds, test_ds = datas.cifarLoader.cifarloader()
+        train_ds, test_ds = cifarLoader.cifarloader()
 
     elif dataset == 'cifar10Lab':
-        train_ds, test_ds = datas.cifarLoader.cifarloaderLab()
+        train_ds, test_ds = cifarLoader.cifarloaderLab()
 
     elif dataset == 'imagenetresized64':
-        train_ds, test_ds = datas.ImagenetResizedLoader.imagenetresized64loaderLab()
+        train_ds, test_ds = ImagenetResizedLoader.imagenetresized64loaderLab()
 
     else:
         print("No good dataset selected")

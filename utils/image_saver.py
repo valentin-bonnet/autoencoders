@@ -24,14 +24,81 @@ def generate_and_save_images_compare(model, epoch, test_input, file_name_head='i
     x_logit = x_logits[:2, :, :, :]
     # predictions = model.sample(test_input)
     fig = plt.figure(figsize=(2, 2))
+    print(x_logit.dtype)
+    print(test_input.dtype)
 
     for i in range(x_logit.shape[0]):
         plt.subplot(2, 2, (2 * i) + 1)
-        plt.imshow(cv2.cvtColor(np.float32(test_input[i]), cv2.COLOR_Lab2RGB))
+        test_input_color = cv2.cvtColor(np.float32(test_input[i]), cv2.COLOR_Lab2RGB)
+        test_logit_color = cv2.cvtColor(np.float32(x_logit[i]), cv2.COLOR_Lab2RGB)
+        print(test_input_color)
+        print(test_logit_color)
+        plt.imshow(test_input_color)
         plt.axis('off')
         plt.subplot(2, 2, 2 * (i + 1))
-        plt.imshow(cv2.cvtColor(np.float32(x_logit[i]), cv2.COLOR_Lab2RGB))
+        plt.imshow(test_logit_color)
         plt.axis('off')
+
+    # tight_layout minimizes the overlap between 2 sub-plots
+    plt.savefig(file_name_head+'_at_epoch_{:04d}.png'.format(epoch))
+    # plt.show()
+
+
+
+def extract_single_dim_from_LAB_convert_to_RGB(image,idim):
+    '''
+    image is a single lab image of shape (None,None,3)
+    '''
+    z = np.zeros(image.shape)
+    if idim != 0 :
+        z[:,:,0]=80 ## I need brightness to plot the image along 1st or 2nd axis
+    z[:,:,idim] = image[:,:,idim]
+    z = cv2.cvtColor(z, cv2.COLOR_Lab2RGB)
+    return(z)
+
+def generate_and_save_images_compare_lab(model, epoch, test_input, file_name_head='image'):
+    x_logits = model.reconstruct(test_input)
+    test_input = test_input[:2, :, :, :]
+    x_logit = x_logits[:2, :, :, :]
+    # predictions = model.sample(test_input)
+    fig = plt.figure(figsize=(4, 4))
+    print(x_logit.dtype)
+    print(test_input.dtype)
+
+    for i in range(x_logit.shape[0]):
+        input_l = extract_single_dim_from_LAB_convert_to_RGB(test_input[i], 0)
+        input_a = extract_single_dim_from_LAB_convert_to_RGB(test_input[i], 1)
+        input_b = extract_single_dim_from_LAB_convert_to_RGB(test_input[i], 2)
+        logit_l = extract_single_dim_from_LAB_convert_to_RGB(x_logit[i], 0)
+        logit_a = extract_single_dim_from_LAB_convert_to_RGB(x_logit[i], 1)
+        logit_b = extract_single_dim_from_LAB_convert_to_RGB(x_logit[i], 2)
+        test_input_color = cv2.cvtColor(np.float32(test_input[i]), cv2.COLOR_Lab2RGB)
+        test_logit_color = cv2.cvtColor(np.float32(x_logit[i]), cv2.COLOR_Lab2RGB)
+        plt.subplot(4, 4, (8 * i) + 1)
+        plt.imshow(test_input_color)
+        plt.axis('off')
+        plt.subplot(4, 4, (8 * i) + 2)
+        plt.imshow(input_l)
+        plt.axis('off')
+        plt.subplot(4, 4, (8 * i) + 3)
+        plt.imshow(input_a)
+        plt.axis('off')
+        plt.subplot(4, 4, (8 * i) + 4)
+        plt.imshow(input_b)
+        plt.axis('off')
+        plt.subplot(4, 4, (8 * i) + 5)
+        plt.imshow(test_logit_color)
+        plt.axis('off')
+        plt.subplot(4, 4, (8 * i) + 6)
+        plt.imshow(logit_l)
+        plt.axis('off')
+        plt.subplot(4, 4, (8 * i) + 7)
+        plt.imshow(logit_a)
+        plt.axis('off')
+        plt.subplot(4, 4, (8 * i) + 8)
+        plt.imshow(logit_b)
+        plt.axis('off')
+
 
     # tight_layout minimizes the overlap between 2 sub-plots
     plt.savefig(file_name_head+'_at_epoch_{:04d}.png'.format(epoch))
