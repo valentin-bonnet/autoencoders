@@ -1,6 +1,7 @@
 import sys
-
-sys.path.append('/home/valentin/Programmation/Projects/vae/models')
+import os
+curr_dir = os.getcwd()
+sys.path.append(curr_dir)
 
 import cvae
 import vae

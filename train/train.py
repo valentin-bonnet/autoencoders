@@ -3,9 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import sys
-sys.path.append('/home/valentin/Programmation/Projects/vae/models')
-sys.path.append('/home/valentin/Programmation/Projects/vae/utils')
-sys.path.append('/home/valentin/Programmation/Projects/vae/datas')
+import os
+curr_dir = os.getcwd()
+path = os.path.abspath(os.path.join(curr_dir, '..'))
+sys.path.append(os.path.join(path, 'models'))
+sys.path.append(os.path.join(path, 'utils'))
+sys.path.append(os.path.join(path, 'datas'))
 
 import image_saver
 import datasetLoader
@@ -101,7 +104,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path):
 
 logging.basicConfig(filename='./training_Lab.log', level=logging.DEBUG)
 
-ds = datasetLoader.get_dataset('cifar10Lab')
+ds = datasetLoader.get_dataset('imagenetresized64')
 model = construct_model.get_model('SBAE', [64, 128, 256], 1024)
 
 train(ds, model, lr=1e-4, epochs=40, batch_size=128, ckpt_path='./ckpts_sbaeLab')
