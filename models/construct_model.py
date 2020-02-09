@@ -9,7 +9,7 @@ import sbvae
 import sbae
 
 
-def get_model(model_type, layers, latent_dim):
+def get_model(model_type, layers, latent_dim, input_shape):
 
     if model_type == 'CVAE':
         model = cvae.CVAE(layers=layers, latent_dim=latent_dim)
@@ -21,7 +21,7 @@ def get_model(model_type, layers, latent_dim):
         model = sbvae.SBVAE(layers, latent_dim)
 
     elif model_type == 'SBAE':
-        model = sbae.SBAE(layers, latent_dim)
+        model = sbae.SBAE(layers, latent_dim, input_shape)
 
     else:
         print("Model type is not good")

@@ -19,13 +19,13 @@ import logging
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 
-def train(ds, model, lr, epochs, batch_size, ckpt_path):
+def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch):
 
     optimizer = tf.keras.optimizers.Adam(lr)
 
     current_epoch = tf.Variable(1)
     ckpt = tf.train.Checkpoint(step=current_epoch, optimizer=optimizer, net=model)
-    manager = tf.train.CheckpointManager(ckpt, ckpt_path, max_to_keep=epochs/10)
+    manager = tf.train.CheckpointManager(ckpt, ckpt_path, max_to_keep=epochs/ckpt_epoch)
 
     ckpt.restore(manager.latest_checkpoint)
     if manager.latest_checkpoint:
@@ -59,11 +59,18 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path):
     test_accuracy_results = []
 
     starting_epoch = current_epoch.numpy()
+    len_train = tf.data.experimental.cardinality(train_dataset).numpy()
     for epoch in range(starting_epoch, epochs + 1):
         start_time = time.time()
-        for train_x in train_dataset:
+        progbar = tf.keras.utils.Progbar(len_train)
+        for i, train_x in enumerate(train_dataset):
+            progbar.update(i+1)
             train_loss_mean(model.compute_apply_gradients(train_x, optimizer))
             train_accuracy_mean(model.compute_accuracy(train_x))
+            if i % (len_train/10) == 0:
+                for test_x in test_dataset.take(1):
+                    image_saver.generate_and_save_images_compare_lab(model, epoch, test_x, 'SBAE_Lab_step_'+str(i))
+
 
         end_time = time.time()
 
@@ -88,11 +95,12 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path):
             test_loss_mean.reset_states()
             train_accuracy_mean.reset_states()
             test_accuracy_mean.reset_states()
+            image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracy_Lab_temp")
             for test_x in test_dataset.take(1):
-                image_saver.generate_and_save_images_compare(
+                image_saver.generate_and_save_images_compare_lab(
                     model, epoch, test_x, 'SBAE_Lab')
         ckpt.step.assign_add(1)
-        if int(ckpt.step) % 10 == 0:
+        if int(ckpt.step) % ckpt_epoch == 0:
             save_path = manager.save()
             print("Saved checkpoint for step {}: {}".format(int(ckpt.step), save_path))
             print("loss {:1.2f}".format(-test_loss_mean.result()))
@@ -104,7 +112,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path):
 
 logging.basicConfig(filename='./training_Lab.log', level=logging.DEBUG)
 
-ds = datasetLoader.get_dataset('imagenetresized64')
-model = construct_model.get_model('SBAE', [64, 128, 256], 1024)
+ds = datasetLoader.get_dataset('cifar10Lab')
+model = construct_model.get_model('SBAE', [64, 128, 256], 1024, 32)
 
-train(ds, model, lr=1e-4, epochs=40, batch_size=128, ckpt_path='./ckpts_sbaeLab')
+train(ds, model, lr=1e-4, epochs=40, batch_size=128, ckpt_path='./ckpts_sbaeLab', ckpt_epoch=10)
