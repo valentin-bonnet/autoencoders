@@ -21,6 +21,10 @@ def cifarloaderLab():
     test_images = np.float32(test_images) / 255.0
     train_dataset = np.array([_rgb2lab(image) for image in train_images])
     test_dataset = np.array([_rgb2lab(image) for image in test_images])
+    train_dataset = train_dataset+[0, 128, 128]
+    train_dataset = np.float32(train_dataset/[100.0, 255.0, 255.0])
+    test_dataset = test_dataset+[0, 128, 128]
+    test_dataset = np.float32(test_dataset/[100.0, 255.0, 255.0])
     #train_dataset = cv2.cvtColor(train_images, cv2.COLOR_RGB2Lab)
     #test_dataset = cv2.cvtColor(test_images, cv2.COLOR_RGB2Lab)
     train_dataset = tf.data.Dataset.from_tensor_slices(train_dataset)

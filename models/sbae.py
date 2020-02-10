@@ -8,7 +8,7 @@ tfd = tfp.distributions
 
 
 class SBAE(tf.keras.Model):
-    def __init__(self, layers=[64, 128, 512], latent_dim=512, input_shape=32):
+    def __init__(self, layers=[64, 128, 512], latent_dim=512, input_shape=32, is_Lab=False):
         super(SBAE, self).__init__()
         self.latent_dim = latent_dim
 
@@ -43,7 +43,7 @@ class SBAE(tf.keras.Model):
         for l in layers:
             self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, activation=tf.nn.relu, padding='same'))
 
-        self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=4, strides=1, activation=tf.nn.relu, padding='same'))
+        self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=4, strides=1, padding='same'))
 
         ## DECODER_AB2L
 
@@ -52,7 +52,8 @@ class SBAE(tf.keras.Model):
         for l in layers:
             self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, activation=tf.nn.relu, padding='same'))
 
-        self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, strides=1, activation=tf.nn.relu, padding='same'))
+
+        self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, strides=1, padding='same'))
 
         print("####")
         self.L2ab.summary()
@@ -84,11 +85,14 @@ class SBAE(tf.keras.Model):
             ]
         )"""
 
-    def reconstruct(self, x):
+    def reconstruct(self, x, is_Lab=False):
         L, ab = tf.split(x, num_or_size_splits=[1, 2], axis=-1)
-        ab_logits = self.L2ab(L)
-        L_logits = self.ab2L(ab)
-        x_logit = tf.concat([L_logits, ab_logits], axis=-1)
+        if is_Lab:
+            x_logits = 2
+        else:
+            ab_logits = self.L2ab(L)
+            L_logits = self.ab2L(ab)
+            x_logit = tf.concat([L_logits, ab_logits], axis=-1)
 
         return x_logit
 
@@ -100,10 +104,13 @@ class SBAE(tf.keras.Model):
         ab_labels = lab_images[:, :, :, 1] * 32 + lab_images[:, :, :, 2]
         return l_labels.reshape([-1, 32*32]), ab_labels.reshape([-1, 32*32])
 
-    def compute_loss(self, x):
-        x_logits = self.reconstruct(x)
-
-        loss = tf.reduce_sum(tf.square(x - x_logits))
+    def compute_loss(self, x, is_Lab=False):
+        if is_Lab:
+            x_logits = self.reconstruct(x, is_Lab)
+            loss = tf.reduce_sum(tf.square(x - x_logits))
+        else:
+            x_logits = self.reconstruct(x)
+            loss = tf.reduce_sum(tf.square(x - x_logits))
 
         """
         logpx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
@@ -113,9 +120,9 @@ class SBAE(tf.keras.Model):
 
         return loss
 
-    def compute_apply_gradients(self, x, optimizer):
+    def compute_apply_gradients(self, x, optimizer, is_Lab=False):
         with tf.GradientTape() as tape:
-            loss = self.compute_loss(x)
+            loss = self.compute_loss(x, is_Lab)
         gradients = tape.gradient(loss, self.trainable_variables)
         optimizer.apply_gradients(zip(gradients, self.trainable_variables))
         return loss

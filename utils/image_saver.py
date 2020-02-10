@@ -51,13 +51,18 @@ def extract_single_dim_from_LAB_convert_to_RGB(image,idim):
     '''
     z = np.zeros(image.shape)
     if idim != 0 :
-        z[:,:,0]=80 ## I need brightness to plot the image along 1st or 2nd axis
+        z[:,:,0]=50 ## I need brightness to plot the image along 1st or 2nd axis
     z[:,:,idim] = image[:,:,idim]
     z = cv2.cvtColor(np.float32(z), cv2.COLOR_Lab2RGB)
     return(z)
 
 def generate_and_save_images_compare_lab(model, epoch, test_input, file_name_head='image'):
     x_logits = model.reconstruct(test_input)
+    test_input = test_input*[100, 255.0, 255.0]
+    test_input = test_input-[100, 128, 128]
+    x_logits = x_logits*[100, 255.0, 255.0]
+    x_logits = x_logits-[100, 128, 128]
+
     test_input = test_input[:2, :, :, :]
     x_logit = x_logits[:2, :, :, :]
     # predictions = model.sample(test_input)
