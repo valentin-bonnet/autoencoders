@@ -113,6 +113,6 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch):
 logging.basicConfig(filename='./training_Lab.log', level=logging.DEBUG)
 
 ds = datasetLoader.get_dataset('cifar10Lab')
-model = construct_model.get_model('SBAE', [64, 128, 256], 1024, 32)
+model = construct_model.get_model('AE', [64, 128, 256], 1024, 32)
 
 train(ds, model, lr=1e-4, epochs=40, batch_size=128, ckpt_path='./ckpts_sbaeLab', ckpt_epoch=10)
