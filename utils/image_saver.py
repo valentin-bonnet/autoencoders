@@ -59,9 +59,9 @@ def extract_single_dim_from_LAB_convert_to_RGB(image,idim):
 def generate_and_save_images_compare_lab(model, epoch, test_input, file_name_head='image'):
     x_logits = model.reconstruct(test_input)
     test_input = test_input*[100, 255.0, 255.0]
-    test_input = test_input-[100, 128, 128]
+    test_input = test_input-[0, 128, 128]
     x_logits = x_logits*[100, 255.0, 255.0]
-    x_logits = x_logits-[100, 128, 128]
+    x_logits = x_logits-[0, 128, 128]
 
     test_input = test_input[:2, :, :, :]
     x_logit = x_logits[:2, :, :, :]
