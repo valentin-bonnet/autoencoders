@@ -19,7 +19,7 @@ import logging
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 
-def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch, img_while_training=True):
+def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch, img_while_training=True, filename='default_filename'):
 
     optimizer = tf.keras.optimizers.Adam(lr)
 
@@ -70,7 +70,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch, img_while_tr
             if img_while_training:
                 if i % (len_train/10) == 0:
                     for test_x in test_dataset.take(1):
-                        image_saver.generate_and_save_images_compare_lab(model, epoch, test_x, 'SBAE_Lab_step_'+str(i))
+                        image_saver.generate_and_save_images_compare_lab(model, epoch, test_x, 'temp_'+filename+'_step_'+str(i))
 
 
         end_time = time.time()
@@ -100,7 +100,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch, img_while_tr
                 image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracy_Lab_temp")
                 for test_x in test_dataset.take(1):
                     image_saver.generate_and_save_images_compare_lab(
-                        model, epoch, test_x, 'SBAE_Lab')
+                        model, epoch, test_x, 'temp_'+filename)
         ckpt.step.assign_add(1)
         if int(ckpt.step) % ckpt_epoch == 0:
             save_path = manager.save()
@@ -170,7 +170,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
         print(ckpt_path)
         print(ckpt_epoch)
 
-        train_l, test_l, train_acc, test_acc = train(dataset, model, lr, epoch, bs, ckpt_path, ckpt_epoch)
+        train_l, test_l, train_acc, test_acc = train(dataset, model, lr, epoch, bs, ckpt_path, ckpt_epoch, str_all)
 
         #Get curves and output them
         train_losses.append(train_l)
@@ -217,23 +217,23 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
 #model = construct_model.get_model('AE', [64, 128, 256], 1024, 32)
 
 datasets = ['cifar10Lab']
-models_type = ['AE', 'AE']  # or ['AE']
-models_arch = [[64, 128, 256], [128, 256, 512], [128, 256, 512, 1024]]
+models_type = ['AE']  # or ['AE']
+models_arch = [[64, 128, 256], [128, 256, 512], [128, 256, 512, 1024], [256, 512, 1024, 2048]]
 #models_arch = [[64, 128, 256]]
-models_latent_space = [256, 512, 1024]
-models_use_bn = [False, True]
+models_latent_space = [1024]
+models_use_bn = [False]
 lr = [1e-4]
-epochs = [2]
+epochs = [40]
 batch_size = [128]
-ckpt_path = ['./ckpts_aeLab_1', './ckpts_aeLab_2', './ckpts_aeLab_3']
+ckpt_path = ['./ckpts_aeLab_lat1024_64x128x256', './ckpts_aeLab_lat1024_128x256x512', './ckpts_aeLab_lat1024_256x512x1024x2048', './ckpts_aeLab_lat1024_256x512x1024x2048']
 ckpt_epoch = [10]
-filename = 'test'
+filename = 'first_general'
 
-#multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename)
+multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename)
 
-res = [[0.00789244, 0.0055954787], [0.007047541, 0.004881351], [0.0083873095, 0.0067818933]]
-legende = ['cifar10Lab_AE_256_128_64_lat256', 'cifar10Lab_AE_512_256_128_lat512_BN', 'cifar10Lab_AE_1024_512_256_128_lat1024']
-image_saver.curves(res, legende, 'truc')
+#res = [[0.00789244, 0.0055954787], [0.007047541, 0.004881351], [0.0083873095, 0.0067818933]]
+#legende = ['cifar10Lab_AE_256_128_64_lat256', 'cifar10Lab_AE_512_256_128_lat512_BN', 'cifar10Lab_AE_1024_512_256_128_lat1024']
+#image_saver.curves(res, legende, 'truc')
 
 #print(len(models_arch))
 
@@ -247,25 +247,4 @@ image_saver.curves(res, legende, 'truc')
 #logging.basicConfig(filename='./training_Lab.log', level=logging.DEBUG)
 
 #train(ds, model, lr=1e-4, epochs=40, batch_size=128, ckpt_path='./ckpts_sbaeLab', ckpt_epoch=10)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
