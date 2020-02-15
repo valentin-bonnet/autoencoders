@@ -115,6 +115,7 @@ def curves(curves, legendes, file_name):
         handle, = plt.plot(e, curve, label=legendes[i])
         handles.append(handle)
     plt.legend(handles=handles)
+    plt.savefig(file_name+'.png')
     plt.show()
     print(file_name)
 

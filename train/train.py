@@ -106,11 +106,11 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch, img_while_tr
             save_path = manager.save()
             print("Saved checkpoint for step {}: {}".format(int(ckpt.step), save_path))
             print("loss {:1.2f}".format(-test_loss_mean.result()))
-
-    image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracyLab")
+    if img_while_training:
+        image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracyLab")
     return train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results
 
-def multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, funcs_output_data, lrs, epochs, batch_size, ckpt_paths, ckpt_epochs):
+def multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_paths, ckpt_epochs, filename):
 
     model_args = [datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_paths, ckpt_epochs]
     max_len = max(map(len, model_args))
@@ -137,6 +137,14 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
     legendes = []
     # Construct the model,
     for i in range(max_len):
+        #Get name
+        str_ds = model_args[0][i]
+        str_model = model_args[1][i]
+        str_arch = '_'.join(str(x) for x in model_args[2][i])
+        str_lat = 'lat' + str(model_args[3][i])
+        str_use_bn = 'BN' if model_args[4][i] else ''
+        str_all = '_'.join(filter(None, [str_ds, str_model, str_arch, str_lat, str_use_bn]))
+
         #Construct the model
         dataset = ds[model_args[0][i]][0]
         shape = ds[model_args[0][i]][1]
@@ -151,11 +159,18 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
         ckpt_path = model_args[8][i]
         ckpt_epoch = model_args[9][i]
 
-        model = construct_model.get_model(model_type, model_arch, 1024, shape)
+        model = construct_model.get_model(model_type, model_arch, model_lat, shape, model_use_bn)
 
         #Train
+        print(dataset)
+        print(model)
+        print(lr)
+        print(epoch)
+        print(bs)
+        print(ckpt_path)
+        print(ckpt_epoch)
 
-        train_l, test_l, train_acc, test_acc = train(dataset, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch)
+        train_l, test_l, train_acc, test_acc = train(dataset, model, lr, epoch, bs, ckpt_path, ckpt_epoch)
 
         #Get curves and output them
         train_losses.append(train_l)
@@ -163,16 +178,11 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
         test_losses.append(test_l)
         test_accs.append(test_acc)
 
-        str_ds = model_args[0][i]
-        str_model = model_args[1][i]
-        str_arch = '_'.join(str(x) for x in model_args[2][i])
-        str_lat = 'lat' + str(model_args[3][i])
-        str_use_bn = 'BN' if model_args[4][i] else ''
-        str_all = '_'.join(filter(None, [str_ds, str_model, str_arch, str_lat, str_use_bn]))
+
 
         legendes.append(str_all)
 
-    image_saver.curves(test_accs, legendes, 'truc')
+    image_saver.curves(test_accs, legendes, filename)
 
 
 
@@ -217,8 +227,13 @@ epochs = [2]
 batch_size = [128]
 ckpt_path = ['./ckpts_aeLab_1', './ckpts_aeLab_2', './ckpts_aeLab_3']
 ckpt_epoch = [10]
+filename = 'test'
 
-multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch)
+#multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename)
+
+res = [[0.00789244, 0.0055954787], [0.007047541, 0.004881351], [0.0083873095, 0.0067818933]]
+legende = ['cifar10Lab_AE_256_128_64_lat256', 'cifar10Lab_AE_512_256_128_lat512_BN', 'cifar10Lab_AE_1024_512_256_128_lat1024']
+image_saver.curves(res, legende, 'truc')
 
 #print(len(models_arch))
 

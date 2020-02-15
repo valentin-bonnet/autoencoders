@@ -10,10 +10,10 @@ import sbvae
 import sbae
 
 
-def get_model(model_type, layers, latent_dim, input_shape):
+def get_model(model_type, layers, latent_dim, input_shape, use_bn):
 
     if model_type == 'AE':
-        model = ae.AE(layers, latent_dim, input_shape)
+        model = ae.AE(layers, latent_dim, input_shape, use_bn)
 
     elif model_type == 'CVAE':
         model = cvae.CVAE(layers=layers, latent_dim=latent_dim)

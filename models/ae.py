@@ -6,7 +6,7 @@ import sklearn.neighbors as nn
 
 
 class AE(tf.keras.Model):
-    def __init__(self, layers=[64, 128, 512], latent_dim=512, input_shape=32):
+    def __init__(self, layers=[64, 128, 512], latent_dim=512, input_shape=32, use_bn=False):
         super(AE, self).__init__()
         self.latent_dim = latent_dim
         self.cc = np.load('../utils/pts_in_hull.npy')
@@ -16,7 +16,10 @@ class AE(tf.keras.Model):
         self.ae = tf.keras.Sequential()
         self.ae.add(tf.keras.layers.Input(shape=(input_shape, input_shape, 3)))
         for l in layers:
-            self.ae.add(tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, activation=tf.nn.relu, padding='same'))
+            self.ae.add(tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, padding='same'))
+            if use_bn:
+                self.ae.add(tf.keras.layers.BatchNormalization())
+            self.ae.add(tf.keras.layers.ReLU())
 
         self.ae.add(tf.keras.layers.Flatten())
         self.ae.add(tf.keras.layers.Dense(latent_dim))
@@ -32,9 +35,16 @@ class AE(tf.keras.Model):
         self.ae.add(tf.keras.layers.Dense(size_decoded_frame*size_decoded_frame*size_decoded_layers))
         self.ae.add(tf.keras.layers.Reshape(target_shape=(size_decoded_frame, size_decoded_frame, size_decoded_layers)))
         for l in layers:
-            self.ae.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, activation=tf.nn.relu, padding='same'))
+            self.ae.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
+            if use_bn:
+                self.ae.add(tf.keras.layers.BatchNormalization())
+            self.ae.add(tf.keras.layers.ReLU())
 
-        self.ae.add(tf.keras.layers.Conv2DTranspose(filters=3, kernel_size=4, strides=1, activation=tf.nn.relu, padding='same'))
+
+        self.ae.add(tf.keras.layers.Conv2DTranspose(filters=3, kernel_size=4, strides=1, padding='same'))
+        if use_bn:
+            self.ae.add(tf.keras.layers.BatchNormalization())
+        self.ae.add(tf.keras.layers.ReLU())
 
 
         print("####")
