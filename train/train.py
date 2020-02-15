@@ -215,7 +215,7 @@ models_use_bn = [False, True]
 lr = [1e-4]
 epochs = [2]
 batch_size = [128]
-ckpt_path = ['./ckpts_aeLab']
+ckpt_path = ['./ckpts_aeLab_1', './ckpts_aeLab_2', './ckpts_aeLab_3']
 ckpt_epoch = [10]
 
 multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch)
