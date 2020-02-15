@@ -19,7 +19,7 @@ import logging
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 
-def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch):
+def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch, img_while_training=True):
 
     optimizer = tf.keras.optimizers.Adam(lr)
 
@@ -67,9 +67,10 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch):
             progbar.update(i+1)
             train_loss_mean(model.compute_apply_gradients(train_x, optimizer))
             train_accuracy_mean(model.compute_accuracy(train_x))
-            if i % (len_train/10) == 0:
-                for test_x in test_dataset.take(1):
-                    image_saver.generate_and_save_images_compare_lab(model, epoch, test_x, 'SBAE_Lab_step_'+str(i))
+            if img_while_training:
+                if i % (len_train/10) == 0:
+                    for test_x in test_dataset.take(1):
+                        image_saver.generate_and_save_images_compare_lab(model, epoch, test_x, 'SBAE_Lab_step_'+str(i))
 
 
         end_time = time.time()
@@ -95,10 +96,11 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch):
             test_loss_mean.reset_states()
             train_accuracy_mean.reset_states()
             test_accuracy_mean.reset_states()
-            image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracy_Lab_temp")
-            for test_x in test_dataset.take(1):
-                image_saver.generate_and_save_images_compare_lab(
-                    model, epoch, test_x, 'SBAE_Lab')
+            if img_while_training:
+                image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracy_Lab_temp")
+                for test_x in test_dataset.take(1):
+                    image_saver.generate_and_save_images_compare_lab(
+                        model, epoch, test_x, 'SBAE_Lab')
         ckpt.step.assign_add(1)
         if int(ckpt.step) % ckpt_epoch == 0:
             save_path = manager.save()
@@ -106,13 +108,149 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch):
             print("loss {:1.2f}".format(-test_loss_mean.result()))
 
     image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracyLab")
+    return train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results
+
+def multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, funcs_output_data, lrs, epochs, batch_size, ckpt_paths, ckpt_epochs):
+
+    model_args = [datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_paths, ckpt_epochs]
+    max_len = max(map(len, model_args))
+    print(max_len)
+
+    #Adapt to get all parameters to same size
+    for i, arg in enumerate(model_args):
+        temp_arg = arg.copy()
+        for j in range((max_len-1)//len(arg)):
+            arg.extend(temp_arg)
+        model_args[i] = arg[:max_len]
+
+    #Use this to get unique dataset used multiple times
+    ds = {}
+    for dataset in datasets:
+        if dataset not in ds:
+            train_test_ds, shape = datasetLoader.get_dataset(dataset)
+            ds.update({dataset: [train_test_ds, shape]})
+
+    train_losses = []
+    test_losses = []
+    train_accs = []
+    test_accs = []
+    legendes = []
+    # Construct the model,
+    for i in range(max_len):
+        #Construct the model
+        dataset = ds[model_args[0][i]][0]
+        shape = ds[model_args[0][i]][1]
+        model_type = model_args[1][i]
+        model_arch = model_args[2][i]
+        model_lat = model_args[3][i]
+        model_use_bn = model_args[4][i]
+
+        lr = model_args[5][i]
+        epoch = model_args[6][i]
+        bs = model_args[7][i]
+        ckpt_path = model_args[8][i]
+        ckpt_epoch = model_args[9][i]
+
+        model = construct_model.get_model(model_type, model_arch, 1024, shape)
+
+        #Train
+
+        train_l, test_l, train_acc, test_acc = train(dataset, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch)
+
+        #Get curves and output them
+        train_losses.append(train_l)
+        train_accs.append(train_acc)
+        test_losses.append(test_l)
+        test_accs.append(test_acc)
+
+        str_ds = model_args[0][i]
+        str_model = model_args[1][i]
+        str_arch = '_'.join(str(x) for x in model_args[2][i])
+        str_lat = 'lat' + str(model_args[3][i])
+        str_use_bn = 'BN' if model_args[4][i] else ''
+        str_all = '_'.join(filter(None, [str_ds, str_model, str_arch, str_lat, str_use_bn]))
+
+        legendes.append(str_all)
+
+    image_saver.curves(test_accs, legendes, 'truc')
+
+
+
+
+"""
+    print(model_args)
+    for i in range(max_len):
+        str_ds = model_args[0][i]
+        str_model = model_args[1][i]
+        str_arch = '_'.join(str(x) for x in model_args[2][i])
+        str_lat = 'lat'+str(model_args[3][i])
+        str_use_bn = 'BN' if model_args[4][i] else ''
+        str_all = '_'.join(filter(None, [str_ds, str_model, str_arch, str_lat, str_use_bn]))
+
+        print(str_all)
+        test_data = [[10, 7, 5, 6, 4, 3, 3.1, 2.8], [1, 2, 4]]
+        image_saver.curves(test_data, ['test_1', 'test_2'], ['test_1_img', 'test_2_img'])
+
+"""
+
+
+
+    #for model in models:
+    #    train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch)
+
 
 # Dataset
 
 
-logging.basicConfig(filename='./training_Lab.log', level=logging.DEBUG)
+#ds = datasetLoader.get_dataset('cifar10Lab')
+#datasets = ['cifar10Lab']
+#model = construct_model.get_model('AE', [64, 128, 256], 1024, 32)
 
-ds = datasetLoader.get_dataset('cifar10Lab')
-model = construct_model.get_model('AE', [64, 128, 256], 1024, 32)
+datasets = ['cifar10Lab']
+models_type = ['AE', 'AE']  # or ['AE']
+models_arch = [[64, 128, 256], [128, 256, 512], [128, 256, 512, 1024]]
+#models_arch = [[64, 128, 256]]
+models_latent_space = [256, 512, 1024]
+models_use_bn = [False, True]
+lr = [1e-4]
+epochs = [2]
+batch_size = [128]
+ckpt_path = ['./ckpts_aeLab']
+ckpt_epoch = [10]
 
-train(ds, model, lr=1e-4, epochs=40, batch_size=128, ckpt_path='./ckpts_sbaeLab', ckpt_epoch=10)
+multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch)
+
+#print(len(models_arch))
+
+
+#train_l, test_l, train_acc, test_acc = train(ds, model, lr=1e-4, epochs=40, batch_size=128, ckpt_path='./ckpts_sbaeLab', ckpt_epoch=10)
+
+#ll_train_l.append(train_l)
+
+
+
+#logging.basicConfig(filename='./training_Lab.log', level=logging.DEBUG)
+
+#train(ds, model, lr=1e-4, epochs=40, batch_size=128, ckpt_path='./ckpts_sbaeLab', ckpt_epoch=10)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

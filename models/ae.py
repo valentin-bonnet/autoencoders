@@ -83,9 +83,9 @@ class AE(tf.keras.Model):
 
         return loss
 
-    def compute_apply_gradients(self, x, optimizer, is_Lab=False):
+    def compute_apply_gradients(self, x, optimizer):
         with tf.GradientTape() as tape:
-            loss = self.compute_loss(x, is_Lab)
+            loss = self.compute_loss(x)
         gradients = tape.gradient(loss, self.trainable_variables)
         optimizer.apply_gradients(zip(gradients, self.trainable_variables))
         return loss

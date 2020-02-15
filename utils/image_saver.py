@@ -107,6 +107,19 @@ def generate_and_save_images_compare_lab(model, epoch, test_input, file_name_hea
     plt.savefig(file_name_head+'_at_epoch_{:04d}.png'.format(epoch))
     # plt.show()
 
+def curves(curves, legendes, file_name):
+
+    handles = []
+    for i, curve in enumerate(curves):
+        e = np.linspace(1, len(curve), len(curve))
+        handle, = plt.plot(e, curve, label=legendes[i])
+        handles.append(handle)
+    plt.legend(handles=handles)
+    plt.show()
+    print(file_name)
+
+
+
 def img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracy"):
     e = np.linspace(1, len(train_loss_results) + 1, len(train_loss_results))
     fig = plt.figure()
