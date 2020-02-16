@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
+import os
 import cv2
 
 
@@ -18,7 +19,7 @@ def generate_and_save_images(model, epoch, test_input):
     # plt.show()
 
 
-def generate_and_save_images_compare(model, epoch, test_input, file_name_head='image'):
+def generate_and_save_images_compare(model, epoch, test_input, file_name_head='image', path='./'):
     x_logits = model.reconstruct(test_input)
     test_input = test_input[:2, :, :, :]
     x_logit = x_logits[:2, :, :, :]
@@ -40,28 +41,30 @@ def generate_and_save_images_compare(model, epoch, test_input, file_name_head='i
         plt.axis('off')
 
     # tight_layout minimizes the overlap between 2 sub-plots
-    plt.savefig(file_name_head+'_at_epoch_{:04d}.png'.format(epoch))
+    if not os.path.isdir(path):
+        os.makedirs(path)
+    plt.savefig(path + file_name_head + '_at_epoch_{:04d}.png'.format(epoch))
     # plt.show()
 
 
-
-def extract_single_dim_from_LAB_convert_to_RGB(image,idim):
+def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
     '''
     image is a single lab image of shape (None,None,3)
     '''
     z = np.zeros(image.shape)
-    if idim != 0 :
-        z[:,:,0]=50 ## I need brightness to plot the image along 1st or 2nd axis
-    z[:,:,idim] = image[:,:,idim]
+    if idim != 0:
+        z[:, :, 0] = 50  ## I need brightness to plot the image along 1st or 2nd axis
+    z[:, :, idim] = image[:, :, idim]
     z = cv2.cvtColor(np.float32(z), cv2.COLOR_Lab2RGB)
-    return(z)
+    return (z)
 
-def generate_and_save_images_compare_lab(model, epoch, test_input, file_name_head='image'):
+
+def generate_and_save_images_compare_lab(model, epoch, test_input, file_name_head='image', path='./'):
     x_logits = model.reconstruct(test_input)
-    test_input = test_input*[100, 255.0, 255.0]
-    test_input = test_input-[0, 128, 128]
-    x_logits = x_logits*[100, 255.0, 255.0]
-    x_logits = x_logits-[0, 128, 128]
+    test_input = test_input * [100, 255.0, 255.0]
+    test_input = test_input - [0, 128, 128]
+    x_logits = x_logits * [100, 255.0, 255.0]
+    x_logits = x_logits - [0, 128, 128]
 
     test_input = test_input[:2, :, :, :]
     x_logit = x_logits[:2, :, :, :]
@@ -102,26 +105,29 @@ def generate_and_save_images_compare_lab(model, epoch, test_input, file_name_hea
         plt.imshow(logit_b)
         plt.axis('off')
 
-
     # tight_layout minimizes the overlap between 2 sub-plots
-    plt.savefig(file_name_head+'_at_epoch_{:04d}.png'.format(epoch))
+    if not os.path.isdir(path):
+        os.makedirs(path)
+    plt.savefig(file_name_head + '_at_epoch_{:04d}.png'.format(epoch))
     # plt.show()
 
-def curves(curves, legendes, file_name):
 
+def curves(curves, legendes, file_name, path):
     handles = []
     for i, curve in enumerate(curves):
         e = np.linspace(1, len(curve), len(curve))
         handle, = plt.plot(e, curve, label=legendes[i])
         handles.append(handle)
     plt.legend(handles=handles)
-    plt.savefig(file_name+'.png')
+    if not os.path.isdir(path):
+        os.makedirs(path)
+    plt.savefig(path + file_name + '.png')
     plt.show()
     print(file_name)
 
 
-
-def img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracy"):
+def img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results,
+                      filename="loss_accuracy", path='./'):
     e = np.linspace(1, len(train_loss_results) + 1, len(train_loss_results))
     fig = plt.figure()
     plt.subplot(211)
@@ -134,4 +140,7 @@ def img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_resu
     test_plot_acc, = plt.plot(e, test_accuracy_results, 'r', label="test")
     plt.legend(handles=[train_plot_acc, test_plot_acc])
     plt.show()
-    plt.savefig(filename+'.png')
+    if not os.path.isdir(path):
+        os.makedirs(path)
+    plt.savefig(filename + '.png')
+
