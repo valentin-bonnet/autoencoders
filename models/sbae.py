@@ -9,7 +9,7 @@ tfd = tfp.distributions
 
 
 class SBAE(tf.keras.Model):
-    def __init__(self, layers=[64, 128, 512], latent_dim=512, input_shape=32, classification=False):
+    def __init__(self, layers=[64, 128, 512], latent_dim=512, input_shape=32, use_bn=False, classification=False):
         super(SBAE, self).__init__()
         self.latent_dim = latent_dim
         self.cc = np.load('../utils/pts_in_hull.npy')
@@ -19,7 +19,10 @@ class SBAE(tf.keras.Model):
         self.L2ab = tf.keras.Sequential()
         self.L2ab.add(tf.keras.layers.Input(shape=(input_shape, input_shape, 1)))
         for l in layers:
-            self.L2ab.add(tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, activation=tf.nn.relu, padding='same'))
+            self.L2ab.add(tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, padding='same'))
+            if use_bn:
+                self.L2ab.add(tf.keras.layers.BatchNormalization())
+            self.L2ab.add(tf.keras.layers.Relu())
 
         self.L2ab.add(tf.keras.layers.Flatten())
         self.L2ab.add(tf.keras.layers.Dense(latent_dim))
@@ -29,7 +32,10 @@ class SBAE(tf.keras.Model):
         self.ab2L.add(tf.keras.layers.Input(shape=(input_shape, input_shape, 2)))
         for l in layers:
             self.ab2L.add(
-                tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, activation=tf.nn.relu, padding='same'))
+                tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, padding='same'))
+            if use_bn:
+                self.ab2L.add(tf.keras.layers.BatchNormalization())
+            self.ab2L.add(tf.keras.layers.Relu())
 
         self.ab2L.add(tf.keras.layers.Flatten())
         self.ab2L.add(tf.keras.layers.Dense(latent_dim))
@@ -44,7 +50,10 @@ class SBAE(tf.keras.Model):
         self.L2ab.add(tf.keras.layers.Dense(size_decoded_frame*size_decoded_frame*size_decoded_layers))
         self.L2ab.add(tf.keras.layers.Reshape(target_shape=(size_decoded_frame, size_decoded_frame, size_decoded_layers)))
         for l in layers:
-            self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, activation=tf.nn.relu, padding='same'))
+            self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
+            if use_bn:
+                self.L2ab.add(tf.keras.layers.BatchNormalization())
+            self.L2ab.add(tf.keras.layers.Relu())
 
         if classification:
             self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=313, kernel_size=4, strides=tf.nn.softmax, activation=tf.nn.relu, padding='same'))
@@ -56,7 +65,10 @@ class SBAE(tf.keras.Model):
         self.ab2L.add(tf.keras.layers.Dense(size_decoded_frame * size_decoded_frame * size_decoded_layers))
         self.ab2L.add(tf.keras.layers.Reshape(target_shape=(size_decoded_frame, size_decoded_frame, size_decoded_layers)))
         for l in layers:
-            self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, activation=tf.nn.relu, padding='same'))
+            self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
+            if use_bn:
+                self.ab2L.add(tf.keras.layers.BatchNormalization())
+            self.ab2L.add(tf.keras.layers.Relu())
 
         if classification:
             self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=50, kernel_size=4, strides=2, activation=tf.nn.softmax, padding='same'))

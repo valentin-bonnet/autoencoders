@@ -25,7 +25,7 @@ def get_model(model_type, layers, latent_dim, input_shape, use_bn):
         model = sbvae.SBVAE(layers, latent_dim)
 
     elif model_type == 'SBAE':
-        model = sbae.SBAE(layers, latent_dim, input_shape)
+        model = sbae.SBAE(layers, latent_dim, input_shape, use_bn)
 
     else:
         print("Model type is not good")

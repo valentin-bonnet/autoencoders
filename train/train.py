@@ -215,22 +215,63 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
 #ds = datasetLoader.get_dataset('cifar10Lab')
 #datasets = ['cifar10Lab']
 #model = construct_model.get_model('AE', [64, 128, 256], 1024, 32)
-
+"""
 datasets = ['cifar10Lab']
 models_type = ['AE']  # or ['AE']
-models_arch = [[128, 256, 512]]
+models_arch = [[32, 64, 128], [32, 64, 128, 128], [128, 256, 512], [128, 256, 512, 512], [512, 1024, 2048], [512, 1024, 2048, 2048]]
 #models_arch = [[64, 128, 256]]
-models_latent_space = [64, 128, 256, 512, 1024, 2048]
+models_latent_space = [1024]
 models_use_bn = [False]
 lr = [1e-4]
 epochs = [40]
 batch_size = [128]
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
-ckpt_path = ['ckpts_aeLab_lat64', 'ckpts_aeLab_lat128', 'ckpts_aeLab_lat256', 'ckpts_aeLab_lat512', 'ckpts_aeLab_lat1024', 'ckpts_aeLab_lat2048']
+ckpt_path = ['ckpts_aeLab_32x64x128', 'ckpts_aeLab_32x64x128x128', 'ckpts_aeLab_128x256x512', 'ckpts_aeLab_128x256x512x512', 'ckpts_aeLab_512x1024x2048', 'ckpts_aeLab_512x1024x2048x2048']
 ckpt_epoch = [10]
-filename = 'first_general'
+filename = 'models_layers'
 
 multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
+"""
+
+
+datasets = ['cifar10Lab']
+models_type = ['AE']  # or ['AE']
+models_arch = [[128, 256, 512]]
+#models_arch = [[64, 128, 256]]
+models_latent_space = [1024]
+models_use_bn = [False, True]
+lr = [1e-4]
+epochs = [40]
+batch_size = [128]
+my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
+ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_aeLab_128x256x512_lat1024_BN']
+ckpt_epoch = [10]
+filename = 'batch_normalization'
+
+
+
+multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
+
+
+
+datasets = ['cifar10Lab']
+models_type = ['AE', 'SBAE', 'AE', 'SBAE']  # or ['AE']
+models_arch = [[128, 256, 512], [128, 256, 512], [256, 512, 1024], [256, 512, 1024]]
+#models_arch = [[64, 128, 256]]
+models_latent_space = [1024, 1024, 2048, 2048]
+models_use_bn = [False]
+lr = [1e-4]
+epochs = [40]
+batch_size = [128]
+my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
+ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
+ckpt_epoch = [10]
+filename = 'ae_sbae'
+
+
+
+multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
+
 
 #res = [[0.00789244, 0.0055954787], [0.007047541, 0.004881351], [0.0083873095, 0.0067818933]]
 #legende = ['cifar10Lab_AE_256_128_64_lat256', 'cifar10Lab_AE_512_256_128_lat512_BN', 'cifar10Lab_AE_1024_512_256_128_lat1024']
