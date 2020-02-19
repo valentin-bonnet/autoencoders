@@ -108,7 +108,7 @@ def generate_and_save_images_compare_lab(model, epoch, test_input, file_name_hea
     # tight_layout minimizes the overlap between 2 sub-plots
     if not os.path.isdir(path):
         os.makedirs(path)
-    plt.savefig(file_name_head + '_at_epoch_{:04d}.png'.format(epoch))
+    plt.savefig(path+file_name_head + '_at_epoch_{:04d}.png'.format(epoch))
     # plt.show()
 
 
