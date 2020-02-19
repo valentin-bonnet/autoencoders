@@ -19,7 +19,7 @@ def generate_and_save_images(model, epoch, test_input):
     # plt.show()
 
 
-def generate_and_save_images_compare(model, epoch, test_input, file_name_head='image', path='./'):
+def generate_and_save_images_compare(model, test_input, file_name_head='image', path='./'):
     x_logits = model.reconstruct(test_input)
     test_input = test_input[:2, :, :, :]
     x_logit = x_logits[:2, :, :, :]
@@ -43,7 +43,7 @@ def generate_and_save_images_compare(model, epoch, test_input, file_name_head='i
     # tight_layout minimizes the overlap between 2 sub-plots
     if not os.path.isdir(path):
         os.makedirs(path)
-    plt.savefig(path + file_name_head + '_at_epoch_{:04d}.png'.format(epoch))
+    plt.savefig(path + file_name_head + '.png')
     # plt.show()
 
 
@@ -59,7 +59,7 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
     return (z)
 
 
-def generate_and_save_images_compare_lab(model, epoch, test_input, file_name_head='image', path='./'):
+def generate_and_save_images_compare_lab(model, test_input, file_name_head='image', path='./'):
     x_logits = model.reconstruct(test_input)
     test_input = test_input * [100, 255.0, 255.0]
     test_input = test_input - [0, 128, 128]
@@ -108,7 +108,7 @@ def generate_and_save_images_compare_lab(model, epoch, test_input, file_name_hea
     # tight_layout minimizes the overlap between 2 sub-plots
     if not os.path.isdir(path):
         os.makedirs(path)
-    plt.savefig(path+file_name_head + '_at_epoch_{:04d}.png'.format(epoch))
+    plt.savefig(path+file_name_head+'.png')
     # plt.show()
 
 
@@ -123,7 +123,6 @@ def curves(curves, legendes, file_name, path):
         os.makedirs(path)
     plt.savefig(path + file_name + '.png')
     plt.show()
-    print(file_name)
 
 
 def img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results,
@@ -141,7 +140,7 @@ def img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_resu
     plt.legend(handles=[train_plot_acc, test_plot_acc])
     if not os.path.isdir(path):
         os.makedirs(path)
-    plt.savefig(filename + '.png')
+    plt.savefig(path+ filename + '.png')
     plt.show()
 
 

@@ -83,7 +83,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
             if img_while_training:
                 if i % (len_train/10) == 0:
                     for test_x in test_dataset.take(1):
-                        image_saver.generate_and_save_images_compare_lab(model, epoch, test_x, 'temp_'+directory_name+'_step_'+str(i), path=images_path)
+                        image_saver.generate_and_save_images_compare_lab(model, test_x, directory_name+'epoch_{:03d}'.format(epoch)+'_step_'+str(i), path=images_path)
 
 
         end_time = time.time()
@@ -121,7 +121,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
             if img_while_training:
                 image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename='loss_accuracy_Lab_temp', path=images_path)
                 for test_x in test_dataset.take(1):
-                    image_saver.generate_and_save_images_compare_lab(model, epoch, test_x, 'temp_'+directory_name, images_path)
+                    image_saver.generate_and_save_images_compare_lab(model, test_x, directory_name+'_epoch_{:03d}'.format(epoch), images_path)
         ckpt.step.assign_add(1)
         if int(ckpt.step) % ckpt_epoch == 0:
             save_path = manager.save()
