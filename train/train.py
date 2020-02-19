@@ -41,10 +41,10 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
     validation_loss_npy_path = os.path.join(validation_data_path, 'loss.npy')
     validation_acc_npy_path = os.path.join(validation_data_path, 'accuracy.npy')
 
-    training_loss_np = np.load(training_loss_npy_path) if os.path.isfile(training_loss_npy_path) else np.asarray([])
-    training_acc_np = np.load(training_acc_npy_path) if os.path.isfile(training_acc_npy_path) else np.asarray([])
-    validation_loss_np = np.load(validation_loss_npy_path) if os.path.isfile(validation_loss_npy_path) else np.asarray([])
-    validation_acc_np = np.load(validation_acc_npy_path) if os.path.isfile(validation_acc_npy_path) else np.asarray([])
+    training_loss_np = np.load(training_loss_npy_path) if os.path.isfile(training_loss_npy_path) else np.zeros(epochs)
+    training_acc_np = np.load(training_acc_npy_path) if os.path.isfile(training_acc_npy_path) else np.zeros(epochs)
+    validation_loss_np = np.load(validation_loss_npy_path) if os.path.isfile(validation_loss_npy_path) else np.zeros(epochs)
+    validation_acc_np = np.load(validation_acc_npy_path) if os.path.isfile(validation_acc_npy_path) else np.zeros(epochs)
 
     current_epoch = tf.Variable(1)
     ckpt = tf.train.Checkpoint(step=current_epoch, optimizer=optimizer, net=model)
