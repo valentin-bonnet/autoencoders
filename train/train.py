@@ -290,7 +290,7 @@ multitraining(datasets, models_type, models_arch, models_latent_space, models_us
 
 
 datasets = ['cifar10Lab']
-models_type = ['AE']  # or ['AE']
+models_type = ['CVAE']  # or ['AE']
 models_arch = [[128, 256, 512]]
 #models_arch = [[64, 128, 256]]
 models_latent_space = [128, 256, 512, 124, 2048, 4096]
@@ -301,7 +301,7 @@ batch_size = [128]
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
 #ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
 ckpt_epoch = [20]
-directory_name = 'AE_Latent_space'
+directory_name = 'VAE_Latent_space'
 
 
 

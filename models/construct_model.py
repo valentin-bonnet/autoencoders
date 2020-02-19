@@ -16,7 +16,7 @@ def get_model(model_type, layers, latent_dim, input_shape, use_bn):
         model = ae.AE(layers, latent_dim, input_shape, use_bn)
 
     elif model_type == 'CVAE':
-        model = cvae.CVAE(layers=layers, latent_dim=latent_dim)
+        model = cvae.CVAE(layers, latent_dim, input_shape, use_bn)
 
     elif model_type == 'VAE':
         model = vae.VAE(layers, latent_dim)
