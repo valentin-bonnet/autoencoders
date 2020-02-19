@@ -88,7 +88,11 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
 
         end_time = time.time()
 
-        if epoch % 30 == 0:
+        if epoch == 30:
+            lr = lr*0.1
+            optimizer.lr = lr
+
+        if epoch == 50:
             lr = lr*0.1
             optimizer.lr = lr
 
@@ -123,7 +127,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
                 for test_x in test_dataset.take(1):
                     image_saver.generate_and_save_images_compare_lab(model, test_x, directory_name+'_epoch_{:03d}'.format(epoch), images_path)
         ckpt.step.assign_add(1)
-        if int(ckpt.step) % ckpt_epoch == 0:
+        if int(ckpt.step) % ckpt_epoch == 0 or epoch == epochs:
             save_path = manager.save()
             np.save(training_loss_npy_path, training_loss_np)
             np.save(training_acc_npy_path, training_acc_np)
@@ -133,6 +137,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
             print("loss {:1.2f}".format(-test_loss_mean.result()))
     if img_while_training:
         image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracyLab", path=images_path)
+
     return train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results
 
 def multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_epochs, directory_name, path):
@@ -291,7 +296,7 @@ models_arch = [[128, 256, 512]]
 models_latent_space = [128, 256, 512, 124, 2048, 4096]
 models_use_bn = [False]
 lr = [1e-4]
-epochs = [110]
+epochs = [70]
 batch_size = [128]
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
 #ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
