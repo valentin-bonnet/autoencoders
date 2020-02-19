@@ -43,7 +43,8 @@ def generate_and_save_images_compare(model, test_input, file_name_head='image', 
     # tight_layout minimizes the overlap between 2 sub-plots
     if not os.path.isdir(path):
         os.makedirs(path)
-    plt.savefig(path + file_name_head + '.png')
+    file_path = os.path.join(path, file_name_head)
+    plt.savefig(file_path + '.png')
     # plt.show()
 
 
@@ -108,8 +109,8 @@ def generate_and_save_images_compare_lab(model, test_input, file_name_head='imag
     # tight_layout minimizes the overlap between 2 sub-plots
     if not os.path.isdir(path):
         os.makedirs(path)
-    plt.savefig(path+file_name_head+'.png')
-    # plt.show()
+    file_path = os.path.join(path, file_name_head)
+    plt.savefig(file_path + '.png')
 
 
 def curves(curves, legendes, file_name, path):
@@ -121,7 +122,8 @@ def curves(curves, legendes, file_name, path):
     plt.legend(handles=handles)
     if not os.path.isdir(path):
         os.makedirs(path)
-    plt.savefig(path + file_name + '.png')
+    file_path = os.path.join(path, file_name)
+    plt.savefig(file_path + '.png')
     plt.show()
 
 
@@ -140,7 +142,8 @@ def img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_resu
     plt.legend(handles=[train_plot_acc, test_plot_acc])
     if not os.path.isdir(path):
         os.makedirs(path)
-    plt.savefig(path+ filename + '.png')
+    file_path = os.path.join(path, filename)
+    plt.savefig(file_path + '.png')
     plt.show()
 
 
