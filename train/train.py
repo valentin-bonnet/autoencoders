@@ -19,9 +19,32 @@ import logging
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 
-def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename='default_filename', path='./', img_while_training=True):
+def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directory_name='default_filename', img_while_training=True):
 
     optimizer = tf.keras.optimizers.Adam(lr)
+    main_path = os.path.join(directory_path, directory_name)
+    ckpt_path = os.path.join(main_path, 'ckpts')
+    training_data_path = os.path.join(main_path, 'training')
+    validation_data_path = os.path.join(main_path, 'validation')
+    images_path = os.path.join(main_path, 'imgs')
+    if not os.path.isdir(ckpt_path):
+        os.makedirs(ckpt_path)
+    if not os.path.isdir(training_data_path):
+        os.makedirs(training_data_path)
+    if not os.path.isdir(validation_data_path):
+        os.makedirs(validation_data_path)
+    if not os.path.isdir(images_path):
+        os.makedirs(images_path)
+
+    training_loss_npy_path = os.path.join(training_data_path, 'loss.npy')
+    training_acc_npy_path = os.path.join(training_data_path, 'accuracy.npy')
+    validation_loss_npy_path = os.path.join(validation_data_path, 'loss.npy')
+    validation_acc_npy_path = os.path.join(validation_data_path, 'accuracy.npy')
+
+    training_loss_np = np.load(training_loss_npy_path) if os.path.isfile(training_loss_npy_path) else np.asarray([])
+    training_acc_np = np.load(training_acc_npy_path) if os.path.isfile(training_acc_npy_path) else np.asarray([])
+    validation_loss_np = np.load(validation_loss_npy_path) if os.path.isfile(validation_loss_npy_path) else np.asarray([])
+    validation_acc_np = np.load(validation_acc_npy_path) if os.path.isfile(validation_acc_npy_path) else np.asarray([])
 
     current_epoch = tf.Variable(1)
     ckpt = tf.train.Checkpoint(step=current_epoch, optimizer=optimizer, net=model)
@@ -33,6 +56,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename='de
     else:
         print("Initializing from scratch.")
 
+
     train_loss_mean = tf.keras.metrics.Mean(name='train_loss')
     test_loss_mean = tf.keras.metrics.Mean(name='test_loss')
     train_accuracy_mean = tf.keras.metrics.Mean(name='train_accuracy')
@@ -42,17 +66,6 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename='de
     train_dataset = train_dataset.shuffle(buffer_size=10000).batch(batch_size).prefetch(buffer_size=AUTOTUNE)
     test_dataset = test_dataset.shuffle(buffer_size=10000).batch(batch_size).prefetch(buffer_size=AUTOTUNE)
 
-
-
-
-
-    # keeping the random vector constant for generation (prediction) so
-    # it will be easier to see the improvement.
-    #random_vector_for_generation = tf.random.normal(shape=[num_examples_to_generate, latent_dim])
-
-
-
-    # generate_and_save_images(model, 0, random_vector_for_generation)
     train_loss_results = []
     test_loss_results = []
     train_accuracy_results = []
@@ -70,12 +83,17 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename='de
             if img_while_training:
                 if i % (len_train/10) == 0:
                     for test_x in test_dataset.take(1):
-                        image_saver.generate_and_save_images_compare_lab(model, epoch, test_x, 'temp_'+filename+'_step_'+str(i), path=path+ckpt_path+'/imgs/')
+                        image_saver.generate_and_save_images_compare_lab(model, epoch, test_x, 'temp_'+directory_name+'_step_'+str(i), path=images_path)
 
 
         end_time = time.time()
 
+        if epoch % 30 == 0:
+            lr = lr*0.1
+            optimizer.lr = lr
+
         if epoch % 1 == 0:
+            #### See if not only take(1)
             for test_x in test_dataset:
                 test_loss_mean(model.compute_loss(test_x))
                 test_accuracy_mean(model.compute_accuracy(test_x))
@@ -91,28 +109,41 @@ def train(ds, model, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename='de
             test_loss_results.append(test_loss_mean.result())
             train_accuracy_results.append(train_accuracy_mean.result())
             test_accuracy_results.append(test_accuracy_mean.result())
+            training_loss_np[epoch-1] = train_loss_mean.result().numpy()
+            training_acc_np[epoch-1] = train_accuracy_mean.result().numpy()
+            validation_loss_np[epoch - 1] = test_loss_mean.result().numpy()
+            validation_acc_np[epoch - 1] = test_accuracy_mean.result().numpy()
+
             train_loss_mean.reset_states()
             test_loss_mean.reset_states()
             train_accuracy_mean.reset_states()
             test_accuracy_mean.reset_states()
             if img_while_training:
-                image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename='loss_accuracy_Lab_temp', path=path+ckpt_path+'/imgs/')
+                image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename='loss_accuracy_Lab_temp', path=images_path)
                 for test_x in test_dataset.take(1):
-                    image_saver.generate_and_save_images_compare_lab(model, epoch, test_x, 'temp_'+filename, path+ckpt_path+'/imgs/')
+                    image_saver.generate_and_save_images_compare_lab(model, epoch, test_x, 'temp_'+directory_name, path+ckpt_path+'/imgs/')
         ckpt.step.assign_add(1)
         if int(ckpt.step) % ckpt_epoch == 0:
             save_path = manager.save()
+            np.save(training_loss_npy_path, training_loss_np)
+            np.save(training_acc_npy_path, training_acc_np)
+            np.save(validation_loss_npy_path, validation_loss_np)
+            np.save(validation_acc_npy_path, validation_acc_np)
             print("Saved checkpoint for step {}: {}".format(int(ckpt.step), save_path))
             print("loss {:1.2f}".format(-test_loss_mean.result()))
     if img_while_training:
-        image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracyLab", path=path+ckpt_path+'/imgs/')
+        image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracyLab", path=images_path)
     return train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results
 
-def multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_paths, ckpt_epochs, filename, path):
+def multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_epochs, directory_name, path):
 
-    model_args = [datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_paths, ckpt_epochs]
+    model_args = [datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_epochs]
     max_len = max(map(len, model_args))
     print(max_len)
+
+    path_directory = os.path.join(path, directory_name)
+    if not os.path.isdir(path_directory):
+        os.makedirs(path_directory)
 
     #Adapt to get all parameters to same size
     for i, arg in enumerate(model_args):
@@ -147,15 +178,14 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
         dataset = ds[model_args[0][i]][0]
         shape = ds[model_args[0][i]][1]
         model_type = model_args[1][i]
-        model_arch = model_args[2][i]
+        model_arch = model_args[2][i].copy()
         model_lat = model_args[3][i]
         model_use_bn = model_args[4][i]
 
         lr = model_args[5][i]
         epoch = model_args[6][i]
         bs = model_args[7][i]
-        ckpt_path = model_args[8][i]
-        ckpt_epoch = model_args[9][i]
+        ckpt_epoch = model_args[8][i]
 
         print(model_lat)
 
@@ -167,10 +197,10 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
         print(lr)
         print(epoch)
         print(bs)
-        print(ckpt_path)
         print(ckpt_epoch)
 
-        train_l, test_l, train_acc, test_acc = train(dataset, model, lr, epoch, bs, ckpt_path, ckpt_epoch, str_all, path)
+
+        train_l, test_l, train_acc, test_acc = train(dataset, model, lr, epoch, bs, ckpt_epoch, path_directory,  str_all, True)
 
         #Get curves and output them
         train_losses.append(train_l)
@@ -182,7 +212,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
 
         legendes.append(str_all)
 
-    image_saver.curves(test_accs, legendes, filename, path)
+    image_saver.curves(test_accs, legendes, directory_name, path_directory)
 
 
 
@@ -231,11 +261,11 @@ ckpt_epoch = [10]
 filename = 'models_layers'
 
 multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
-"""
+
 
 
 datasets = ['cifar10Lab']
-models_type = ['AE']  # or ['AE']
+models_type = ['CVAE']  # or ['AE']
 models_arch = [[128, 256, 512]]
 #models_arch = [[64, 128, 256]]
 models_latent_space = [1024]
@@ -244,33 +274,33 @@ lr = [1e-4]
 epochs = [40]
 batch_size = [128]
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
-ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_aeLab_128x256x512_lat1024_BN']
+#directories_name = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_aeLab_128x256x512_lat1024_BN']
 ckpt_epoch = [10]
 filename = 'batch_normalization'
 
 
 
-multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
-
+multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_epoch, directory_name, my_drive_path)
+"""
 
 
 datasets = ['cifar10Lab']
-models_type = ['AE', 'SBAE', 'AE', 'SBAE']  # or ['AE']
-models_arch = [[128, 256, 512], [128, 256, 512], [256, 512, 1024], [256, 512, 1024]]
+models_type = ['AE']  # or ['AE']
+models_arch = [[128, 256, 512]]
 #models_arch = [[64, 128, 256]]
-models_latent_space = [1024, 1024, 2048, 2048]
+models_latent_space = [128, 256, 512, 124, 2048, 4096]
 models_use_bn = [False]
 lr = [1e-4]
-epochs = [40]
+epochs = [110]
 batch_size = [128]
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
-ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
-ckpt_epoch = [10]
-filename = 'ae_sbae'
+#ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
+ckpt_epoch = [20]
+directory_name = 'AE_Latent_space'
 
 
 
-multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
+multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_epoch, directory_name, my_drive_path)
 
 
 #res = [[0.00789244, 0.0055954787], [0.007047541, 0.004881351], [0.0083873095, 0.0067818933]]

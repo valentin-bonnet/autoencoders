@@ -8,15 +8,18 @@ tfd = tfp.distributions
 
 
 class CVAE(tf.keras.Model):
-    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=(32, 32, 3)):
+    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=32, use_bn=False):
         super(CVAE, self).__init__()
         self.latent_dim = latent_dim
 
         ## ENCODER
         self.inference_net = tf.keras.Sequential()
-        self.inference_net.add(tf.keras.layers.Input(shape=input_shape))
+        self.inference_net.add(tf.keras.layers.Input(shape=(input_shape, input_shape, 3)))
         for l in layers:
-            self.inference_net.add(tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, activation=tf.nn.relu, padding='same'))
+            self.inference_net.add(tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, padding='same'))
+            if use_bn:
+                self.inference_net.add(tf.keras.layers.BatchNormalization())
+            self.inference_net.add(tf.keras.layers.ReLU())
 
         self.inference_net.add(tf.keras.layers.Flatten())
         self.inference_net.add(tf.keras.layers.Dense(latent_dim+latent_dim))
@@ -24,8 +27,8 @@ class CVAE(tf.keras.Model):
         ## DECODER
 
         layers.reverse()
-        size_decoded_frame = int(input_shape[0]/(2**len(layers)))
-        size_decoded_layers = int(layers[0]/2)
+        size_decoded_frame = int(input_shape//(2**len(layers)))
+        size_decoded_layers = int(layers[0]//2)
 
         self.generative_net = tf.keras.Sequential()
         self.generative_net.add(tf.keras.layers.InputLayer(input_shape=(latent_dim,)))
@@ -34,9 +37,12 @@ class CVAE(tf.keras.Model):
 
 
         for l in layers:
-            self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, activation=tf.nn.relu, padding='same'))
+            self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
+            if use_bn:
+                self.inference_net.add(tf.keras.layers.BatchNormalization())
+            self.inference_net.add(tf.keras.layers.ReLU())
 
-        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=input_shape[2], kernel_size=4, strides=1, activation=tf.nn.relu, padding='same'))
+        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=3, kernel_size=4, strides=1, activation=tf.nn.relu, padding='same'))
 
         print("####")
         self.inference_net.summary()

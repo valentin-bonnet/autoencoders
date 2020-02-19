@@ -139,8 +139,9 @@ def img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_resu
     train_plot_acc, = plt.plot(e, train_accuracy_results, 'r:', label="train")
     test_plot_acc, = plt.plot(e, test_accuracy_results, 'r', label="test")
     plt.legend(handles=[train_plot_acc, test_plot_acc])
-    plt.show()
     if not os.path.isdir(path):
         os.makedirs(path)
     plt.savefig(filename + '.png')
+    plt.show()
+
 
