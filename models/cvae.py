@@ -98,6 +98,12 @@ class CVAE(tf.keras.Model):
         se = 0.5 * tf.reduce_sum(tf.square(targets - mean)) / (2 * tf.square(std)) + tf.log(std)
         return se
 
+    def reconstruct(self, x):
+        mean, logvar = self.encode(x)
+        z = self.reparameterize(mean, logvar)
+        x_logit = self.decode(z, apply_sigmoid=False)
+        return x_logit
+
     def compute_loss(self, x):
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)

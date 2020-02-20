@@ -81,7 +81,6 @@ class AE(tf.keras.Model):
 
 
     def compute_loss(self, x):
-
         x_logits = self.reconstruct(x)
         loss = tf.reduce_sum(tf.square(x - x_logits))
 
