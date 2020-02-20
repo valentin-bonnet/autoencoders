@@ -66,10 +66,10 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
     train_dataset = train_dataset.shuffle(buffer_size=10000).batch(batch_size).prefetch(buffer_size=AUTOTUNE)
     test_dataset = test_dataset.shuffle(buffer_size=10000).batch(batch_size).prefetch(buffer_size=AUTOTUNE)
 
-    train_loss_results = []
-    test_loss_results = []
-    train_accuracy_results = []
-    test_accuracy_results = []
+    #train_loss_results = []
+    #test_loss_results = []
+    #train_accuracy_results = []
+    #test_accuracy_results = []
 
     starting_epoch = current_epoch.numpy()
     len_train = tf.data.experimental.cardinality(train_dataset).numpy()
@@ -109,10 +109,10 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
                                                             elbo,
                                                             end_time - start_time))
             logging.info('Loss_train_{:.6f}_test_{:.6f}'.format(-train_loss_mean.result(), -test_loss_mean.result()))
-            train_loss_results.append(train_loss_mean.result())
-            test_loss_results.append(test_loss_mean.result())
-            train_accuracy_results.append(train_accuracy_mean.result())
-            test_accuracy_results.append(test_accuracy_mean.result())
+            #train_loss_results.append(train_loss_mean.result())
+            #test_loss_results.append(test_loss_mean.result())
+            #train_accuracy_results.append(train_accuracy_mean.result())
+            #test_accuracy_results.append(test_accuracy_mean.result())
             training_loss_np[epoch-1] = train_loss_mean.result().numpy()
             training_acc_np[epoch-1] = train_accuracy_mean.result().numpy()
             validation_loss_np[epoch - 1] = test_loss_mean.result().numpy()
@@ -123,7 +123,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
             train_accuracy_mean.reset_states()
             test_accuracy_mean.reset_states()
             if img_while_training:
-                image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename='loss_accuracy_Lab_temp', path=images_path)
+                image_saver.img_loss_accuracy(training_loss_np, validation_loss_np, training_acc_np, validation_acc_np, filename='loss_accuracy_Lab_temp', path=images_path)
                 for test_x in test_dataset.take(1):
                     image_saver.generate_and_save_images_compare_lab(model, test_x, directory_name+'_epoch_{:03d}'.format(epoch), images_path)
         ckpt.step.assign_add(1)
@@ -136,9 +136,9 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
             print("Saved checkpoint for step {}: {}".format(int(ckpt.step), save_path))
             print("loss {:1.2f}".format(-test_loss_mean.result()))
     if img_while_training:
-        image_saver.img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results, filename="loss_accuracyLab", path=images_path)
+        image_saver.img_loss_accuracy(training_loss_np, validation_loss_np, training_acc_np, validation_acc_np, filename="loss_accuracyLab", path=images_path)
 
-    return train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results
+    return training_loss_np, validation_loss_np, training_acc_np, validation_acc_np
 
 def multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_epochs, directory_name, path):
 
@@ -293,7 +293,7 @@ datasets = ['cifar10Lab']
 models_type = ['CVAE']  # or ['AE']
 models_arch = [[128, 256, 512]]
 #models_arch = [[64, 128, 256]]
-models_latent_space = [128, 256, 512, 124, 2048, 4096]
+models_latent_space = [128, 256, 512, 1024, 2048, 4096]
 models_use_bn = [False]
 lr = [1e-4]
 epochs = [70]
