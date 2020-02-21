@@ -16,7 +16,7 @@ def multitest(ds_test, my_drive_path, directory_name, subfolders=None):
         if not os.path.isdir(sub_path):
             print("No directory found at : " + directory_path)
             return
-        if not
+        #if not
 
 """def multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_epochs, directory_name, path):
 
