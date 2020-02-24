@@ -13,6 +13,8 @@ sys.path.append(os.path.join(path, 'datas'))
 import image_saver
 import datasetLoader
 import construct_model
+import Multitraining
+import Dataset
 
 import logging
 
@@ -254,27 +256,47 @@ filename = 'batch_normalization'
 
 
 
-multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
+#multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
 
 
 
-datasets = ['cifar10Lab']
-models_type = ['AE', 'SBAE', 'AE', 'SBAE']  # or ['AE']
-models_arch = [[128, 256, 512], [128, 256, 512], [256, 512, 1024], [256, 512, 1024]]
+#datasets = ['cifar10Lab']
+#models_type = ['AE', 'SBAE', 'AE', 'SBAE']  # or ['AE']
+#models_arch = [[128, 256, 512], [128, 256, 512], [256, 512, 1024], [256, 512, 1024]]
 #models_arch = [[64, 128, 256]]
-models_latent_space = [1024, 1024, 2048, 2048]
-models_use_bn = [False]
-lr = [1e-4]
-epochs = [40]
-batch_size = [128]
-my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
-ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
-ckpt_epoch = [10]
-filename = 'ae_sbae'
+#models_latent_space = [1024, 1024, 2048, 2048]
+#models_use_bn = [False]
+#lr = [1e-4]
+#epochs = [40]
+#batch_size = [128]
+#my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
+#ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
+#ckpt_epoch = [10]
+#filename = 'ae_sbae'
 
 
+datasets = [Dataset.Dataset('cifar10')]*4
+model1 = construct_model.get_model('CVAE', [64, 128, 256], 1024, 32, False)
+model2 = construct_model.get_model('CVAE', [64, 128, 256], 512, 32, False)
+model3 = construct_model.get_model('CVAE', [64, 128, 256], 256, 32, False)
+model4 = construct_model.get_model('CVAE', [64, 128, 256], 128, 32, False)
 
-multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
+models = [model1, model2, model3, model4]
+lrs = [1e-4]*4
+optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
+def lr_fn(lr, epoch):
+    if epoch == 30 or epoch == 50:
+        return lr*0.1
+lrs_fn = [lr_fn]*4
+
+epochs_max = [70]*4
+saves_epochs = [20]*4
+path_to_directory = '/content/drive/My Drive/Colab Data/AE/AE_new_training_method/'
+
+multi = Multitraining.Multitraining(datasets, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory)
+
+
+#multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
 
 
 #res = [[0.00789244, 0.0055954787], [0.007047541, 0.004881351], [0.0083873095, 0.0067818933]]

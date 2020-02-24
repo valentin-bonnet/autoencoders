@@ -112,8 +112,28 @@ def generate_and_save_images_compare_lab(model, test_input, file_name_head='imag
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '.png')
 
+def compare_images(imgs_ground_truth, imgs_reconstruct, filename, path):
+    if len(imgs_ground_truth) != len(imgs_reconstruct):
+        print("Number of ground truth image and reconstructed image are not equals")
 
-def curves(curves, legendes, file_name, path):
+    else:
+        nb_imgs = len(imgs_ground_truth)
+        plt.figure(figsize=(nb_imgs, 2))
+        for i in range(nb_imgs):
+            plt.subplot(nb_imgs, 2, (2*i))
+            plt.imshow(imgs_ground_truth[i])
+            plt.axis('off')
+            plt.subplot(nb_imgs, 2, (2*i))
+            plt.imshow(imgs_reconstruct[i])
+            plt.axis('off')
+
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        file_path = os.path.join(path, filename)
+        plt.savefig(file_path+'.png')
+
+
+def curves(curves, legendes, axis_x, axis_y, file_name, path):
     handles = []
     for i, curve in enumerate(curves):
         e = np.linspace(1, len(curve), len(curve))
@@ -125,6 +145,7 @@ def curves(curves, legendes, file_name, path):
     file_path = os.path.join(path, file_name)
     plt.savefig(file_path + '.png')
     plt.show()
+
 
 
 def img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results,

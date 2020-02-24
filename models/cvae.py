@@ -10,7 +10,14 @@ tfd = tfp.distributions
 class CVAE(tf.keras.Model):
     def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=32, use_bn=False):
         super(CVAE, self).__init__()
+        self.model_type = 'VAE'
+        self.architecture = layers.copy()
         self.latent_dim = latent_dim
+        self.use_bn = use_bn
+
+        str_arch = '_'.join(str(x) for x in self.architecture)
+        str_bn = 'BN' if use_bn else ''
+        self.description = '_'.join(filter(None, ['VAE', str_arch, 'lat'+str(self.latent_dim), str_bn]))
 
         ## ENCODER
         self.inference_net = tf.keras.Sequential()
@@ -76,7 +83,7 @@ class CVAE(tf.keras.Model):
 
     def sample(self, eps=None):
         if eps is None:
-            eps = tf.random.normal(shape=(100, self.latent_dim))
+            eps = tf.random.normal(shape=(10000, self.latent_dim))
         return self.decode(eps, apply_sigmoid=True)
 
     def encode(self, x, training=True):
@@ -110,10 +117,10 @@ class CVAE(tf.keras.Model):
         x_logit = self.decode(z, apply_sigmoid=False)
 
 
-        reconstruction_term = -tf.reduce_sum(tfp.distributions.MultivariateNormalDiag(
-          tf.keras.layers.Flatten()(x_logit), scale_identity_multiplier=0.05).log_prob(tf.keras.layers.Flatten()(x)))
+        #reconstruction_term = -tf.reduce_sum(tfp.distributions.MultivariateNormalDiag(
+        #  tf.keras.layers.Flatten()(x_logit), scale_identity_multiplier=0.05).log_prob(tf.keras.layers.Flatten()(x)))
 
-        kl_divergence = tf.reduce_sum(tf.keras.metrics.kullback_leibler_divergence(x, x_logit), axis=[1, 2])
+        #kl_divergence = tf.reduce_sum(tf.keras.metrics.kullback_leibler_divergence(x, x_logit), axis=[1, 2])
 
         #cross_ent = self._gaussian_log_likelihood(x_logit, mean, logvar)
         """
@@ -121,7 +128,8 @@ class CVAE(tf.keras.Model):
         logpz = self.log_normal_pdf(z, 0., 0.)
         logqz_x = self.log_normal_pdf(z, mean, logvar)
         return -tf.reduce_mean(logpx_z + logpz - logqz_x)"""
-        return tf.reduce_mean(reconstruction_term + kl_divergence)
+        #return tf.reduce_mean(reconstruction_term + kl_divergence)
+        return tf.reduce_sum(tf.square(x - x_logit))
 
     def log_normal_pdf(self, sample, mean, logvar, raxis=1):
         log2pi = tf.math.log(2. * np.pi)
@@ -142,3 +150,4 @@ class CVAE(tf.keras.Model):
         x_logit = self.decode(z, apply_sigmoid=True)
         accuracy = tf.reduce_mean(tf.square(x_logit - x))
         return accuracy
+
