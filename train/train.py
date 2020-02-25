@@ -125,7 +125,10 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
             if img_while_training:
                 image_saver.img_loss_accuracy(training_loss_np, validation_loss_np, training_acc_np, validation_acc_np, filename='loss_accuracy_Lab_temp', path=images_path)
                 for test_x in test_dataset.take(1):
-                    image_saver.generate_and_save_images_compare_lab(model, test_x, directory_name+'_epoch_{:03d}'.format(epoch), images_path)
+                    image_saver.generate_and_save_images_compare_lab(model, test_x, directory_name+'_epoch_{:03d}_test'.format(epoch), images_path)
+                for train_x in train_dataset.take(1):
+                    image_saver.generate_and_save_images_compare_lab(model, train_x, directory_name+'_epoch_{:03d}_train'.format(epoch), images_path)
+
         ckpt.step.assign_add(1)
         if int(ckpt.step) % ckpt_epoch == 0 or epoch == epochs:
             print("ckpt.step :", int(ckpt.step))
