@@ -122,14 +122,14 @@ class CVAE(tf.keras.Model):
 
         #kl_divergence = tf.reduce_sum(tf.keras.metrics.kullback_leibler_divergence(x, x_logit), axis=[1, 2])
 
-        #cross_ent = self._gaussian_log_likelihood(x_logit, mean, logvar)
-        """
+        cross_ent = self._gaussian_log_likelihood(x_logit, mean, logvar)
+
         logpx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
         logpz = self.log_normal_pdf(z, 0., 0.)
         logqz_x = self.log_normal_pdf(z, mean, logvar)
-        return -tf.reduce_mean(logpx_z + logpz - logqz_x)"""
+        return -tf.reduce_mean(logpx_z + logpz - logqz_x)
         #return tf.reduce_mean(reconstruction_term + kl_divergence)
-        return tf.reduce_sum(tf.square(x - x_logit))
+        #return tf.reduce_sum(tf.square(x - x_logit))
 
     def log_normal_pdf(self, sample, mean, logvar, raxis=1):
         log2pi = tf.math.log(2. * np.pi)
