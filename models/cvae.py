@@ -122,7 +122,8 @@ class CVAE(tf.keras.Model):
 
         #kl_divergence = tf.reduce_sum(tf.keras.metrics.kullback_leibler_divergence(x, x_logit), axis=[1, 2])
 
-        cross_ent = self._gaussian_log_likelihood(x_logit, mean, logvar)
+        #cross_ent = self._gaussian_log_likelihood(x_logit, mean, logvar)
+        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
 
         logpx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
         logpz = self.log_normal_pdf(z, 0., 0.)
