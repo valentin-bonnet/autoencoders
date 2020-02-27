@@ -123,12 +123,17 @@ class CVAE(tf.keras.Model):
         #kl_divergence = tf.reduce_sum(tf.keras.metrics.kullback_leibler_divergence(x, x_logit), axis=[1, 2])
 
         #cross_ent = self._gaussian_log_likelihood(x_logit, mean, logvar)
-        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
+        #cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
 
-        logpx_z = -tf.reduce_sum(cross_ent, axis=[1, 2])
-        logpz = self.log_normal_pdf(z, 0., 0.)
-        logqz_x = self.log_normal_pdf(z, mean, logvar)
-        return -tf.reduce_mean(logpx_z + logpz - logqz_x)
+        reconstr = tf.reduce_mean(tf.square(x - x_logit))
+        kl = self._kl_diagnormal_stdnormal(mean, logvar)
+        return tf.reduce_mean(reconstr + kl)
+
+        #logpx_z = -tf.reduce_sum(cross_ent, axis=[1, 2])
+        #logpx_z = tf.reduce_mean(tf.square(x - x_logit))
+        #logpz = self.log_normal_pdf(z, 0., 0.)
+        #logqz_x = self.log_normal_pdf(z, mean, logvar)
+        #return -tf.reduce_mean(logpx_z + logpz - logqz_x)
         #return tf.reduce_mean(reconstruction_term + kl_divergence)
         #return tf.reduce_sum(tf.square(x - x_logit))
 
@@ -137,6 +142,11 @@ class CVAE(tf.keras.Model):
         return tf.reduce_sum(
             -.5 * ((sample - mean) ** 2. * tf.exp(-logvar) + logvar + log2pi),
             axis=raxis)
+
+    def _kl_diagnormal_stdnormal(self, mu, log_var):
+        var = tf.exp(log_var)
+        kl = 0.5 * tf.reduce_sum(tf.square(mu) + var - 1. - log_var)
+        return kl
 
     def compute_apply_gradients(self, x, optimizer):
         with tf.GradientTape() as tape:
