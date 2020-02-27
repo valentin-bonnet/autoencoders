@@ -135,6 +135,7 @@ def compare_images(imgs_ground_truth, imgs_reconstruct, filename, path):
 
 def curves(curves, legendes, file_name, path):
     handles = []
+    fig = plt.figure()
     for i, curve in enumerate(curves):
         e = np.linspace(1, len(curve), len(curve))
         handle, = plt.plot(e, curve, label=legendes[i])
@@ -148,6 +149,7 @@ def curves(curves, legendes, file_name, path):
 
 def points(points, legendes, file_name, path):
     handles = []
+    fig = plt.figure()
     for i, point in enumerate(points):
         e = np.linspace(1, len(point), len(point))
         handle, = plt.plot(e, point, 'ro', label=legendes[i])
