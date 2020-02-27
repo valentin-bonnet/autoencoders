@@ -315,7 +315,7 @@ batch_size = [128]
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
 #ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
 ckpt_epoch = [20]
-directory_name = 'VAE_Latent_space_L2_final'
+directory_name = 'VAE_Latent_space_L2'
 
 
 
