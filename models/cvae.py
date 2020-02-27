@@ -92,8 +92,8 @@ class CVAE(tf.keras.Model):
 
     def reparameterize(self, mean, logvar):
         eps = tf.random.normal(shape=mean.shape)
-        #return eps * tf.exp(logvar * .5) + mean
-        return mean
+        return eps * tf.exp(logvar * .5) + mean
+        #return mean
 
     def decode(self, z, apply_sigmoid=False):
         logits = self.generative_net(z)
