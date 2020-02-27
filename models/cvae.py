@@ -92,7 +92,8 @@ class CVAE(tf.keras.Model):
 
     def reparameterize(self, mean, logvar):
         eps = tf.random.normal(shape=mean.shape)
-        return eps * tf.exp(logvar * .5) + mean
+        #return eps * tf.exp(logvar * .5) + mean
+        return mean
 
     def decode(self, z, apply_sigmoid=False):
         logits = self.generative_net(z)
@@ -141,7 +142,6 @@ class CVAE(tf.keras.Model):
         with tf.GradientTape() as tape:
             loss = self.compute_loss(x)
         gradients = tape.gradient(loss, self.trainable_variables)
-        tf.print(gradients)
         optimizer.apply_gradients(zip(gradients, self.trainable_variables))
         return loss
 
