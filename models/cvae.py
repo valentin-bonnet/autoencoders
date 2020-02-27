@@ -129,7 +129,7 @@ class CVAE(tf.keras.Model):
         logqz_x = self.log_normal_pdf(z, mean, logvar)
         return -tf.reduce_mean(logpx_z + logpz - logqz_x)"""
         #return tf.reduce_mean(reconstruction_term + kl_divergence)
-        return tf.reduce_sum(tf.square(x - x_logit))
+        return tf.reduce_mean(tf.square(x - x_logit))
 
     def log_normal_pdf(self, sample, mean, logvar, raxis=1):
         log2pi = tf.math.log(2. * np.pi)
@@ -141,6 +141,7 @@ class CVAE(tf.keras.Model):
         with tf.GradientTape() as tape:
             loss = self.compute_loss(x)
         gradients = tape.gradient(loss, self.trainable_variables)
+        tf.print(gradients)
         optimizer.apply_gradients(zip(gradients, self.trainable_variables))
         return loss
 
