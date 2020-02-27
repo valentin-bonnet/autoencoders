@@ -102,7 +102,7 @@ class CVAE(tf.keras.Model):
         return logits
 
     def _gaussian_log_likelihood(self, targets, mean, std):
-        se = 0.5 * tf.reduce_sum(tf.square(targets - mean)) / (2 * tf.square(std)) + tf.log(std)
+        se = 0.5 * tf.reduce_sum(tf.square(targets - mean)) / (2 * tf.square(std)) + tf.math.log(std)
         #log2pi = tf.math.log(2. * np.pi)
         #se = 5 * ((targets - mean) ** 2. * tf.exp(-logvar) - logvar - log2pi)
         return se
@@ -118,7 +118,7 @@ class CVAE(tf.keras.Model):
         z = self.reparameterize(mean, logvar)
         x_logit = self.decode(z, apply_sigmoid=False)
         std = 0.05
-        x_obs = self.reparameterize(x_logit, logvar=tf.log(std))
+        x_obs = self.reparameterize(x_logit, logvar=tf.math.log(std))
 
 
         #reconstruction_term = -tf.reduce_sum(tfp.distributions.MultivariateNormalDiag(
