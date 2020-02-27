@@ -93,7 +93,6 @@ class CVAE(tf.keras.Model):
     def reparameterize(self, mean, logvar):
         eps = tf.random.normal(shape=mean.shape)
         return eps * tf.exp(logvar * .5) + mean
-        #return mean
 
     def decode(self, z, apply_sigmoid=False):
         logits = self.generative_net(z)
@@ -130,7 +129,7 @@ class CVAE(tf.keras.Model):
         logqz_x = self.log_normal_pdf(z, mean, logvar)
         return -tf.reduce_mean(logpx_z + logpz - logqz_x)"""
         #return tf.reduce_mean(reconstruction_term + kl_divergence)
-        return tf.reduce_mean(tf.square(x - x_logit))
+        return tf.reduce_sum(tf.square(x - x_logit))
 
     def log_normal_pdf(self, sample, mean, logvar, raxis=1):
         log2pi = tf.math.log(2. * np.pi)
@@ -153,10 +152,5 @@ class CVAE(tf.keras.Model):
         return accuracy
 
 class View_VAE():
-    def init(self, vae, img_path):
-        self.img_path = img_path
+    def init(self, vae):
         self.vae = vae
-
-
-    def images(self):
-        print("TODO : view")

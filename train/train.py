@@ -127,15 +127,15 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
                 for test_x in test_dataset.take(1):
                     image_saver.generate_and_save_images_compare_lab(model, test_x, directory_name+'_epoch_{:03d}_test'.format(epoch), images_path)
                     means, logvar = model.encode(test_x)
-                    logvar = 10000 * logvar
+                    var = tf.exp(logvar)
                     image_saver.points([means[0, :]], ['mean'], 'epoch_{:03d}_mean_test'.format(epoch), images_path)
-                    image_saver.points([logvar[0, :]], ['var'], 'epoch_{:03d}_var_test'.format(epoch), images_path)
+                    image_saver.points([var[0, :]], ['var'], 'epoch_{:03d}_var_test'.format(epoch), images_path)
                 for train_x in train_dataset.take(1):
                     image_saver.generate_and_save_images_compare_lab(model, train_x, directory_name+'_epoch_{:03d}_train'.format(epoch), images_path)
                     means, logvar = model.encode(train_x)
-                    logvar = 10000*logvar
+                    var = tf.exp(logvar)
                     image_saver.points([means[0, :]], ['mean'], 'epoch_{:03d}_mean_tran'.format(epoch), images_path)
-                    image_saver.points([logvar[0, :]], ['var'], 'epoch_{:03d}_var_train'.format(epoch), images_path)
+                    image_saver.points([var[0, :]], ['var'], 'epoch_{:03d}_var_train'.format(epoch), images_path)
 
         ckpt.step.assign_add(1)
         if int(ckpt.step) % ckpt_epoch == 0 or epoch == epochs:
@@ -316,7 +316,7 @@ batch_size = [128]
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
 #ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
 ckpt_epoch = [20]
-directory_name = 'VAE_Latent_space_L2'
+directory_name = 'VAE_Latent_space_L2_var'
 
 
 
