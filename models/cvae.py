@@ -46,8 +46,8 @@ class CVAE(tf.keras.Model):
         for l in layers:
             self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
             if use_bn:
-                self.inference_net.add(tf.keras.layers.BatchNormalization())
-            self.inference_net.add(tf.keras.layers.ReLU())
+                self.generative_net.add(tf.keras.layers.BatchNormalization())
+            self.generative_net.add(tf.keras.layers.ReLU())
 
         self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=3, kernel_size=4, strides=1, activation=tf.nn.relu, padding='same'))
 
