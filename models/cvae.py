@@ -151,3 +151,11 @@ class CVAE(tf.keras.Model):
         accuracy = tf.reduce_mean(tf.square(x_logit - x))
         return accuracy
 
+class View_VAE():
+    def init(self, vae, img_path):
+        self.img_path = img_path
+        self.vae = vae
+
+
+    def images(self):
+        print("TODO : view")

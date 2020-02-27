@@ -133,7 +133,7 @@ def compare_images(imgs_ground_truth, imgs_reconstruct, filename, path):
         plt.savefig(file_path+'.png')
 
 
-def curves(curves, legendes, axis_x, axis_y, file_name, path):
+def curves(curves, legendes, file_name, path):
     handles = []
     for i, curve in enumerate(curves):
         e = np.linspace(1, len(curve), len(curve))
@@ -146,7 +146,18 @@ def curves(curves, legendes, axis_x, axis_y, file_name, path):
     plt.savefig(file_path + '.png')
     plt.show()
 
-
+def points(points, legendes, file_name, path):
+    handles = []
+    for i, curve in enumerate(curves):
+        e = np.linspace(1, len(curve), len(curve))
+        handle, = plt.plot(e, points, fmt='ro', label=legendes[i])
+        handles.append(handle)
+    plt.legend(handles=handles)
+    if not os.path.isdir(path):
+        os.makedirs(path)
+    file_path = os.path.join(path, file_name)
+    plt.savefig(file_path + '.png')
+    plt.show()
 
 def img_loss_accuracy(train_loss_results, test_loss_results, train_accuracy_results, test_accuracy_results,
                       filename="loss_accuracy", path='./'):

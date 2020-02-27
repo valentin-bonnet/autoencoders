@@ -14,12 +14,13 @@ import datasetLoader
 import construct_model
 
 class Training():
-    def __init__(self, dataset, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_epochs):
+    def __init__(self, dataset, model, model_view, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_epochs):
         self.train_ds = dataset.train_ds
         self.train_size = dataset.train_size
         self.val_ds = dataset.val_ds
         self.val_size = dataset.val_size
         self.model = model
+        self.model_view = model_view
         self.optimizer = optimizer
         self.lr = lr
         self.lr_fn = lr_fn
