@@ -150,7 +150,7 @@ def points(points, legendes, file_name, path):
     handles = []
     for i, point in enumerate(points):
         e = np.linspace(1, len(point), len(point))
-        handle, = plt.plot(e, point, fmt='ro', label=legendes[i])
+        handle, = plt.plot(e, point, 'ro', label=legendes[i])
         handles.append(handle)
     plt.legend(handles=handles)
     if not os.path.isdir(path):
