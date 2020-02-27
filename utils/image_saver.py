@@ -148,8 +148,8 @@ def curves(curves, legendes, file_name, path):
 
 def points(points, legendes, file_name, path):
     handles = []
-    for i, curve in enumerate(curves):
-        e = np.linspace(1, len(curve), len(curve))
+    for i, point in enumerate(points):
+        e = np.linspace(1, len(point), len(point))
         handle, = plt.plot(e, points, fmt='ro', label=legendes[i])
         handles.append(handle)
     plt.legend(handles=handles)
