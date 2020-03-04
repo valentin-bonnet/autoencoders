@@ -8,11 +8,12 @@ tfd = tfp.distributions
 
 
 class CVAE(tf.keras.Model):
-    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=32, use_bn=False):
+    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=32, std=0.05, use_bn=False):
         super(CVAE, self).__init__()
         self.model_type = 'VAE'
         self.architecture = layers.copy()
         self.latent_dim = latent_dim
+        self.std = std
         self.use_bn = use_bn
 
         str_arch = '_'.join(str(x) for x in self.architecture)
@@ -117,8 +118,8 @@ class CVAE(tf.keras.Model):
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
         x_logit = self.decode(z, apply_sigmoid=False)
-        std = 0.05
-        x_obs = self.reparameterize(x_logit, logvar=tf.math.log(std))
+
+        x_obs = self.reparameterize(x_logit, logvar=tf.math.log(self.std))
 
 
         #reconstruction_term = -tf.reduce_sum(tfp.distributions.MultivariateNormalDiag(
@@ -130,7 +131,7 @@ class CVAE(tf.keras.Model):
         #cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
 
         #reconstr = tf.reduce_mean(tf.square(x - x_logit))
-        reconstr = self._gaussian_log_likelihood(x, x_obs, std=std)
+        reconstr = self._gaussian_log_likelihood(x, x_obs, std=self.std)
         kl = self._kl_diagnormal_stdnormal(mean, logvar)
         return tf.reduce_mean(reconstr + kl)
 
