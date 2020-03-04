@@ -191,7 +191,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
         str_lat = 'lat' + str(model_args[3][i])
         str_use_bn = 'BN' if model_args[4][i] else ''
         str_std = 'std' + str(model_args[5][i])
-        str_all = '_'.join(filter(None, [str_ds, str_model, str_arch, str_lat, str_use_bn]))
+        str_all = '_'.join(filter(None, [str_ds, str_model, str_arch, str_lat, str_std, str_use_bn]))
 
         #Construct the model
         dataset = ds[model_args[0][i]][0]
