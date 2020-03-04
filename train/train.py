@@ -305,7 +305,7 @@ multitraining(datasets, models_type, models_arch, models_latent_space, models_us
 
 datasets = ['cifar10Lab']
 models_type = ['CVAE']  # or ['AE']
-models_arch = [[128, 256, 512], [256, 512, 1024], [128, 256, 512, 1024], [256,512, 1024, 2048]]
+models_arch = [[256, 512, 1024]]
 models_std = [0.001, 0.01, 0.05, 0.1, 0.2]
 #models_arch = [[64, 128, 256]]
 #models_latent_space = [64]
