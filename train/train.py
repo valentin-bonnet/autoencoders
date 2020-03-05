@@ -231,7 +231,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
 
         legendes.append(str_all)
 
-    image_saver.curves(test_accs, legendes, directory_name, path_directory)
+    image_saver.curves(test_accs, legendes, directory_name, path_directory, 'epochs', 'accuracy (L2)')
 
 
 

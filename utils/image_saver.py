@@ -133,7 +133,7 @@ def compare_images(imgs_ground_truth, imgs_reconstruct, filename, path):
         plt.savefig(file_path+'.png')
 
 
-def curves(curves, legendes, file_name, path):
+def curves(curves, legendes, file_name, path, x_axis_label='', y_axis_label=''):
     handles = []
     fig = plt.figure()
     for i, curve in enumerate(curves):
@@ -141,6 +141,8 @@ def curves(curves, legendes, file_name, path):
         handle, = plt.plot(e, curve, label=legendes[i])
         handles.append(handle)
     plt.legend(handles=handles)
+    plt.xlabel(x_axis_label)
+    plt.ylabel(y_axis_label)
     if not os.path.isdir(path):
         os.makedirs(path)
     file_path = os.path.join(path, file_name)
