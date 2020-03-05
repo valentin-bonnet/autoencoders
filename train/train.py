@@ -190,8 +190,9 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
         str_arch = '_'.join(str(x) for x in model_args[2][i])
         str_lat = 'lat' + str(model_args[3][i])
         str_use_bn = 'BN' if model_args[4][i] else ''
-        str_std = 'std' + str(model_args[5][i])
-        str_all = '_'.join(filter(None, [str_ds, str_model, str_arch, str_lat, str_std, str_use_bn]))
+        #str_std = 'std' + str(model_args[5][i])
+        #str_all = '_'.join(filter(None, [str_ds, str_model, str_arch, str_lat, str_std, str_use_bn]))
+        str_all = '_'.join(filter(None, [str_ds, str_model, str_arch, str_lat, str_use_bn]))
 
         #Construct the model
         dataset = ds[model_args[0][i]][0]
@@ -200,7 +201,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
         model_arch = model_args[2][i].copy()
         model_lat = model_args[3][i]
         model_use_bn = model_args[4][i]
-        model_std = model_args[5][i]
+        #model_std = model_args[5][i]
         lr = model_args[6][i]
         epoch = model_args[7][i]
         bs = model_args[8][i]
@@ -208,7 +209,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
 
         print(model_lat)
 
-        model = construct_model.get_model(model_type, model_arch, model_lat, shape, model_use_bn, model_std)
+        model = construct_model.get_model(model_type, model_arch, model_lat, shape, model_use_bn)
 
         #Train
         print(dataset)
@@ -305,8 +306,8 @@ multitraining(datasets, models_type, models_arch, models_latent_space, models_us
 
 datasets = ['cifar10Lab']
 models_type = ['CVAE']  # or ['AE']
-models_arch = [[256, 512, 1024]]
-models_std = [0.001, 0.01, 0.05, 0.1, 0.2]
+models_arch = [[256, 512, 1024], [128, 256, 512], [256, 512, 1024, 2048], [128, 256, 512, 1024]]
+models_std = [0.05]
 #models_arch = [[64, 128, 256]]
 #models_latent_space = [64]
 models_latent_space = [2048]
@@ -318,7 +319,7 @@ batch_size = [128]
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
 #ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
 ckpt_epoch = [20]
-directory_name = 'VAE_COMPARE_std'
+directory_name = 'VAE_COMPARE_Archi'
 
 
 
