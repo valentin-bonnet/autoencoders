@@ -153,7 +153,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
 
     return training_loss_np, validation_loss_np, training_acc_np, validation_acc_np
 
-def multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_epochs, directory_name, path, models_std):
+def multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lrs, epochs, batch_size, ckpt_epochs, directory_name, path, models_std, legends=None):
 
     model_args = [datasets, models_type, models_arch, models_latent_space, models_use_bn, models_std, lrs, epochs, batch_size, ckpt_epochs]
     max_len = max(map(len, model_args))
@@ -182,7 +182,9 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
     train_accs = []
     test_accs = []
     legendes = []
-    # Construct the model,
+    models = []
+
+    # Construct the model
     for i in range(max_len):
         #Get name
         str_ds = model_args[0][i]
@@ -210,6 +212,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
         print(model_lat)
 
         model = construct_model.get_model(model_type, model_arch, model_lat, shape, model_use_bn)
+        models.append(model)
 
         #Train
         print(dataset)
@@ -230,10 +233,25 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
 
 
 
+
         legendes.append(str_all)
 
-    image_saver.curves(test_accs, legendes, directory_name, path_directory, 'epochs', 'accuracy (L2)')
+    if legends is None:
+        legends = legendes
 
+    image_saver.curves(test_accs, legends, directory_name+'_curves', path_directory, 'epochs', 'accuracy (L2)')
+    dataset_test = ds[model_args[0][0]][1]
+
+    images = []
+    for test in dataset_test.take(1):
+        ground_truth = test[:4, :, :, :]
+        images.append(ground_truth)
+        for model in models:
+            output = model.reconstruct(ground_truth)
+            images.append(output)
+
+
+    image_saver.compare_multiple_images(images, directory_name+'_images', path_directory)
 
 
 
@@ -316,6 +334,7 @@ models_use_bn = [False]
 lr = [1e-4]
 epochs = [70]
 batch_size = [128]
+legends = ['512', '1024', '2048', '4096']
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
 #ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
 ckpt_epoch = [20]
@@ -323,7 +342,7 @@ directory_name = 'VAE_COMPARE_Latent_Space'
 
 
 
-multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_epoch, directory_name, my_drive_path, models_std)
+multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_epoch, directory_name, my_drive_path, models_std, legends)
 
 
 #res = [[0.00789244, 0.0055954787], [0.007047541, 0.004881351], [0.0083873095, 0.0067818933]]
