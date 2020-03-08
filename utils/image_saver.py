@@ -153,7 +153,7 @@ def compare_multiple_images_Lab(images, legends, filename, path):
             plt.imshow(images[i][j])
             plt.axis('off')
             if j == 0:
-                ax.set_title(legends[i], fontdic=fontdic)
+                ax.set_title(legends[i], fontdict=fontdic)
 
     if not os.path.isdir(path):
         os.makedirs(path)
