@@ -141,7 +141,7 @@ def compare_multiple_images_Lab(images, legends, filename, path):
     images = np.asarray(images) * [100, 255.0, 255.0]
     images = images - [0, 128, 128]
 
-    legends = ['Ground_truth'] + legends
+    legends = ['Ground truth'] + legends
 
     plt.figure(figsize=(nb_images, nb_models))
     for i in range(nb_models):
@@ -149,7 +149,7 @@ def compare_multiple_images_Lab(images, legends, filename, path):
             ax = plt.subplot(nb_images, nb_models, j*nb_models+i+1)
             plt.imshow(images[i][j])
             plt.axis('off')
-            if i == nb_models-1:
+            if j == nb_images-1:
                 ax.set_title(legends[i])
 
     if not os.path.isdir(path):
