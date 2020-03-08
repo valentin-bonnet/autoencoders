@@ -142,13 +142,13 @@ def compare_multiple_images_Lab(images, legends, filename, path):
     images = images - [0, 128, 128]
 
     plt.figure(figsize=(nb_images, nb_models))
-    for i in range(nb_images):
-        for j in range(nb_models):
-            ax = plt.subplot(nb_images, nb_models, i*nb_models+j+1)
+    for i in range(nb_models):
+        for j in range(nb_images):
+            ax = plt.subplot(nb_images, nb_models, j*nb_models+i+1)
             plt.imshow(images[i][j])
             plt.axis('off')
             if i == nb_models-1:
-                ax.set_title(legends[j])
+                ax.set_title(legends[i])
 
     if not os.path.isdir(path):
         os.makedirs(path)
