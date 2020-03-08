@@ -138,7 +138,7 @@ def compare_multiple_images_Lab(images, legends, filename, path):
     print("nb_images ", nb_images)
     print("nb_models ", nb_models)
 
-    images = images * [100, 255.0, 255.0]
+    images = np.asarray(images) * [100, 255.0, 255.0]
     images = images - [0, 128, 128]
 
     plt.figure(figsize=(nb_images, nb_models))
