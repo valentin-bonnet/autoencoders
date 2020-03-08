@@ -252,7 +252,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
             images.append(output.numpy())
 
 
-    image_saver.compare_multiple_images(images, directory_name+'_images', path_directory)
+    image_saver.compare_multiple_images_Lab(images, directory_name+'_images', path_directory)
 
 
 

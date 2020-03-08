@@ -136,6 +136,25 @@ def compare_multiple_images(images, filename, path):
     nb_images = len(images)
     nb_models = len(images[0])
 
+    images = images * [100, 255.0, 255.0]
+    images = images - [0, 128, 128]
+
+    plt.figure(figsize=(nb_images, nb_models))
+    for i in range(nb_models):
+        for j in range(nb_images):
+            plt.subplot(nb_images, nb_models, i*nb_models+j+1)
+            plt.imshow(images[i][j])
+            plt.axis('off')
+
+    if not os.path.isdir(path):
+        os.makedirs(path)
+    file_path = os.path.join(path, filename)
+    plt.savefig(file_path + '.png')
+
+def compare_multiple_images_Lab(images, filename, path):
+    nb_images = len(images)
+    nb_models = len(images[0])
+
     plt.figure(figsize=(nb_images, nb_models))
     for i in range(nb_images):
         for j in range(nb_models):
