@@ -243,7 +243,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
     dataset_test = ds[model_args[0][0]][0][1]
 
     images = []
-    for test in dataset_test.batch(4).take(1):
+    for test in dataset_test.batch(3).take(1):
         print(test.shape)
         ground_truth = test.numpy()
         images.append(ground_truth)
@@ -252,7 +252,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
             images.append(output.numpy())
 
 
-    image_saver.compare_multiple_images_Lab(images, directory_name+'_images', path_directory)
+    image_saver.compare_multiple_images_Lab(images, legends, directory_name+'_images', path_directory)
 
 
 
