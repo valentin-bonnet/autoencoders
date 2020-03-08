@@ -141,6 +141,8 @@ def compare_multiple_images_Lab(images, legends, filename, path):
     images = np.asarray(images) * [100, 255.0, 255.0]
     images = images - [0, 128, 128]
 
+    legends = ['Ground_truth'] + legends
+
     plt.figure(figsize=(nb_images, nb_models))
     for i in range(nb_models):
         for j in range(nb_images):
