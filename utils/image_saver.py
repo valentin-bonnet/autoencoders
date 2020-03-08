@@ -150,7 +150,8 @@ def compare_multiple_images_Lab(images, legends, filename, path):
     for i in range(nb_models):
         for j in range(nb_images):
             ax = plt.subplot(nb_images, nb_models, j*nb_models+i+1)
-            plt.imshow(images[i][j])
+
+            plt.imshow(cv2.cvtColor(np.float32(images[i][j]), cv2.COLOR_Lab2RGB))
             plt.axis('off')
             if j == 0:
                 ax.set_title(legends[i], fontdict=fontdic)
