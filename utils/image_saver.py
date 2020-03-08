@@ -139,7 +139,7 @@ def compare_multiple_images(images, filename, path):
     plt.figure(figsize=(nb_images, nb_models))
     for i in range(nb_images):
         for j in range(nb_models):
-            plt.subplot(nb_images, nb_models, i*nb_models+j)
+            plt.subplot(nb_images, nb_models, i*nb_models+j+1)
             plt.imshow(images[i][j])
             plt.axis('off')
 
