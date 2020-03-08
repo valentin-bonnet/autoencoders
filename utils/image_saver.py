@@ -141,10 +141,10 @@ def compare_multiple_images_Lab(images, legends, filename, path):
     images = np.asarray(images, dtype=np.float32) * [100, 255.0, 255.0]
     images = images - [0, 128, 128]
 
-    legends = ['Ground truth'] + legends
+    legends = ['GT'] + legends
 
-    fontdic = {'fontsize': 10,
-               'verticalalignment': 'bottom'}
+    fontdic = {'size': 6,
+               'verticalalignment': 'top'}
 
     plt.figure(figsize=(nb_images, nb_models))
     for i in range(nb_models):
