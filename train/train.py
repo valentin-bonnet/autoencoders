@@ -244,7 +244,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
 
     images = []
     for test in dataset_test.take(1):
-        ground_truth = test[:4, :, :, :]
+        ground_truth = test[:4, :, :]
         images.append(ground_truth)
         for model in models:
             output = model.reconstruct(ground_truth)
