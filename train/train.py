@@ -240,7 +240,7 @@ def multitraining(datasets, models_type, models_arch, models_latent_space, model
         legends = legendes
 
     image_saver.curves(test_accs, legends, directory_name+'_curves', path_directory, 'epochs', 'accuracy (L2)')
-    dataset_test = ds[model_args[0][0]][1]
+    dataset_test = ds[model_args[0][0]][0][1]
 
     images = []
     for test in dataset_test.take(1):
