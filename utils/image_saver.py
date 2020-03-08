@@ -133,8 +133,8 @@ def compare_images(imgs_ground_truth, imgs_reconstruct, filename, path):
         plt.savefig(file_path+'.png')
 
 def compare_multiple_images_Lab(images, legends, filename, path):
-    nb_images = len(images)
-    nb_models = len(images[0])
+    nb_images = len(images[0])
+    nb_models = len(images)
     print("nb_images ", nb_images)
     print("nb_models ", nb_models)
 
@@ -142,8 +142,8 @@ def compare_multiple_images_Lab(images, legends, filename, path):
     images = images - [0, 128, 128]
 
     plt.figure(figsize=(nb_images, nb_models))
-    for i in range(nb_models):
-        for j in range(nb_images):
+    for i in range(nb_images):
+        for j in range(nb_models):
             ax = plt.subplot(nb_images, nb_models, i*nb_models+j+1)
             plt.imshow(images[i][j])
             plt.axis('off')
