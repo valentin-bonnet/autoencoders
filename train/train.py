@@ -322,7 +322,7 @@ filename = 'batch_normalization'
 multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_epoch, directory_name, my_drive_path)
 """
 
-
+"""
 datasets = ['cifar10Lab']
 models_type = ['CVAE']  # or ['AE']
 models_arch = [[256, 512, 1024]]
@@ -340,7 +340,25 @@ my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
 #ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
 ckpt_epoch = [20]
 directory_name = 'VAE_COMPARE_std'
+"""
 
+datasets = ['cifar10Lab']
+models_type = ['SBAE']  # or ['AE']
+models_arch = [[256, 512, 1024], [512, 1024, 2048]]
+models_std = [0]
+#models_arch = [[64, 128, 256]]
+#models_latent_space = [64]
+models_latent_space = [1024, 2048]
+#models_latent_space = [128, 256, 512, 1024, 2048, 4096]
+models_use_bn = [False]
+lr = [1e-4]
+epochs = [70]
+batch_size = [128]
+legends = ['256-512-1024-lat1024', '512-1024-2048-lat2048']
+my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
+#ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
+ckpt_epoch = [20]
+directory_name = 'SBAE_First'
 
 
 multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_epoch, directory_name, my_drive_path, models_std, legends)

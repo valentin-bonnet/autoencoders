@@ -9,7 +9,7 @@ tfd = tfp.distributions
 
 
 class SBAE(tf.keras.Model):
-    def __init__(self, layers=[64, 128, 512], latent_dim=512, input_shape=32, use_bn=False, classification=False):
+    def __init__(self, layers=[128, 256, 512], latent_dim=512, input_shape=32, use_bn=False, classification=False):
         super(SBAE, self).__init__()
         self.latent_dim = latent_dim
         self.cc = np.load('../utils/pts_in_hull.npy')
@@ -22,7 +22,7 @@ class SBAE(tf.keras.Model):
             self.L2ab.add(tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, padding='same'))
             if use_bn:
                 self.L2ab.add(tf.keras.layers.BatchNormalization())
-            self.L2ab.add(tf.keras.layers.Relu())
+            self.L2ab.add(tf.keras.layers.ReLu())
 
         self.L2ab.add(tf.keras.layers.Flatten())
         self.L2ab.add(tf.keras.layers.Dense(latent_dim))
@@ -35,7 +35,7 @@ class SBAE(tf.keras.Model):
                 tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, padding='same'))
             if use_bn:
                 self.ab2L.add(tf.keras.layers.BatchNormalization())
-            self.ab2L.add(tf.keras.layers.Relu())
+            self.ab2L.add(tf.keras.layers.ReLu())
 
         self.ab2L.add(tf.keras.layers.Flatten())
         self.ab2L.add(tf.keras.layers.Dense(latent_dim))
@@ -53,7 +53,7 @@ class SBAE(tf.keras.Model):
             self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
             if use_bn:
                 self.L2ab.add(tf.keras.layers.BatchNormalization())
-            self.L2ab.add(tf.keras.layers.Relu())
+            self.L2ab.add(tf.keras.layers.ReLu())
 
         if classification:
             self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=313, kernel_size=4, strides=tf.nn.softmax, activation=tf.nn.relu, padding='same'))
@@ -68,7 +68,7 @@ class SBAE(tf.keras.Model):
             self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
             if use_bn:
                 self.ab2L.add(tf.keras.layers.BatchNormalization())
-            self.ab2L.add(tf.keras.layers.Relu())
+            self.ab2L.add(tf.keras.layers.ReLu())
 
         if classification:
             self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=50, kernel_size=4, strides=2, activation=tf.nn.softmax, padding='same'))
@@ -120,7 +120,7 @@ class SBAE(tf.keras.Model):
         wts = tf.reduce_mean(wts, axis=1)
 
         p_inds = np.arange(0, P, dtype='int')[:, np.newaxis]
-        pts_enc_flt[p_inds, inds] = wts
+        #pts_enc_flt[p_inds, inds] = wts
         #pts_enc_nd = unflatten_2d_array(self.pts_enc_flt, pts_nd, axis=axis)
 
         """
@@ -198,3 +198,4 @@ class SBAE(tf.keras.Model):
 
         accuracy = tf.reduce_mean(tf.square(x_logits - x))
         return accuracy
+
