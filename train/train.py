@@ -78,10 +78,10 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
         start_time = time.time()
         progbar = tf.keras.utils.Progbar(100)
         for i, train_x in enumerate(train_dataset):
-            progbar.update(i+1)
+            #progbar.update(i+1)
             train_loss_mean(model.compute_apply_gradients(train_x, optimizer))
             train_accuracy_mean(model.compute_accuracy(train_x))
-            if i % (len_train/100) == 0:
+            if i % (len_train//100) == 0:
                 progbar.update(i+1)
             if img_while_training:
                 if i % (len_train/10) == 0:
