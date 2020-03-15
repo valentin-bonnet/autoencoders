@@ -37,3 +37,12 @@ def imagenetresized64loaderLab():
     test_dataset = test_dataset.map(_preprocess_Lab, num_parallel_calls=AUTOTUNE)
     return train_dataset, test_dataset
 
+def imagenetresized64loaderLab():
+    data = tfds.load('imagenet_resized/32x32')
+    train_dataset = data['train']
+    print("####\n\ntrain done")
+    test_dataset = data['validation']
+    train_dataset = train_dataset.map(_preprocess_Lab, num_parallel_calls=AUTOTUNE)
+    test_dataset = test_dataset.map(_preprocess_Lab, num_parallel_calls=AUTOTUNE)
+    return train_dataset, test_dataset
+

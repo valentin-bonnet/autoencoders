@@ -336,7 +336,7 @@ ckpt_epoch = [20]
 directory_name = 'VAE_COMPARE_std'
 """
 
-datasets = ['imagenetresized64']
+datasets = ['imagenetresized32']
 models_type = ['SBAE']  # or ['AE']
 models_arch = [[256, 512, 1024]]
 models_std = [0]

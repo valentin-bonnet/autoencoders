@@ -29,6 +29,10 @@ def get_dataset(dataset):
         train_ds, test_ds = cifarLoader.cifarloaderLab()
         shape = 32
 
+    elif dataset == 'imagenetresized32':
+        train_ds, test_ds = ImagenetResizedLoader.imagenetresized32loaderLab()
+        shape = 32
+
     elif dataset == 'imagenetresized64':
         train_ds, test_ds = ImagenetResizedLoader.imagenetresized64loaderLab()
         shape = 64
