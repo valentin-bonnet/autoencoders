@@ -7,6 +7,7 @@ AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 def _rgb2lab(image):
     image = cv2.cvtColor(image.numpy(), cv2.COLOR_RGB2Lab)
+    return image
 
 def _preprocess_Lab(image):
     print(image['image'])
