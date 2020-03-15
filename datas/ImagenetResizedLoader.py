@@ -13,7 +13,7 @@ def _preprocess_Lab(image):
     image = tf.cast(image['image'], dtype=tf.float32)/255.0
     image = tf.py_function(func=_rgb2lab, inp=[image], Tout=tf.float32)
     image = image+[0, 128, 128]
-    image = image/[100.0, 255.0, 255.0]
+    image = np.float32(image/[100.0, 255.0, 255.0])
     #image = _rgb2lab(image.numpy())
     return image
 
