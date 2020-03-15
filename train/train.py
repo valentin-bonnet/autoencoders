@@ -72,7 +72,8 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
     #test_accuracy_results = []
 
     starting_epoch = current_epoch.numpy()
-    len_train = tf.data.experimental.cardinality(train_dataset).numpy()
+    #len_train = tf.data.experimental.cardinality(train_dataset).numpy()
+    len_train = 1281167
     for epoch in range(starting_epoch, epochs + 1):
         start_time = time.time()
         progbar = tf.keras.utils.Progbar(len_train)
