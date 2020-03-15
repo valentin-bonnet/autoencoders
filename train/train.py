@@ -333,7 +333,7 @@ ckpt_epoch = [20]
 directory_name = 'VAE_COMPARE_std'
 """
 
-datasets = ['cifar10Lab']
+datasets = ['imagenetresized64']
 models_type = ['SBAE']  # or ['AE']
 models_arch = [[512, 1024, 2048]]
 models_std = [0]
@@ -349,7 +349,7 @@ legends = ['512-1024-2048-lat2048']
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
 #ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
 ckpt_epoch = [20]
-directory_name = 'SBAE_2'
+directory_name = 'SBAE_ImageNET'
 
 
 multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_epoch, directory_name, my_drive_path, models_std, legends)
