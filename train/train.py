@@ -48,7 +48,7 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
 
     current_epoch = tf.Variable(1)
     ckpt = tf.train.Checkpoint(step=current_epoch, optimizer=optimizer, net=model)
-    manager = tf.train.CheckpointManager(ckpt, ckpt_path, max_to_keep=epochs/ckpt_epoch)
+    manager = tf.train.CheckpointManager(ckpt, ckpt_path, max_to_keep=2)
 
     ckpt.restore(manager.latest_checkpoint)
     if manager.latest_checkpoint:
