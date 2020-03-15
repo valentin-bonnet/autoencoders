@@ -82,9 +82,9 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
             train_loss_mean(model.compute_apply_gradients(train_x, optimizer))
             train_accuracy_mean(model.compute_accuracy(train_x))
             if i % (len_train//100) == 0:
-                progbar.update(i+1)
+                progbar.add(1)
             if img_while_training:
-                if i % (len_train/10) == 0:
+                if i % (len_train//10) == 0:
                     for test_x in test_dataset.take(1):
                         image_saver.generate_and_save_images_compare_lab(model, test_x, directory_name+'epoch_{:03d}'.format(epoch)+'_step_'+str(i), path=images_path)
 
