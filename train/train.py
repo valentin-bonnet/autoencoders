@@ -76,13 +76,13 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
     len_train = 1281167//batch_size
     for epoch in range(starting_epoch, epochs + 1):
         start_time = time.time()
-        #progbar = tf.keras.utils.Progbar(100)
+        progbar = tf.keras.utils.Progbar(100)
         for i, train_x in enumerate(train_dataset):
-            #progbar.update(i+1)
+            progbar.update(i+1)
             train_loss_mean(model.compute_apply_gradients(train_x, optimizer))
             train_accuracy_mean(model.compute_accuracy(train_x))
-            #if i % (len_train/100) == 0:
-            #    progbar.update(i+1)
+            if i % (len_train/100) == 0:
+                progbar.update(i+1)
             if img_while_training:
                 if i % (len_train/10) == 0:
                     for test_x in test_dataset.take(1):
@@ -338,11 +338,11 @@ directory_name = 'VAE_COMPARE_std'
 
 datasets = ['imagenetresized64']
 models_type = ['SBAE']  # or ['AE']
-models_arch = [[512, 1024, 2048]]
+models_arch = [[256, 512, 1024]]
 models_std = [0]
 #models_arch = [[64, 128, 256]]
 #models_latent_space = [64]
-models_latent_space = [2048]
+models_latent_space = [1024]
 #models_latent_space = [128, 256, 512, 1024, 2048, 4096]
 models_use_bn = [False]
 lr = [1e-4]
