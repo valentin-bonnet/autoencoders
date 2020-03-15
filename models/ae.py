@@ -9,8 +9,6 @@ class AE(tf.keras.Model):
     def __init__(self, layers=[64, 128, 512], latent_dim=512, input_shape=32, use_bn=False):
         super(AE, self).__init__()
         self.latent_dim = latent_dim
-        self.cc = np.load('../utils/pts_in_hull.npy')
-        self.nbrs = nn.NearestNeighbors(n_neighbors=10, algorithm='ball_tree').fit(self.cc)
 
         ## ENCODER
         self.ae = tf.keras.Sequential()
