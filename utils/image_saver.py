@@ -177,11 +177,14 @@ def compare_multiple_images(images, legends, filename, path):
     file_path = os.path.join(path, filename)
     plt.savefig(file_path + '.png')
 
-def curves(curves, legendes, file_name, path, x_axis_label='', y_axis_label=''):
+def curves(curves, legendes, file_name, path, x_axis_label='', y_axis_label='', x_axis=None):
     handles = []
     fig = plt.figure()
     for i, curve in enumerate(curves):
-        e = np.linspace(1, len(curve), len(curve))
+        if x_axis[i] is None:
+            e = np.linspace(1, len(curve), len(curve))
+        else:
+            e = x_axis[i]
         handle, = plt.plot(e, curve, label=legendes[i])
         handles.append(handle)
     plt.legend(handles=handles)

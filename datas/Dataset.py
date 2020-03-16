@@ -18,7 +18,8 @@ class Dataset():
         self.val_ds = None
         self.test_ds = None
         self.shape = None
-        self.size = None
+        self.train_size = None
+        self.val_size = None
         self.batch_size = batch_size
         self.buffer_size = buffer_size
         self.name = dataset_name
@@ -36,10 +37,20 @@ class Dataset():
             else:
                 self.train_ds, self.val_ds = cifarLoader.cifarloader()
             self.shape = 32
+            self.train_size = 50000
+            self.val_size = 10000
+
+        elif dataset_name == 'imagenetresized32':
+            self.train_ds, self.val_ds = ImagenetResizedLoader.imagenetresized32loaderLab()
+            self.shape = 32
+            self.train_size = 1281167
+            self.val_size = 50000
 
         elif dataset_name == 'imagenetresized64':
             self.train_ds, self.val_ds = ImagenetResizedLoader.imagenetresized64loaderLab()
             self.shape = 64
+            self.train_size = 1281167
+            self.val_size = 50000
 
         else:
             print("No good dataset selected")

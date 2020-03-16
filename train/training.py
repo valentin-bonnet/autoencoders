@@ -13,12 +13,15 @@ import image_saver
 import datasetLoader
 import construct_model
 
+AUTOTUNE = tf.data.experimental.AUTOTUNE
+
 class Training():
-    def __init__(self, dataset, model, model_view, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_epochs):
-        self.train_ds = dataset.train_ds
-        self.train_size = dataset.train_size
-        self.val_ds = dataset.val_ds
-        self.val_size = dataset.val_size
+    def __init__(self, dataset, batch_size, model, model_view, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch):
+        self.batch_size = batch_size
+        self.train_ds = dataset.train_ds.shuffle(buffer_size=10000).batch(batch_size).prefetch(buffer_size=AUTOTUNE)
+        self.train_size = dataset.train_size//batch_size
+        self.val_ds = dataset.val_ds.shuffle(buffer_size=10000).batch(batch_size).prefetch(buffer_size=AUTOTUNE)
+        self.val_size = dataset.val_size//batch_size
         self.model = model
         self.model_view = model_view
         self.optimizer = optimizer
@@ -31,12 +34,16 @@ class Training():
         self.train_path = os.path.join(self.path, 'training')
         self.val_path = os.path.join(self.path, 'validation')
         self.img_path = os.path.join(self.path, 'imgs')
-        self.save_epochs = save_epochs
+        self.save_steps = save_steps
+        self.step_is_epoch = step_is_epoch
 
         self.t_loss = None
         self.t_acc = None
         self.v_loss = None
         self.v_acc = None
+
+        if not self.step_is_epoch and self.save_steps > 100:
+            self.save_steps = self.save_steps % 100
 
         if not os.path.isdir(self.ckpt_path):
             os.makedirs(self.ckpt_path)
@@ -48,13 +55,142 @@ class Training():
             os.makedirs(self.val_path)
 
         self.current_epoch = tf.Variable(0)
-        self.ckpt = tf.train.Checkpoint(step=self.current_epoch, optimizer=self.optimizer, net=self.model)
-        self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=self.epoch_max // self.save_epochs)
+        self.current_step = tf.Variable(0)
+        if self.step_is_epoch:
+            self.ckpt = tf.train.Checkpoint(epoch=self.current_epoch, optimizer=self.optimizer, net=self.model)
+        else:
+            self.ckpt = tf.train.Checkpoint(step=self.current_step, epoch = self.current_epoch, optimizer=self.optimizer, net=self.model)
+        self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=2)
 
         self.load()
 
+    def forward_percent(self):
+        t_loss_mean = tf.keras.metrics.Mean(name='t_loss')
+        t_acc_mean = tf.keras.metrics.Mean(name='t_acc')
+        v_loss_mean = tf.keras.metrics.Mean(name='v_loss')
+        v_acc_mean = tf.keras.metrics.Mean(name='v_acc')
 
-    def forward(self, epochs=None, steps=None):
+
+        starting_epoch = self.ckpt.epoch
+        starting_step = self.ckpt.step
+
+        epoch_percent_train = self.train_size // 100
+        epoch_percent_train = 1 if epoch_percent_train == 0 else epoch_percent_train
+        epoch_percent_val = self.val_size // 100
+        epoch_percent_val = 1 if epoch_percent_val == 0 else epoch_percent_val
+
+
+
+        for epoch in range(starting_epoch, self.epoch_max + 1):
+            progbar = tf.keras.utils.Progbar(100)
+
+            self.lr = self.lr_fn(self.lr, epoch)
+            self.optimizer.lr = self.lr
+
+            # One epoch on TRAIN dataset
+            for i, train_x in enumerate(self.train_ds, starting_step):
+                t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
+                t_acc_mean(self.model.compute_accuracy(train_x))
+
+                if i % epoch_percent_train == 0:
+                    progbar.add(1)
+
+                    for j, val_x in enumerate(self.val_size.take(epoch_percent_val)):
+                        v_loss_mean(self.model.compute_loss(val_x))
+                        v_acc_mean(self.model.compute_accuracy(val_x))
+
+                    self.t_loss.append(t_loss_mean.result().numpy())
+                    self.t_acc.append(t_acc_mean.result().numpy())
+                    self.v_loss.append(v_loss_mean.result().numpy())
+                    self.v_acc.append(v_acc_mean.result().numpy())
+
+                    x_axis = np.linspace(0, len(self.t_loss) / 100, len(self.t_loss))
+                    image_saver.curves([self.t_loss, self.v_loss], ['Training', 'Validation'],
+                                       'training_validation_loss', self.img_path, 'Steps', 'Loss', x_axis)
+                    image_saver.curves([self.t_acc, self.v_acc], ['Training', 'Validation'],
+                                       'training_validation_accuracy', self.img_path, 'Steps', 'Accuracy', x_axis)
+
+                if i % (epoch_percent_train*self.save_steps) == 0:
+                    self.ckpt.step = i
+                    self.save()
+
+            starting_step = 0
+
+
+            # Create temp image of loss
+
+
+            img_name = 'epoch_' + str(epoch)
+            for val_x in self.val_ds.take(1):
+                image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
+
+            t_loss_mean.reset_states()
+            t_acc_mean.reset_states()
+            v_loss_mean.reset_states()
+            v_acc_mean.reset_states()
+
+            if epoch % self.save_steps or epoch == self.epoch_max:
+                self.save()
+            self.ckpt.epoch.assign_add(1)
+
+    def forward_epoch(self):
+
+        t_loss_mean = tf.keras.metrics.Mean(name='t_loss')
+        t_acc_mean = tf.keras.metrics.Mean(name='t_acc')
+        v_loss_mean = tf.keras.metrics.Mean(name='v_loss')
+        v_acc_mean = tf.keras.metrics.Mean(name='v_acc')
+
+        starting_epoch = self.ckpt.epoch
+
+        for epoch in range(starting_epoch, self.epoch_max + 1):
+            len_train = self.train_size
+            progbar = tf.keras.utils.Progbar(len_train)
+
+            self.lr = self.lr_fn(self.lr, epoch)
+            self.optimizer.lr = self.lr
+
+            # One epoch on TRAIN dataset
+            for i, train_x in enumerate(self.train_ds):
+                progbar.update(i + 1)
+                t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
+                t_acc_mean(self.model.compute_accuracy(train_x))
+
+            # One epoch on VALIDATION dataset
+            for i, val_x in enumerate(self.val_ds):
+                v_loss_mean(self.model.compute_loss(val_x))
+                v_acc_mean(self.model.compute_accuracy(val_x))
+
+            self.t_loss.append(t_loss_mean.result().numpy())
+            self.t_acc.append(t_acc_mean.result().numpy())
+            self.v_loss.append(v_loss_mean.result().numpy())
+            self.v_acc.append(v_acc_mean.result().numpy())
+
+            # Create temp image of loss
+            image_saver.curves([self.t_loss, self.v_loss], ['Training', 'Validation'], 'epochs', 'loss',
+                               'training_validation_loss', self.img_path)
+            image_saver.curves([self.t_acc, self.v_acc], ['Training', 'Validation'], 'epochs', 'accuracy',
+                               'training_validation_accuracy', self.img_path)
+
+            img_name = 'epoch_' + str(epoch)
+            for val_x in self.val_ds.take(1):
+                image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
+
+            t_loss_mean.reset_states()
+            t_acc_mean.reset_states()
+            v_loss_mean.reset_states()
+            v_acc_mean.reset_states()
+
+            if epoch % self.save_steps or epoch == self.epoch_max:
+                self.save()
+            self.ckpt.epoch.assign_add(1)
+
+    def forward(self):
+        if self.step_is_epoch:
+            self.forward_epoch()
+        else:
+            self.forward_percent()
+
+    """def forward(self, epochs=None, steps=None):
         if epochs is None or epochs + int(self.ckpt.step) > self.epoch_max:
             epochs = self.epoch_max
         if steps is None:
@@ -67,7 +203,11 @@ class Training():
         v_loss_mean = tf.keras.metrics.Mean(name='v_loss')
         v_acc_mean = tf.keras.metrics.Mean(name='v_acc')
 
-        starting_epoch = self.ckpt.step
+        starting_step = self.ckpt.step
+        starting_epoch = self.ckpt.epoch
+
+        steps_in_epochs = np.float32(steps)/np.float32(self.train_size)
+
         for epoch in range(starting_epoch, epochs+1):
             len_train = self.train_size
             progbar = tf.keras.utils.Progbar(len_train)
@@ -109,8 +249,21 @@ class Training():
 
             if epoch % self.save_epochs or epoch == epochs:
                 self.save()
-            self.ckpt.step.assign_add(1)
+            self.ckpt.epoch.assign_add(1)
 
+        for step in range(starting_step, steps + 1):
+            progbar = tf.keras.utils.Progbar(100)
+            self.optimizer.lr = self.lr
+
+            for i, train_x in enumerate(self.train_ds.take(steps)):
+                t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
+                t_acc_mean(self.model.compute_accuracy(train_x))
+                if i % (steps // 100):
+                    progbar.add(1)
+
+            for i, val_x in enumerate(self.val_ds):
+                v_loss_mean(self.model.compute_loss(val_x))
+                v_acc_mean(self.model.compute_accuracy(val_x))"""
 
     def save(self):
         #Save info about loss and acuracy of training and validation dataset

@@ -14,6 +14,10 @@ class SBAE(tf.keras.Model):
         self.latent_dim = latent_dim
         self.cc = np.load('../utils/pts_in_hull.npy')
         self.nbrs = nn.NearestNeighbors(n_neighbors=10, algorithm='ball_tree').fit(self.cc)
+        str_arch = '_'.join(str(x) for x in self.architecture)
+        self.architecture = layers.copy()
+        str_bn = 'BN' if use_bn else ''
+        self.description = '_'.join(filter(None, ['SBAE', str_arch, 'lat' + str(self.latent_dim), str_bn]))
 
         ## ENCODER L2AB
         self.L2ab = tf.keras.Sequential()

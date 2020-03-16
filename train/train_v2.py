@@ -275,25 +275,25 @@ filename = 'batch_normalization'
 #filename = 'ae_sbae'
 
 
-datasets = [Dataset.Dataset('cifar10')]*4
-model1 = construct_model.get_model('CVAE', [64, 128, 256], 1024, 32, False)
-model2 = construct_model.get_model('CVAE', [64, 128, 256], 512, 32, False)
-model3 = construct_model.get_model('CVAE', [64, 128, 256], 256, 32, False)
-model4 = construct_model.get_model('CVAE', [64, 128, 256], 128, 32, False)
+datasets = [Dataset.Dataset('imagenetresized32')]
+model1 = construct_model.get_model('SBAE', [128, 256, 512], 1024, 32, False)
 
-models = [model1, model2, model3, model4]
-lrs = [1e-4]*4
+
+models = [model1]
+lrs = [1e-4]
 optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
-def lr_fn(lr, epoch):
-    if epoch == 30 or epoch == 50:
+def lr_fn(lr, step):
+    if step == 30 or step == 50:
         return lr*0.1
-lrs_fn = [lr_fn]*4
+lrs_fn = [lr_fn]
 
-epochs_max = [70]*4
-saves_epochs = [20]*4
-path_to_directory = '/content/drive/My Drive/Colab Data/AE/AE_new_training_method/'
+epochs_max = [10]
+saves_epochs = [10]
+directory_path = '/content/drive/My Drive/Colab Data/AE/'
+path_to_directory = directory_path+'SBAE_New'
+step_is_epoch = False
 
-multi = Multitraining.Multitraining(datasets, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory)
+multi = Multitraining.Multitraining(datasets, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 
 
 #multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
