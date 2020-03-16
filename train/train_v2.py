@@ -294,6 +294,7 @@ path_to_directory = directory_path+'SBAE_New'
 step_is_epoch = False
 
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
+multi.forward()
 
 
 #multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
