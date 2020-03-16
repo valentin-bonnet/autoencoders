@@ -275,7 +275,7 @@ filename = 'batch_normalization'
 #filename = 'ae_sbae'
 
 
-datasets = [Dataset.Dataset('imagenetresized32')]
+datasets = Dataset.Dataset('imagenetresized32')
 model1 = construct_model.get_model('SBAE', [128, 256, 512], 1024, 32, False)
 
 
