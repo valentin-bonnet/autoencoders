@@ -16,7 +16,7 @@ import construct_model
 
 class Multitraining():
     def __init__(self, dataset, batch_size, models, optimizers, lrs, lrs_fn, steps_max, saves_steps, path_to_directory, step_is_epoch):
-        len_list = map(len, [models, optimizers, lrs, lrs_fn, steps_max, saves_steps])
+        len_list = list(map(len, [models, optimizers, lrs, lrs_fn, steps_max, saves_steps]))
         self.dataset = dataset
         self.len_max = len_list[0]
         self.trainings = []
