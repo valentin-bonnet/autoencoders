@@ -21,7 +21,7 @@ class Multitraining():
         self.len_max = len_list[0]
         self.trainings = []
         if not all(length == len_list[0] for length in len_list):
-            print("The arguments are not all from same size")
+            print("All arguments does not have the same size")
 
         else:
             self.dataset = dataset
