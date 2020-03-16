@@ -41,10 +41,13 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
     validation_loss_npy_path = os.path.join(validation_data_path, 'loss.npy')
     validation_acc_npy_path = os.path.join(validation_data_path, 'accuracy.npy')
 
-    training_loss_np = np.load(training_loss_npy_path) if os.path.isfile(training_loss_npy_path) else np.zeros(epochs)
-    training_acc_np = np.load(training_acc_npy_path) if os.path.isfile(training_acc_npy_path) else np.zeros(epochs)
-    validation_loss_np = np.load(validation_loss_npy_path) if os.path.isfile(validation_loss_npy_path) else np.zeros(epochs)
-    validation_acc_np = np.load(validation_acc_npy_path) if os.path.isfile(validation_acc_npy_path) else np.zeros(epochs)
+    len_train = 1281167 // batch_size
+    number_step = (len_train//100)*epochs
+
+    training_loss_np = np.load(training_loss_npy_path) if os.path.isfile(training_loss_npy_path) else np.zeros(number_step)
+    training_acc_np = np.load(training_acc_npy_path) if os.path.isfile(training_acc_npy_path) else np.zeros(number_step)
+    validation_loss_np = np.load(validation_loss_npy_path) if os.path.isfile(validation_loss_npy_path) else np.zeros(number_step)
+    validation_acc_np = np.load(validation_acc_npy_path) if os.path.isfile(validation_acc_npy_path) else np.zeros(number_step)
 
     current_epoch = tf.Variable(1)
     ckpt = tf.train.Checkpoint(step=current_epoch, optimizer=optimizer, net=model)
@@ -74,6 +77,8 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
     starting_epoch = current_epoch.numpy()
     #len_train = tf.data.experimental.cardinality(train_dataset).numpy()
     len_train = 1281167//batch_size
+    k = 0
+    m=0
     for epoch in range(starting_epoch, epochs + 1):
         start_time = time.time()
         progbar = tf.keras.utils.Progbar(100)
@@ -82,15 +87,74 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
             train_loss_mean(model.compute_apply_gradients(train_x, optimizer))
             train_accuracy_mean(model.compute_accuracy(train_x))
             if i % (len_train//100) == 0:
+                k +=1
                 progbar.add(1)
             if img_while_training:
                 if i % (len_train//10) == 0:
                     for test_x in test_dataset.take(1):
                         image_saver.generate_and_save_images_compare_lab(model, test_x, directory_name+'epoch_{:03d}'.format(epoch)+'_step_'+str(i), path=images_path)
 
+            if k % 10 == 0:
+                #### See if not only take(1)
+                for test_x in test_dataset.take(100):
+                    test_loss_mean(model.compute_loss(test_x))
+                    test_accuracy_mean(model.compute_accuracy(test_x))
 
-        end_time = time.time()
+                elbo = -test_loss_mean.result()
+                print('Epoch: {}, Test set ELBO: {}, '.format(epoch, elbo))
 
+                logging.info(
+                    'Loss_train_{:.6f}_test_{:.6f}'.format(-train_loss_mean.result(), -test_loss_mean.result()))
+                # train_loss_results.append(train_loss_mean.result())
+                # test_loss_results.append(test_loss_mean.result())
+                # train_accuracy_results.append(train_accuracy_mean.result())
+                # test_accuracy_results.append(test_accuracy_mean.result())
+                training_loss_np[m] = train_loss_mean.result().numpy()
+                training_acc_np[m] = train_accuracy_mean.result().numpy()
+                validation_loss_np[m] = test_loss_mean.result().numpy()
+                validation_acc_np[m] = test_accuracy_mean.result().numpy()
+
+                train_loss_mean.reset_states()
+                test_loss_mean.reset_states()
+                train_accuracy_mean.reset_states()
+                test_accuracy_mean.reset_states()
+                if img_while_training:
+                    image_saver.img_loss_accuracy(training_loss_np, validation_loss_np, training_acc_np,
+                                                  validation_acc_np, filename='loss_accuracy_Lab_temp',
+                                                  path=images_path)
+                    for test_x in test_dataset.take(1):
+                        image_saver.generate_and_save_images_compare_lab(model, test_x,
+                                                                         directory_name + '_epoch_{:03d}_test'.format(
+                                                                             epoch), images_path)
+                        # means, logvar = model.encode(test_x)
+                        # var = tf.exp(logvar)
+                        # image_saver.points([means[0, :]], ['mean'], 'epoch_{:03d}_mean_test'.format(epoch), images_path)
+                        # image_saver.points([var[0, :]], ['var'], 'epoch_{:03d}_var_test'.format(epoch), images_path)
+                    for train_x in train_dataset.take(1):
+                        image_saver.generate_and_save_images_compare_lab(model, train_x,
+                                                                         directory_name + '_epoch_{:03d}_train'.format(
+                                                                             epoch), images_path)
+                        # means, logvar = model.encode(train_x)
+                        # var = tf.exp(logvar)
+                        # image_saver.points([means[0, :]], ['mean'], 'epoch_{:03d}_mean_tran'.format(epoch), images_path)
+                        # image_saver.points([var[0, :]], ['var'], 'epoch_{:03d}_var_train'.format(epoch), images_path)
+
+
+            if k % ckpt_epoch == 0:
+                print("ckpt.step :", int(ckpt.step))
+                print("epoch :", epoch)
+                save_path = manager.save()
+                np.save(training_loss_npy_path, training_loss_np)
+                np.save(training_acc_npy_path, training_acc_np)
+                np.save(validation_loss_npy_path, validation_loss_np)
+                np.save(validation_acc_npy_path, validation_acc_np)
+                print("Saved checkpoint for step {}: {}".format(i, save_path))
+                print("loss {:1.2f}".format(-test_loss_mean.result()))
+
+
+
+        #end_time = time.time()
+        """
         if epoch == 30:
             lr = lr*0.1
             optimizer.lr = lr
@@ -98,13 +162,14 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
         if epoch == 50:
             lr = lr*0.1
             optimizer.lr = lr
-
+        """
+        """
         if epoch % 1 == 0:
             #### See if not only take(1)
             for test_x in test_dataset:
                 test_loss_mean(model.compute_loss(test_x))
                 test_accuracy_mean(model.compute_accuracy(test_x))
-
+        
 
             elbo = -test_loss_mean.result()
             print('Epoch: {}, Test set ELBO: {}, '
@@ -138,9 +203,10 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
                     #means, logvar = model.encode(train_x)
                     #var = tf.exp(logvar)
                     #image_saver.points([means[0, :]], ['mean'], 'epoch_{:03d}_mean_tran'.format(epoch), images_path)
-                    #image_saver.points([var[0, :]], ['var'], 'epoch_{:03d}_var_train'.format(epoch), images_path)
+                    #image_saver.points([var[0, :]], ['var'], 'epoch_{:03d}_var_train'.format(epoch), images_path)"""
 
         ckpt.step.assign_add(1)
+        """
         if int(ckpt.step) % ckpt_epoch == 0 or epoch == epochs:
             print("ckpt.step :", int(ckpt.step))
             print("epoch :", epoch)
@@ -151,6 +217,9 @@ def train(ds, model, lr, epochs, batch_size, ckpt_epoch, directory_path, directo
             np.save(validation_acc_npy_path, validation_acc_np)
             print("Saved checkpoint for step {}: {}".format(int(ckpt.step), save_path))
             print("loss {:1.2f}".format(-test_loss_mean.result()))
+            """
+    end_time = time.time()
+
     if img_while_training:
         image_saver.img_loss_accuracy(training_loss_np, validation_loss_np, training_acc_np, validation_acc_np, filename="loss_accuracyLab", path=images_path)
 
@@ -346,12 +415,12 @@ models_latent_space = [1024]
 #models_latent_space = [128, 256, 512, 1024, 2048, 4096]
 models_use_bn = [False]
 lr = [1e-4]
-epochs = [20]
-batch_size = [64]
-legends = ['512-1024-2048-lat2048']
+epochs = [10]
+batch_size = [128]
+legends = ['256-512-1024-lat1024']
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
 #ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_sbaeLab_128x256x512_lat1024', 'ckpts_aeLab_256x512x1024_lat2048', 'ckpts_sbaeLab_256x512x1024_lat2048']
-ckpt_epoch = [1]
+ckpt_epoch = [10] #step
 directory_name = 'SBAE_ImageNET'
 
 
