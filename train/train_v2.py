@@ -286,14 +286,14 @@ def lr_fn(lr, step):
     if step == 30 or step == 50:
         return lr*0.1
 lrs_fn = [lr_fn]
-
+batch_size = 128
 epochs_max = [10]
 saves_epochs = [10]
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
 path_to_directory = directory_path+'SBAE_New'
 step_is_epoch = False
 
-multi = Multitraining.Multitraining(datasets, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
+multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 
 
 #multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
