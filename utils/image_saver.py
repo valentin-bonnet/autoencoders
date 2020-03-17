@@ -180,11 +180,13 @@ def compare_multiple_images(images, legends, filename, path):
 def curves(curves, legendes, file_name, path, x_axis_label='', y_axis_label='', x_axis=None):
     handles = []
     fig = plt.figure()
+    len_max = max(list(map(len, curves)))
+    if x_axis is None:
+        e = np.linspace(1, len_max, len_max)
+    else:
+        e = x_axis
     for i, curve in enumerate(curves):
-        if x_axis[i] is None:
-            e = np.linspace(1, len(curve), len(curve))
-        else:
-            e = x_axis[i]
+
         handle, = plt.plot(e, curve, label=legendes[i])
         handles.append(handle)
     plt.legend(handles=handles)
