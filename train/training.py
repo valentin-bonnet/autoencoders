@@ -107,6 +107,11 @@ class Training():
                     self.v_loss.append(v_loss_mean.result().numpy())
                     self.v_acc.append(v_acc_mean.result().numpy())
 
+                    t_loss_mean.reset_states()
+                    t_acc_mean.reset_states()
+                    v_loss_mean.reset_states()
+                    v_acc_mean.reset_states()
+
                 if i != 0 and i % (epoch_percent_train*self.save_steps) == 0:
                     for val_x in self.val_ds.take(1):
                         image_saver.generate_and_save_images_compare_lab(self.model, val_x,
