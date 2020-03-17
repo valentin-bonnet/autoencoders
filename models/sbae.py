@@ -158,7 +158,7 @@ class SBAE(tf.keras.Model):
     def reconstruct(self, x, classification=False):
         L, ab = tf.split(x, num_or_size_splits=[1, 2], axis=-1)
         if classification:
-            x_logits = 2
+            x_logit = 2
         else:
             ab_logits = self.L2ab(L)
             L_logits = self.ab2L(ab)
