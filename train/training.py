@@ -109,7 +109,7 @@ class Training():
                     print('New progbar')
                     progbar.add(1)
 
-                    for j, val_x in enumerate(self.val_size.take(epoch_percent_val)):
+                    for j, val_x in enumerate(self.val_ds.take(epoch_percent_val)):
                         v_loss_mean(self.model.compute_loss(val_x))
                         v_acc_mean(self.model.compute_accuracy(val_x))
 
