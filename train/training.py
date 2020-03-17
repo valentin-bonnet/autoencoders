@@ -81,6 +81,7 @@ class Training():
         epoch_percent_val = 1 if epoch_percent_val == 0 else epoch_percent_val
         for epoch in range(starting_epoch, self.epoch_max + 1):
             progbar = tf.keras.utils.Progbar(100)
+            progbar.update(starting_step)
 
             self.lr = self.lr_fn(self.lr, epoch)
             self.optimizer.lr = self.lr
