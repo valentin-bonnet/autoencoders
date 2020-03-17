@@ -65,6 +65,7 @@ class Training():
         self.load()
 
     def forward_percent(self):
+        print("forward percent")
         t_loss_mean = tf.keras.metrics.Mean(name='t_loss')
         t_acc_mean = tf.keras.metrics.Mean(name='t_acc')
         v_loss_mean = tf.keras.metrics.Mean(name='v_loss')
@@ -131,7 +132,7 @@ class Training():
             self.ckpt.epoch.assign_add(1)
 
     def forward_epoch(self):
-
+        print("forward epoch")
         t_loss_mean = tf.keras.metrics.Mean(name='t_loss')
         t_acc_mean = tf.keras.metrics.Mean(name='t_acc')
         v_loss_mean = tf.keras.metrics.Mean(name='v_loss')

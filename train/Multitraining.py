@@ -46,6 +46,7 @@ class Multitraining():
 
     def forward(self, epochs=None, steps=None):
         for train in self.trainings:
+            print("Train")
             train.forward()
             self.t_loss.append(train.t_loss)
             self.t_acc.append(train.t_acc)

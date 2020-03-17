@@ -296,6 +296,7 @@ path_to_directory = directory_path+'SBAE_New'
 step_is_epoch = False
 
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
+print("Multitraining Done")
 multi.forward()
 
 
