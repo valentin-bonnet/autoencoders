@@ -285,6 +285,8 @@ optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
 def lr_fn(lr, step):
     if step == 30 or step == 50:
         return lr*0.1
+    else:
+        return lr
 lrs_fn = [lr_fn]
 batch_size = 128
 epochs_max = [10]
