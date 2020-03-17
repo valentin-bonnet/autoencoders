@@ -136,9 +136,8 @@ class Training():
             v_loss_mean.reset_states()
             v_acc_mean.reset_states()
 
-            if epoch % self.save_steps == 0 or epoch == self.epoch_max:
-                self.save()
             self.ckpt.epoch.assign_add(1)
+        self.save()
 
     def forward_epoch(self):
         print("forward epoch")
