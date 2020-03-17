@@ -93,7 +93,7 @@ class Training():
             # One epoch on TRAIN dataset
             print("epoch :", epoch)
             print('starting step: ', starting_step)
-            train_enum = self.train_ds.enumerate(start=starting_step)
+            train_enum = self.train_ds.enumerate()
             print("enumerate")
             for element in train_enum.as_numpy_iterator():
                 print('element')
