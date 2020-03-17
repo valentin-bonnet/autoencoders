@@ -80,10 +80,8 @@ class Training():
         epoch_percent_val = self.val_size // 100
         epoch_percent_val = 1 if epoch_percent_val == 0 else epoch_percent_val
 
-        print('train size ', self.train_size)
-        print('epoch percent train ', epoch_percent_train)
-
         for epoch in range(starting_epoch, self.epoch_max + 1):
+            print("epoch : ", epoch)
             progbar = tf.keras.utils.Progbar(100)
             progbar.update(starting_step)
 
@@ -91,22 +89,14 @@ class Training():
             self.optimizer.lr = self.lr
 
             # One epoch on TRAIN dataset
-            print("epoch :", epoch)
-            print('starting step: ', starting_step)
-            print('train_ds: ', self.train_ds)
             #train_enum = self.train_ds.enumerate()
-            print("enumerate")
             #for element in train_enum.as_numpy_iterator():
             for train_x in self.train_ds:
-                print('element')
                 #i, train_x = element
                 i =0
-                print('i: ', i)
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
-                print('i: ', i)
                 if i % epoch_percent_train == 0:
-                    print('New progbar')
                     progbar.add(1)
 
                     for j, val_x in enumerate(self.val_ds.take(epoch_percent_val)):
@@ -125,6 +115,9 @@ class Training():
                                        'training_validation_accuracy', self.img_path, 'Steps', 'Accuracy', x_axis)
 
                 if i % (epoch_percent_train*self.save_steps) == 0:
+                    print('i :', i)
+                    print('epoch percent train: ', epoch_percent_train)
+                    print('save step: ', self.save_steps)
                     self.ckpt.step = i
                     self.save()
 
@@ -143,7 +136,7 @@ class Training():
             v_loss_mean.reset_states()
             v_acc_mean.reset_states()
 
-            if epoch % self.save_steps or epoch == self.epoch_max:
+            if epoch % self.save_steps == 0 or epoch == self.epoch_max:
                 self.save()
             self.ckpt.epoch.assign_add(1)
 
