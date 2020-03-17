@@ -97,9 +97,10 @@ class Training():
                 if i % epoch_percent_train == 0:
                     progbar.add(1)
 
-                    for j, val_x in enumerate(self.val_ds.take(epoch_percent_val)):
+                    for val_x in self.val_ds.take(epoch_percent_val):
                         v_loss_mean(self.model.compute_loss(val_x))
                         v_acc_mean(self.model.compute_accuracy(val_x))
+                    for val_x in self.val_ds.take(1):
                         image_saver.generate_and_save_images_compare_lab(self.model, val_x,
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_test'.format(epoch, i//epoch_percent_train), self.img_path)
 
