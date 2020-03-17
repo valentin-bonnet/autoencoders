@@ -71,16 +71,13 @@ class Training():
         v_acc_mean = tf.keras.metrics.Mean(name='v_acc')
 
 
-        starting_epoch = self.ckpt.epoch
-        starting_step = self.ckpt.step
+        starting_epoch = int(self.ckpt.epoch)
+        starting_step = int(self.ckpt.step)
 
         epoch_percent_train = self.train_size // 100
         epoch_percent_train = 1 if epoch_percent_train == 0 else epoch_percent_train
         epoch_percent_val = self.val_size // 100
         epoch_percent_val = 1 if epoch_percent_val == 0 else epoch_percent_val
-
-
-
         for epoch in range(starting_epoch, self.epoch_max + 1):
             progbar = tf.keras.utils.Progbar(100)
 
