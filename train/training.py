@@ -107,16 +107,17 @@ class Training():
                     self.v_loss.append(v_loss_mean.result().numpy())
                     self.v_acc.append(v_acc_mean.result().numpy())
 
+
+
+                if i != 0 and i % (epoch_percent_train*self.save_steps) == 0:
+                    print('i :', i)
+                    print('epoch percent train: ', epoch_percent_train)
+                    print('save step: ', self.save_steps)
                     x_axis = np.linspace(0, len(self.t_loss) / 100, len(self.t_loss))
                     image_saver.curves([self.t_loss, self.v_loss], ['Training', 'Validation'],
                                        'training_validation_loss', self.img_path, 'Steps', 'Loss', x_axis)
                     image_saver.curves([self.t_acc, self.v_acc], ['Training', 'Validation'],
                                        'training_validation_accuracy', self.img_path, 'Steps', 'Accuracy', x_axis)
-
-                if i % (epoch_percent_train*self.save_steps) == 0:
-                    print('i :', i)
-                    print('epoch percent train: ', epoch_percent_train)
-                    print('save step: ', self.save_steps)
                     self.ckpt.step = i
                     self.save()
 
