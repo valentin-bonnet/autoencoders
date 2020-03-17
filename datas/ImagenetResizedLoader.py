@@ -38,7 +38,7 @@ def imagenetresized64loaderLab():
     return train_dataset, test_dataset
 
 def imagenetresized32loaderLab():
-    data = tfds.load(name='imagenet_resized/32x32', data_dir='/content/drive/My Drive/Colab Data/Datasets/', in_memory=True)
+    data = tfds.load(name='imagenet_resized/32x32', data_dir='/content/drive/My Drive/Colab Data/Datasets/')
     train_dataset = data['train']
     print("####\n\ntrain done")
     test_dataset = data['validation']
