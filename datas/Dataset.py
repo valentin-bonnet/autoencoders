@@ -55,11 +55,5 @@ class Dataset():
         else:
             print("No good dataset selected")
 
-        if self.train_ds is not None:
-            self.train_ds = self.train_ds.shuffle(buffer_size=self.buffer_size).batch(self.batch_size).prefetch(AUTOTUNE)
-        if self.val_ds is not None:
-            self.val_ds = self.val_ds.shuffle(buffer_size=self.buffer_size).batch(self.batch_size).prefetch(AUTOTUNE)
-        if self.test_ds is not None:
-            self.test_ds = self.test_ds.shuffle(buffer_size=self.buffer_size).batch(self.batch_size).prefetch(AUTOTUNE)
 
 
