@@ -100,6 +100,8 @@ class Training():
                     for j, val_x in enumerate(self.val_ds.take(epoch_percent_val)):
                         v_loss_mean(self.model.compute_loss(val_x))
                         v_acc_mean(self.model.compute_accuracy(val_x))
+                        image_saver.generate_and_save_images_compare_lab(self.model, val_x,
+                                                                         self.name + '_epoch_{:03d}_step_{:03d}_test'.format(epoch, i//epoch_percent_train), self.img_path)
 
                     self.t_loss.append(t_loss_mean.result().numpy())
                     self.t_acc.append(t_acc_mean.result().numpy())
@@ -124,10 +126,10 @@ class Training():
             # Create temp image of loss
 
 
-            img_name = 'epoch_' + str(epoch)
-            for val_x in self.val_ds.take(1):
-                image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
-                image_saver.generate_and_save_images_compare_lab(self.model, val_x, self.name+ '_epoch_{:03d}_test'.format(epoch), self.img_path)
+            #img_name = 'epoch_' + str(epoch)
+            #for val_x in self.val_ds.take(1):
+                #image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
+
 
             t_loss_mean.reset_states()
             t_acc_mean.reset_states()
