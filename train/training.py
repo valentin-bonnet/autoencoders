@@ -79,6 +79,10 @@ class Training():
         epoch_percent_train = 1 if epoch_percent_train == 0 else epoch_percent_train
         epoch_percent_val = self.val_size // 100
         epoch_percent_val = 1 if epoch_percent_val == 0 else epoch_percent_val
+
+        print('train size ', self.train_size)
+        print('epoch percent train ', epoch_percent_train)
+
         for epoch in range(starting_epoch, self.epoch_max + 1):
             progbar = tf.keras.utils.Progbar(100)
             progbar.update(starting_step)
