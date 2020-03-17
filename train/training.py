@@ -94,11 +94,13 @@ class Training():
             print("epoch :", epoch)
             print('starting step: ', starting_step)
             print('train_ds: ', self.train_ds)
-            train_enum = self.train_ds.enumerate()
+            #train_enum = self.train_ds.enumerate()
             print("enumerate")
-            for element in train_enum.as_numpy_iterator():
+            #for element in train_enum.as_numpy_iterator():
+            for train_x in self.train_ds:
                 print('element')
-                i, train_x = element
+                #i, train_x = element
+                i =0
                 print('i: ', i)
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
