@@ -122,6 +122,11 @@ class Training():
                     self.ckpt.step = i
                     self.save()
 
+                    t_loss_mean.reset_states()
+                    t_acc_mean.reset_states()
+                    v_loss_mean.reset_states()
+                    v_acc_mean.reset_states()
+
             starting_step = 0
 
 
@@ -131,12 +136,6 @@ class Training():
             #img_name = 'epoch_' + str(epoch)
             #for val_x in self.val_ds.take(1):
                 #image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
-
-
-            t_loss_mean.reset_states()
-            t_acc_mean.reset_states()
-            v_loss_mean.reset_states()
-            v_acc_mean.reset_states()
 
             self.ckpt.epoch.assign_add(1)
         self.save()
