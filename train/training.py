@@ -92,7 +92,6 @@ class Training():
             #train_enum = self.train_ds.enumerate()
             #for element in train_enum.as_numpy_iterator():
             for i, train_x in enumerate(self.train_ds, starting_step):
-                #i, train_x = element
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
                 if i % epoch_percent_train == 0:
@@ -106,8 +105,6 @@ class Training():
                     self.t_acc.append(t_acc_mean.result().numpy())
                     self.v_loss.append(v_loss_mean.result().numpy())
                     self.v_acc.append(v_acc_mean.result().numpy())
-
-
 
                 if i != 0 and i % (epoch_percent_train*self.save_steps) == 0:
                     print('i :', i)
@@ -130,6 +127,7 @@ class Training():
             img_name = 'epoch_' + str(epoch)
             for val_x in self.val_ds.take(1):
                 image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
+                image_saver.generate_and_save_images_compare_lab(self.model, val_x, self.name+ '_epoch_{:03d}_test'.format(epoch), self.img_path)
 
             t_loss_mean.reset_states()
             t_acc_mean.reset_states()
@@ -180,6 +178,7 @@ class Training():
             img_name = 'epoch_' + str(epoch)
             for val_x in self.val_ds.take(1):
                 image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
+
 
             t_loss_mean.reset_states()
             t_acc_mean.reset_states()
