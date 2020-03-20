@@ -276,7 +276,7 @@ filename = 'batch_normalization'
 
 
 datasets = Dataset.Dataset('imagenetresized32')
-model1 = construct_model.get_model('SBAE', [128, 256, 512], 1024, 32, False)
+model1 = construct_model.get_model('SBAE', [512, 1024, 2048], 4096, 32, False)
 
 
 models = [model1]
@@ -292,7 +292,7 @@ batch_size = 128
 epochs_max = [40]
 saves_epochs = [10]
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'SBAE_New'
+path_to_directory = directory_path+'SBAE_Big'
 step_is_epoch = False
 
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
