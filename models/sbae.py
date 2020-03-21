@@ -63,9 +63,9 @@ class SBAE(tf.keras.Model):
         ## DECODER_L2AB
 
         #self.L2ab.add(tf.keras.layers.Dense(size_decoded_frame*size_decoded_frame*size_decoded_layers))
-        self.L2ab.add(tf.keras.layers.Dense(mid_shape_L2ab[0]*mid_shape_L2ab[1]*mid_shape_L2ab[2]))
+        #self.L2ab.add(tf.keras.layers.Dense(mid_shape_L2ab[0]*mid_shape_L2ab[1]*mid_shape_L2ab[2]))
         #self.L2ab.add(tf.keras.layers.Reshape(target_shape=(size_decoded_frame, size_decoded_frame, size_decoded_layers)))
-        self.L2ab.add(tf.keras.layers.Reshape(target_shape=mid_shape_L2ab))
+        #self.L2ab.add(tf.keras.layers.Reshape(target_shape=mid_shape_L2ab))
         for l in layers:
             #self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
             self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=5, strides=1, padding='same'))
@@ -82,9 +82,9 @@ class SBAE(tf.keras.Model):
         ## DECODER_AB2L
 
         #self.ab2L.add(tf.keras.layers.Dense(size_decoded_frame * size_decoded_frame * size_decoded_layers))
-        self.ab2L.add(tf.keras.layers.Dense(mid_shape_ab2L[0]*mid_shape_ab2L[1]*mid_shape_ab2L[2]))
+        #self.ab2L.add(tf.keras.layers.Dense(mid_shape_ab2L[0]*mid_shape_ab2L[1]*mid_shape_ab2L[2]))
         #self.ab2L.add(tf.keras.layers.Reshape(target_shape=(size_decoded_frame, size_decoded_frame, size_decoded_layers)))
-        self.ab2L.add(tf.keras.layers.Reshape(target_shape=mid_shape_ab2L))
+        #self.ab2L.add(tf.keras.layers.Reshape(target_shape=mid_shape_ab2L))
         for l in layers:
             #self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
             self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=5, strides=1, padding='same'))
