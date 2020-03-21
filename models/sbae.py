@@ -29,6 +29,8 @@ class SBAE(tf.keras.Model):
                 self.L2ab.add(tf.keras.layers.BatchNormalization())
             self.L2ab.add(tf.keras.layers.ReLU())
 
+        mid_shape_L2ab = self.L2ab.compute_output_shape(input_shape=(input_shape, input_shape, 1))
+
         self.L2ab.add(tf.keras.layers.Flatten())
         self.L2ab.add(tf.keras.layers.Dense(latent_dim))
 
@@ -44,7 +46,7 @@ class SBAE(tf.keras.Model):
             self.ab2L.add(tf.keras.layers.ReLU())
 
         mid_shape_ab2L = self.ab2L.compute_output_shape(input_shape=(input_shape, input_shape, 2))
-        mid_shape_L2ab = self.L2ab.compute_output_shape(input_shape=(input_shape, input_shape, 1))
+
 
         print("SHAPE")
         print(mid_shape_ab2L)
