@@ -46,6 +46,7 @@ class SBAE(tf.keras.Model):
         mid_shape_ab2L = self.ab2L.compute_output_shape(input_shape=(input_shape, input_shape, 2))
         mid_shape_L2ab = self.L2ab.compute_output_shape(input_shape=(input_shape, input_shape, 1))
 
+        print("SHAPE")
         print(mid_shape_ab2L)
         print(mid_shape_L2ab)
 
