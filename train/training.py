@@ -59,7 +59,7 @@ class Training():
         if self.step_is_epoch:
             self.ckpt = tf.train.Checkpoint(epoch=self.current_epoch, optimizer=self.optimizer, net=self.model)
         else:
-            self.ckpt = tf.train.Checkpoint(step=self.current_step, epoch = self.current_epoch, optimizer=self.optimizer, net=self.model)
+            self.ckpt = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch, optimizer=self.optimizer, net=self.model)
         self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=2)
 
         self.load()
@@ -75,10 +75,15 @@ class Training():
         starting_epoch = int(self.ckpt.epoch)
         starting_step = int(self.ckpt.step)
 
+
+
         epoch_percent_train = self.train_size // 100
         epoch_percent_train = 1 if epoch_percent_train == 0 else epoch_percent_train
         epoch_percent_val = self.val_size // 100
         epoch_percent_val = 1 if epoch_percent_val == 0 else epoch_percent_val
+
+        print("starting_step: ", starting_step)
+        print("start progbar: ", starting_step // epoch_percent_train)
 
         for epoch in range(starting_epoch, self.epoch_max + 1):
             print("epoch : ", epoch)
