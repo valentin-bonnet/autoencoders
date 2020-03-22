@@ -148,7 +148,7 @@ class Training():
                 #image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
 
             self.ckpt.epoch.assign_add(1)
-        self.ckpt.step = 0
+        self.ckpt.step.assign(0)
         self.save()
 
     def forward_epoch(self):
