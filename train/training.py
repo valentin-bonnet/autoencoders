@@ -129,7 +129,7 @@ class Training():
                                        'training_validation_loss', self.img_path, 'Steps', 'Loss', x_axis)
                     image_saver.curves([self.t_acc, self.v_acc], ['Training', 'Validation'],
                                        'training_validation_accuracy', self.img_path, 'Steps', 'Accuracy', x_axis)
-                    self.ckpt.step = i
+                    self.ckpt.step.assign(i)
                     self.save()
 
                     t_loss_mean.reset_states()
@@ -148,6 +148,7 @@ class Training():
                 #image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
 
             self.ckpt.epoch.assign_add(1)
+        self.ckpt.step = 0
         self.save()
 
     def forward_epoch(self):
