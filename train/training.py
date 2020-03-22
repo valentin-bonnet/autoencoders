@@ -129,7 +129,7 @@ class Training():
                                        'training_validation_loss', self.img_path, 'Steps', 'Loss', x_axis)
                     image_saver.curves([self.t_acc, self.v_acc], ['Training', 'Validation'],
                                        'training_validation_accuracy', self.img_path, 'Steps', 'Accuracy', x_axis)
-                    self.ckpt.step.assign(i)
+                    self.ckpt.step.assign(i+1)
                     self.save()
 
                     t_loss_mean.reset_states()
