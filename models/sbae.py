@@ -150,6 +150,7 @@ class SBAE(tf.keras.Model):
         #wts = tf.reduce_mean(wts, axis=1)
         wts = tf.nn.softmax(wts)
         inds = tf.expand_dims(inds, -1)
+        wts.expand_dims(wts, -1)
         print(inds.shape)
         print(wts.shape)
         #hot_mixed_l = tf.scatter_nd(indices=l_inds, updates=1, shape=[128, 32, 32, 50])
