@@ -12,7 +12,7 @@ class SBAE(tf.keras.Model):
     def __init__(self, layers=[128, 256, 512], latent_dim=512, input_shape=32, use_bn=False, classification=False):
         super(SBAE, self).__init__()
         self.latent_dim = latent_dim
-        self.input_shape = input_shape
+        self.inp_shape = input_shape
         self.cc = np.load('../utils/pts_in_hull.npy')
         self.nbrs = nn.NearestNeighbors(n_neighbors=5, algorithm='ball_tree').fit(self.cc)
         self.architecture = layers.copy()
@@ -149,8 +149,8 @@ class SBAE(tf.keras.Model):
         wts = tf.nn.softmax(wts)
 
 
-        hot_mixed_l =tf.scatter_nd(indices=l_inds, updates=l, shape=[self.input_shape, self.input_shape, 50])
-        hot_mixed_ab = tf.scatter_nd(indices=inds, updates=wts, shape=[self.input_shape, self.input_shape, 313])
+        hot_mixed_l =tf.scatter_nd(indices=l_inds, updates=l, shape=[self.inp_shape, self.inp_shape, 50])
+        hot_mixed_ab = tf.scatter_nd(indices=inds, updates=wts, shape=[self.inp_shape, self.inp_shape, 313])
 
         return hot_mixed_l, hot_mixed_ab
 
