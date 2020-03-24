@@ -134,9 +134,8 @@ class SBAE(tf.keras.Model):
     def quantize(self, lab_images):
         l = lab_images[:, :, :, :1]*50.0
         ab = (lab_images[:, :, :, 1:]*255.0)-128.0
-        print(ab.shape)
-        e = tf.linspace(1.0, 50.0, 50)
-        linspace = tf.tile(e, tf.constant([ab.shape[0], ab.shape[1], ab.shape[2], 1]))
+        e = np.linspace(1, 50, 50, dtype=np.float32)
+        linspace = np.tile(e, [ab.shape[0], ab.shape[1], ab.shape[2], 1])
         l_inds = tf.searchsorted(linspace, l)
         l_inds = tf.squeeze(l_inds)
         bs, h, w, c = ab.shape
@@ -157,7 +156,7 @@ class SBAE(tf.keras.Model):
         print(wts.shape)
         #hot_mixed_l = tf.scatter_nd(indices=l_inds, updates=1, shape=[128, 32, 32, 50])
         hot_mixed_l = tf.one_hot(l_inds, 50)
-        hot_mixed_ab = tf.scatter_nd(indices=inds, updates=wts, shape=[313])
+        hot_mixed_ab = tf.scatter_nd(indices=inds, updates=wts, shape=[bs*h*w, 313])
 
         print("HOT MIX")
         print(hot_mixed_l.shape)
