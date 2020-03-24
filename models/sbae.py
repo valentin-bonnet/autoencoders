@@ -134,7 +134,10 @@ class SBAE(tf.keras.Model):
     def quantize(self, lab_images):
         l = lab_images[:, :, :1]*50.0
         ab = (lab_images[:, :, :, 1:]*255.0)-128.0
-        l_inds = tf.searchsorted(l, np.linspace(0, 51, 51)) - 1.0
+        e = np.linspace(1, 50, 50)
+        print(e)
+        print(l.shape)
+        l_inds = tf.searchsorted(l, e)
         bs, h, w, c = ab.shape()
         ab = tf.reshape(h*w, c)
         (dists, inds) = self.nbrs.kneighbors(ab)
