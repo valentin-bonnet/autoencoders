@@ -132,11 +132,13 @@ class SBAE(tf.keras.Model):
         )"""
 
     def quantize(self, lab_images):
-        l = lab_images[:, :, :1]*50.0
+        l = lab_images[:, :, :, :1]*50.0
         ab = (lab_images[:, :, :, 1:]*255.0)-128.0
         e = np.linspace(1, 50, 50)
+
         print(e)
         print(l.shape)
+        print(ab.shape)
         l_inds = tf.searchsorted(l, e)
         bs, h, w, c = ab.shape()
         ab = tf.reshape(h*w, c)
