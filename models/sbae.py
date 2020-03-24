@@ -199,6 +199,7 @@ class SBAE(tf.keras.Model):
         return result"""
 
     def dequantize(self, l_hot, ab_hot):
+        l_hot = tf.cast(l_hot, dtype=tf.float32)
         l = tf.argmax(l_hot)/50.0
         ab_ind = tf.argmax(ab_hot)
         ab = (self.cc[ab_ind]+128.0)/255.0
@@ -231,12 +232,8 @@ class SBAE(tf.keras.Model):
         if self.is_cl:
             l, ab = tf.split(x, num_or_size_splits=[1, 2], axis=-1)
             l_hot, ab_hot = self.quantize(x)
-            print(l_hot.shape)
-            print(ab_hot.shape)
             l_logit = self.ab2L(ab)
             ab_logit = self.L2ab(l)
-            print(l_logit.shape)
-            print(ab_logit.shape)
             cross_entropy_l = tf.nn.softmax_cross_entropy_with_logits(l_hot, l_logit)
             cross_entropy_ab = tf.nn.softmax_cross_entropy_with_logits(ab_hot, ab_logit)
             loss = cross_entropy_l + cross_entropy_ab
