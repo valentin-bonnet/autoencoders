@@ -143,8 +143,6 @@ class SBAE(tf.keras.Model):
         (dists, inds) = self.nbrs.kneighbors(ab)
 
 
-
-
         # Sigma = 5
         sigma=5
         wts = tf.exp(-dists ** 2 / (2 * sigma ** 2))
@@ -157,17 +155,13 @@ class SBAE(tf.keras.Model):
         inds = tf.concat([batch_ind, inds], axis=-1)
 
         #wts = tf.expand_dims(wts, -2)
-        print(inds.shape)
-        print(wts.shape)
+
 
         #hot_mixed_l = tf.scatter_nd(indices=l_inds, updates=1, shape=[128, 32, 32, 50])
         hot_mixed_l = tf.one_hot(l_inds, 50)
         hot_mixed_ab = tf.scatter_nd(indices=inds, updates=wts, shape=[bs*h*w, 313])
         hot_mixed_ab = tf.reshape(hot_mixed_ab, [bs, h, w, 313])
 
-        print("HOT MIX")
-        print(hot_mixed_l.shape)
-        print(hot_mixed_ab.shape)
 
         return hot_mixed_l, hot_mixed_ab
 
@@ -200,8 +194,12 @@ class SBAE(tf.keras.Model):
 
     def dequantize(self, l_hot, ab_hot):
         l = tf.cast(tf.argmax(l_hot), dtype=tf.float32)/50.0
+        print("DEQUANTIZE")
+        print(ab_hot.shape)
         ab_ind = tf.argmax(ab_hot)
+        print(ab_ind.shape)
         ab = (self.cc[ab_ind]+128.0)/255.0
+        print(ab.shape)
         lab_img = tf.concat([l, ab], axis=-1)
         return lab_img
 
