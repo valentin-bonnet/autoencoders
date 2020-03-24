@@ -151,7 +151,7 @@ class SBAE(tf.keras.Model):
         #wts = tf.reduce_mean(wts, axis=1)
         wts = tf.nn.softmax(wts)
         inds = tf.expand_dims(inds, -1)
-        batch_ind = tf.expand_dims(tf.expand_dims(tf.range(0, bs*h*w, 1, dtype=tf.int64), -1), 1)
+        batch_ind = tf.expand_dims(tf.range(0, bs*h*w, 1, dtype=tf.int64), -1)
         inds = tf.concat([batch_ind, inds], axis=-1)
         #wts = tf.expand_dims(wts, -2)
         print(inds.shape)
