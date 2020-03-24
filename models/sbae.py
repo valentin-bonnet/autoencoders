@@ -157,6 +157,7 @@ class SBAE(tf.keras.Model):
         hot_mixed_l = tf.one_hot(l_inds, 50)
         hot_mixed_ab = tf.scatter_nd(indices=inds, updates=wts, shape=[313])
 
+        print("HOT MIX")
         print(hot_mixed_l.shape)
         print(hot_mixed_ab.shape)
 
