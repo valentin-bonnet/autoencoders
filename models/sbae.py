@@ -12,12 +12,15 @@ class SBAE(tf.keras.Model):
     def __init__(self, layers=[128, 256, 512], latent_dim=512, input_shape=32, use_bn=False, classification=False):
         super(SBAE, self).__init__()
         self.latent_dim = latent_dim
+        self.input_shape = input_shape
         self.cc = np.load('../utils/pts_in_hull.npy')
-        self.nbrs = nn.NearestNeighbors(n_neighbors=10, algorithm='ball_tree').fit(self.cc)
+        self.nbrs = nn.NearestNeighbors(n_neighbors=5, algorithm='ball_tree').fit(self.cc)
         self.architecture = layers.copy()
+        self.is_cl = classification
         str_arch = '_'.join(str(x) for x in self.architecture)
         str_bn = 'BN' if use_bn else ''
-        self.description = '_'.join(filter(None, ['SBAE', str_arch, 'lat' + str(self.latent_dim), str_bn]))
+        str_class = 'class' if classification else ''
+        self.description = '_'.join(filter(None, ['SBAE', str_arch, 'lat' + str(self.latent_dim), str_bn, str_class]))
 
         ## ENCODER L2AB
         self.L2ab = tf.keras.Sequential()
@@ -131,30 +134,34 @@ class SBAE(tf.keras.Model):
     def quantize(self, lab_images):
         l = lab_images[:, :, 0]*50.0
         ab = (lab_images[:, :, :, 1:]*255.0)-128.0
-        l = tf.searchsorted(l, np.linspace(0, 51, 51)) - 1
+        l_inds = tf.searchsorted(l, np.linspace(0, 51, 51)) - 1
         bs, h, w, c = ab.shape()
         ab = tf.reshape(h*w, c)
         (dists, inds) = self.nbrs.kneighbors(ab)
+
+
 
 
         # Sigma = 5
         sigma=5
         wts = tf.exp(-dists ** 2 / (2 * sigma ** 2))
         wts = tf.reduce_mean(wts, axis=1)
+        wts = tf.nn.softmax(wts)
 
-        p_inds = np.arange(0, P, dtype='int')[:, np.newaxis]
+
+        hot_mixed_l =tf.scatter_nd(indices=l_inds, updates=l, shape=[self.input_shape, self.input_shape, 50])
+        hot_mixed_ab = tf.scatter_nd(indices=inds, updates=wts, shape=[self.input_shape, self.input_shape, 313])
+
+        return hot_mixed_l, hot_mixed_ab
+
+
+
+
+        #p_inds = np.arange(0, P, dtype='int')[:, np.newaxis]
         #pts_enc_flt[p_inds, inds] = wts
         #pts_enc_nd = unflatten_2d_array(self.pts_enc_flt, pts_nd, axis=axis)
 
-        """
-        lab_images[:, :, :, 1] = np.digitize(lab_images[:, :, :, 1], np.linspace(-110, 99, 17)) - 1
-        lab_images[:, :, :, 2] = np.digitize(lab_images[:, :, :, 2], np.linspace(-108, 95, 17)) - 1
-        l_labels = lab_images[:, :, :, 0]
-        ab_labels = lab_images[:, :, :, 1] * 16 + lab_images[:, :, :, 2]
-        print("L_LABELS: {0}".format(l_labels.shape))
-        print("AB_LABLES: {0}".format(ab_labels.shape))
-        return l_labels.reshape([-1, 16*16]), ab_labels.reshape([-1, 16*16])"""
-
+    """
     def dequantize(self, lab_images):
         print(lab_images.shape)
         # print(lab_images)
@@ -172,19 +179,29 @@ class SBAE(tf.keras.Model):
         print(concat.shape)
         result = np.concatenate((lab_images, concat), axis=2)
         print(result)
-        return result
+        return result"""
 
-    def reconstruct(self, x, classification=False):
+    def dequantize(self, l_hot, ab_hot):
+        l = tf.argmax(l_hot)/50.0
+        ab_ind = tf.argmax(ab_hot)
+        ab = (self.cc[ab_ind]+128.0)/255.0
+        lab_img = tf.concat([l, ab], axis=-1)
+        return lab_img
+
+
+    def reconstruct(self, x):
         L, ab = tf.split(x, num_or_size_splits=[1, 2], axis=-1)
-        if classification:
-            x_logit = 2
+        if self.is_cl:
+            ab_logits = self.L2ab(L)
+            L_logits = self.ab2L(ab)
+            x_logit = self.dequantize(L_logits, ab_logits)
         else:
             ab_logits = self.L2ab(L)
             L_logits = self.ab2L(ab)
             x_logit = tf.concat([L_logits, ab_logits], axis=-1)
 
         return x_logit
-
+    """
     def quantize(self, lab_images):
         lab_images[:, :, :, 0] = np.digitize(lab_images[:, :, :, 0], np.linspace(0, 101, 101)) - 1
         lab_images[:, :, :, 1] = np.digitize(lab_images[:, :, :, 1], np.linspace(-87, 99, 17)) - 1
@@ -192,11 +209,14 @@ class SBAE(tf.keras.Model):
         l_labels = lab_images[:, :, :, 0]
         ab_labels = lab_images[:, :, :, 1] * 32 + lab_images[:, :, :, 2]
         return l_labels.reshape([-1, 32*32]), ab_labels.reshape([-1, 32*32])
-
-    def compute_loss(self, x, classification=False):
-        if classification:
-            x_logits = self.reconstruct(x, classification)
-            loss = tf.reduce_sum(tf.square(x - x_logits))
+    """
+    def compute_loss(self, x):
+        if self.is_cl:
+            l, ab = tf.split(x, num_or_size_splits=[1, 2], axis=-1)
+            l_hot, ab_hot = self.quantize(x)
+            cross_entropy_l = tf.nn.softmax_cross_entropy_with_logits(self.ab2L(ab), l_hot)
+            cross_entropy_ab = tf.nn.softmax_cross_entropy_with_logits(self.L2ab(l), ab_hot)
+            loss = cross_entropy_l + cross_entropy_ab
         else:
             x_logits = self.reconstruct(x)
             loss = tf.reduce_sum(tf.square(x - x_logits))
@@ -209,16 +229,15 @@ class SBAE(tf.keras.Model):
 
         return loss
 
-    def compute_apply_gradients(self, x, optimizer, is_Lab=False):
+    def compute_apply_gradients(self, x, optimizer):
         with tf.GradientTape() as tape:
-            loss = self.compute_loss(x, is_Lab)
+            loss = self.compute_loss(x)
         gradients = tape.gradient(loss, self.trainable_variables)
         optimizer.apply_gradients(zip(gradients, self.trainable_variables))
         return loss
 
     def compute_accuracy(self, x):
         x_logits = self.reconstruct(x)
-
         accuracy = tf.reduce_mean(tf.square(x_logits - x))
         return accuracy
 
