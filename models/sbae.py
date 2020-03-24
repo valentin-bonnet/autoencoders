@@ -193,10 +193,11 @@ class SBAE(tf.keras.Model):
         return result"""
 
     def dequantize(self, l_hot, ab_hot):
-        l = tf.cast(tf.argmax(l_hot), dtype=tf.float32)/50.0
         print("DEQUANTIZE")
+        l = tf.cast(tf.math.argmax(l_hot), dtype=tf.float32)/50.0
+        print(l.shape)
         print(ab_hot.shape)
-        ab_ind = tf.argmax(ab_hot)
+        ab_ind = tf.math.argmax(ab_hot, axis=[0, 1])
         print(ab_ind.shape)
         ab = (self.cc[ab_ind]+128.0)/255.0
         print(ab.shape)
