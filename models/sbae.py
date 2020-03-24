@@ -137,8 +137,8 @@ class SBAE(tf.keras.Model):
         e = np.linspace(1, 50, 50)
 
         print(e)
-        print(l.shape)
-        print(ab.shape)
+        print(l.dtype)
+        print(ab.dtype)
         l_inds = tf.searchsorted(l, e)
         bs, h, w, c = ab.shape()
         ab = tf.reshape(h*w, c)
