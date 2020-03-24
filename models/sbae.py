@@ -134,7 +134,7 @@ class SBAE(tf.keras.Model):
     def quantize(self, lab_images):
         l = lab_images[:, :, :, :1]*50.0
         ab = (lab_images[:, :, :, 1:]*255.0)-128.0
-        e = tf.linspace(1, 50, 50)
+        e = tf.linspace(1.0, 50.0, 50)
         linspace = tf.tile(e, [ab.shape[0], ab.shape[1], ab.shape[2], 1])
         l_inds = tf.searchsorted(linspace, l)
         l_inds = tf.squeeze(l_inds)
