@@ -77,7 +77,7 @@ class SBAE(tf.keras.Model):
             self.L2ab.add(tf.keras.layers.ReLU())
 
         if classification:
-            self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=313, kernel_size=5, strides=1, activation=tf.nn.relu, padding='same'))
+            self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=313, kernel_size=5, strides=1, activation=tf.nn.relu, padding='same'))
         else:
             #self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=4, strides=1, activation=tf.nn.relu, padding='same'))
             self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=5, strides=1, activation=tf.nn.relu, padding='same'))
@@ -231,8 +231,14 @@ class SBAE(tf.keras.Model):
         if self.is_cl:
             l, ab = tf.split(x, num_or_size_splits=[1, 2], axis=-1)
             l_hot, ab_hot = self.quantize(x)
-            cross_entropy_l = tf.nn.softmax_cross_entropy_with_logits(l_hot, self.ab2L(ab))
-            cross_entropy_ab = tf.nn.softmax_cross_entropy_with_logits(ab_hot, self.L2ab(l))
+            print(l_hot.shape)
+            print(ab_hot.shape)
+            l_logit = self.ab2L(ab)
+            ab_logit = self.L2ab(l)
+            print(l_logit.shape)
+            print(ab_logit.shape)
+            cross_entropy_l = tf.nn.softmax_cross_entropy_with_logits(l_hot, l_logit)
+            cross_entropy_ab = tf.nn.softmax_cross_entropy_with_logits(ab_hot, ab_logit)
             loss = cross_entropy_l + cross_entropy_ab
         else:
             x_logits = self.reconstruct(x)
