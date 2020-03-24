@@ -77,7 +77,7 @@ class SBAE(tf.keras.Model):
             self.L2ab.add(tf.keras.layers.ReLU())
 
         if classification:
-            self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=313, kernel_size=4, strides=tf.nn.softmax, activation=tf.nn.relu, padding='same'))
+            self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=313, kernel_size=5, strides=1, activation=tf.nn.relu, padding='same'))
         else:
             #self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=4, strides=1, activation=tf.nn.relu, padding='same'))
             self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=5, strides=1, activation=tf.nn.relu, padding='same'))
@@ -96,7 +96,7 @@ class SBAE(tf.keras.Model):
             self.ab2L.add(tf.keras.layers.ReLU())
 
         if classification:
-            self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=50, kernel_size=4, strides=2, activation=tf.nn.softmax, padding='same'))
+            self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=50, kernel_size=5, strides=1, activation=tf.nn.softmax, padding='same'))
         else:
             #self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, strides=1, activation=tf.nn.relu, padding='same'))
             self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=5, strides=1, activation=tf.nn.relu, padding='same'))
