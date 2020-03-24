@@ -199,8 +199,7 @@ class SBAE(tf.keras.Model):
         return result"""
 
     def dequantize(self, l_hot, ab_hot):
-        l_hot = tf.cast(l_hot, dtype=tf.float32)
-        l = tf.argmax(l_hot)/50.0
+        l = tf.cast(tf.argmax(l_hot), dtype=tf.float32)/50.0
         ab_ind = tf.argmax(ab_hot)
         ab = (self.cc[ab_ind]+128.0)/255.0
         lab_img = tf.concat([l, ab], axis=-1)
