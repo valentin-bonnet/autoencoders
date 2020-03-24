@@ -137,8 +137,8 @@ class SBAE(tf.keras.Model):
         e = np.linspace(1, 50, 50, dtype=np.float32)
         linspace = np.tile(e, [ab.shape[0], ab.shape[1], ab.shape[2], 1])
         l_inds = tf.searchsorted(l, linspace)
-        bs, h, w, c = ab.shape()
-        ab = tf.reshape(h*w, c)
+        bs, h, w, c = ab.shape
+        ab = tf.reshape(bs, h*w, c)
         (dists, inds) = self.nbrs.kneighbors(ab)
 
 
