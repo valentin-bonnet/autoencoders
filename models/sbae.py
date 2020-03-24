@@ -231,8 +231,8 @@ class SBAE(tf.keras.Model):
         if self.is_cl:
             l, ab = tf.split(x, num_or_size_splits=[1, 2], axis=-1)
             l_hot, ab_hot = self.quantize(x)
-            cross_entropy_l = tf.nn.softmax_cross_entropy_with_logits(self.ab2L(ab), l_hot)
-            cross_entropy_ab = tf.nn.softmax_cross_entropy_with_logits(self.L2ab(l), ab_hot)
+            cross_entropy_l = tf.nn.softmax_cross_entropy_with_logits(l_hot, self.ab2L(ab))
+            cross_entropy_ab = tf.nn.softmax_cross_entropy_with_logits(ab_hot, self.L2ab(l))
             loss = cross_entropy_l + cross_entropy_ab
         else:
             x_logits = self.reconstruct(x)
