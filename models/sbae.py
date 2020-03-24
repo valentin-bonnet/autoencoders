@@ -196,7 +196,6 @@ class SBAE(tf.keras.Model):
         l = tf.cast(tf.math.argmax(l_hot, axis=-1), dtype=tf.float32)/50.0
         l = tf.expand_dims(l, -1)
         ab_ind = tf.math.argmax(ab_hot, axis=-1)
-        print(ab_ind)
         ab = (self.cc[ab_ind]+128.0)/255.0
         lab_img = tf.concat([l, ab], axis=-1)
         return lab_img
@@ -229,6 +228,10 @@ class SBAE(tf.keras.Model):
             l_hot, ab_hot = self.quantize(x)
             l_logit = self.ab2L(ab)
             ab_logit = self.L2ab(l)
+            print("##############")
+            print(l_hot)
+            print(l_logit)
+            print("\n\n\n")
             cross_entropy_l = tf.nn.softmax_cross_entropy_with_logits(l_hot, l_logit)
             cross_entropy_ab = tf.nn.softmax_cross_entropy_with_logits(ab_hot, ab_logit)
             loss = cross_entropy_l + cross_entropy_ab
