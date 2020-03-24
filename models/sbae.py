@@ -138,7 +138,7 @@ class SBAE(tf.keras.Model):
         linspace = np.tile(e, [ab.shape[0], ab.shape[1], ab.shape[2], 1])
         l_inds = tf.searchsorted(l, linspace)
         bs, h, w, c = ab.shape
-        ab = tf.reshape(ab, [bs, h*w, c])
+        ab = tf.reshape(ab, [bs*h*w, c])
         (dists, inds) = self.nbrs.kneighbors(ab)
 
 
@@ -151,8 +151,11 @@ class SBAE(tf.keras.Model):
         wts = tf.nn.softmax(wts)
 
 
-        hot_mixed_l =tf.scatter_nd(indices=l_inds, updates=l, shape=[bs, self.inp_shape, self.inp_shape, 50])
-        hot_mixed_ab = tf.scatter_nd(indices=inds, updates=wts, shape=[bs, self.inp_shape, self.inp_shape, 313])
+        hot_mixed_l =tf.scatter_nd(indices=l_inds, updates=l, shape=50)
+        hot_mixed_ab = tf.scatter_nd(indices=inds, updates=wts, shape=313)
+
+        print(hot_mixed_l.shape)
+        print(hot_mixed_ab.shape)
 
         return hot_mixed_l, hot_mixed_ab
 
