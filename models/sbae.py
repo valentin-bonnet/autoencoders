@@ -197,9 +197,7 @@ class SBAE(tf.keras.Model):
         l = tf.cast(tf.math.argmax(l_hot, axis=-1), dtype=tf.float32)/50.0
         l = tf.expand_dims(l, -1)
         ab_ind = tf.expand_dims(tf.math.argmax(ab_hot, axis=-1),-1)
-        print(ab_ind.shape)
-        ab = tf.gather_nd(self.cc, ab_ind)
-        print(ab.shape)
+        ab = tf.cast(tf.gather_nd(self.cc, ab_ind), dtype=tf.float32)
         ab = (ab+128.0)/255.0
         lab_img = tf.concat([l, ab], axis=-1)
         return lab_img
