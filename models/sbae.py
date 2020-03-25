@@ -13,8 +13,9 @@ class SBAE(tf.keras.Model):
         super(SBAE, self).__init__()
         self.latent_dim = latent_dim
         self.inp_shape = input_shape
-        self.cc = np.load('../utils/pts_in_hull.npy')
+        pts = np.load('../utils/pts_in_hull.npy')
         self.nbrs = nn.NearestNeighbors(n_neighbors=5, algorithm='ball_tree').fit(self.cc)
+        self.cc = tf.convert_to_tensor(pts)
         self.architecture = layers.copy()
         self.is_cl = classification
         str_arch = '_'.join(str(x) for x in self.architecture)
@@ -196,7 +197,10 @@ class SBAE(tf.keras.Model):
         l = tf.cast(tf.math.argmax(l_hot, axis=-1), dtype=tf.float32)/50.0
         l = tf.expand_dims(l, -1)
         ab_ind = tf.math.argmax(ab_hot, axis=-1)
-        ab = (self.cc[ab_ind]+128.0)/255.0
+        print(ab_ind.shape)
+        ab = tf.gather_nd(self.cc, ab_ind)
+        print(ab.shape)
+        ab = (ab+128.0)/255.0
         lab_img = tf.concat([l, ab], axis=-1)
         return lab_img
 
