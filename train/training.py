@@ -136,6 +136,7 @@ class Training():
                     t_acc_mean.reset_states()
                     v_loss_mean.reset_states()
                     v_acc_mean.reset_states()
+                    break
 
             starting_step = 0
 
