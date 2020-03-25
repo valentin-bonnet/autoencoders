@@ -14,7 +14,7 @@ class SBAE(tf.keras.Model):
         self.latent_dim = latent_dim
         self.inp_shape = input_shape
         pts = np.load('../utils/pts_in_hull.npy')
-        self.nbrs = nn.NearestNeighbors(n_neighbors=5, algorithm='ball_tree').fit(self.cc)
+        self.nbrs = nn.NearestNeighbors(n_neighbors=5, algorithm='ball_tree').fit(pts)
         self.cc = tf.convert_to_tensor(pts)
         self.architecture = layers.copy()
         self.is_cl = classification
