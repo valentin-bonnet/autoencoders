@@ -61,7 +61,9 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
 
 
 def generate_and_save_images_compare_lab(model, test_input, file_name_head='image', path='./'):
+    print(test_input.shape)
     x_logits = model.reconstruct(test_input)
+    print(x_logits.shape)
     test_input = test_input * [100, 255.0, 255.0]
     test_input = test_input - [0, 128, 128]
     x_logits = x_logits * [100, 255.0, 255.0]

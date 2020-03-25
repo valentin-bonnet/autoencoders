@@ -251,7 +251,7 @@ epochs = [40]
 batch_size = [128]
 my_drive_path = '/content/drive/My Drive/Colab Data/AE/'
 ckpt_path = ['ckpts_aeLab_128x256x512_lat1024', 'ckpts_aeLab_128x256x512_lat1024_BN']
-ckpt_epoch = [10]
+ckpt_epoch = [1]
 filename = 'batch_normalization'
 
 
