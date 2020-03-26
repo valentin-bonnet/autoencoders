@@ -230,7 +230,8 @@ class SBAE(tf.keras.Model):
             l_hot, ab_hot = self.quantize(x)
             l_logit = self.ab2L(ab)
             ab_logit = self.L2ab(l)
-            print(tf.nn.softmax(ab_logit)[0,0,0])
+
+            print(tf.nn.softmax(tf.reshape(ab_logit, [128*32*32, 313]))[0])
             cross_entropy_l = tf.nn.softmax_cross_entropy_with_logits(l_hot, l_logit)
             cross_entropy_ab = tf.nn.softmax_cross_entropy_with_logits(ab_hot, ab_logit)
             loss = cross_entropy_l + cross_entropy_ab
