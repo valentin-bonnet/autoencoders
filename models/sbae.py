@@ -147,7 +147,7 @@ class SBAE(tf.keras.Model):
 
         # Sigma = 5
         sigma=5
-        wts = tf.exp(-dists ** 2 / (2 * sigma ** 2))
+        wts = tf.exp(dists ** 2 / (2 * sigma ** 2))
         #wts = tf.reduce_mean(wts, axis=1)
         wts = tf.nn.softmax(wts)
         inds = tf.expand_dims(inds, -1)
