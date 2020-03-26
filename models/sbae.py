@@ -16,6 +16,7 @@ class SBAE(tf.keras.Model):
         pts = np.load('../utils/pts_in_hull.npy')
         self.nbrs = nn.NearestNeighbors(n_neighbors=5, algorithm='ball_tree').fit(pts)
         self.cc = tf.convert_to_tensor(pts)
+        self.wgts = tf.convert_to_tensor(np.load('../utils/prior_probs.npy'))
         self.architecture = layers.copy()
         self.is_cl = classification
         str_arch = '_'.join(str(x) for x in self.architecture)
@@ -228,13 +229,17 @@ class SBAE(tf.keras.Model):
         if self.is_cl:
             l, ab = tf.split(x, num_or_size_splits=[1, 2], axis=-1)
             l_hot, ab_hot = self.quantize(x)
+            ab_ind = tf.expand_dims(tf.math.argmax(ab_hot, axis=-1), -1)
+            priors = tf.cast(tf.gather_nd(self.wgts, ab_ind), dtype=tf.float32)
+            print(priors.shape)
+            priors = tf.reduce_sum(priors, -1)
             l_logit = self.ab2L(ab)
             ab_logit = self.L2ab(l)
 
             #print(tf.nn.softmax(tf.reshape(ab_logit, [128*32*32, 313]))[0])
             cross_entropy_l = tf.nn.softmax_cross_entropy_with_logits(l_hot, l_logit)
             cross_entropy_ab = tf.nn.softmax_cross_entropy_with_logits(ab_hot, ab_logit)
-            loss = cross_entropy_l + cross_entropy_ab
+            loss = cross_entropy_l + priors*cross_entropy_ab
         else:
             x_logits = self.reconstruct(x)
             loss = tf.reduce_sum(tf.square(x - x_logits))
