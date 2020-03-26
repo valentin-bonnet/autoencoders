@@ -230,16 +230,14 @@ class SBAE(tf.keras.Model):
             l, ab = tf.split(x, num_or_size_splits=[1, 2], axis=-1)
             l_hot, ab_hot = self.quantize(x)
             ab_ind = tf.expand_dims(tf.math.argmax(ab_hot, axis=-1), -1)
-            priors = tf.cast(tf.gather_nd(self.wgts, ab_ind), dtype=tf.float32)
-            print(priors.shape)
-            priors = tf.reduce_sum(priors, -1)
+            priors = tf.reduce_sum(tf.cast(tf.gather_nd(self.wgts, ab_ind), dtype=tf.float32))
             l_logit = self.ab2L(ab)
             ab_logit = self.L2ab(l)
 
             #print(tf.nn.softmax(tf.reshape(ab_logit, [128*32*32, 313]))[0])
-            cross_entropy_l = tf.nn.softmax_cross_entropy_with_logits(l_hot, l_logit)
-            cross_entropy_ab = tf.nn.softmax_cross_entropy_with_logits(ab_hot, ab_logit)
-            loss = cross_entropy_l + priors*cross_entropy_ab
+            cross_entropy_l = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(l_hot, l_logit))
+            cross_entropy_ab = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(ab_hot, ab_logit))
+            loss = tf.reduce_sum(cross_entropy_l + priors*cross_entropy_ab)
         else:
             x_logits = self.reconstruct(x)
             loss = tf.reduce_sum(tf.square(x - x_logits))
