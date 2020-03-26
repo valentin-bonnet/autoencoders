@@ -78,7 +78,7 @@ class SBAE(tf.keras.Model):
             self.L2ab.add(tf.keras.layers.ReLU())
 
         if classification:
-            self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=313, kernel_size=5, strides=1, activation=tf.nn.relu, padding='same'))
+            self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=313, kernel_size=5, strides=1, padding='same'))
         else:
             #self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=4, strides=1, activation=tf.nn.relu, padding='same'))
             self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=5, strides=1, activation=tf.nn.relu, padding='same'))
@@ -196,7 +196,7 @@ class SBAE(tf.keras.Model):
     def dequantize(self, l_hot, ab_hot):
         l = tf.cast(tf.math.argmax(l_hot, axis=-1), dtype=tf.float32)/50.0
         l = tf.expand_dims(l, -1)
-        ab_ind = tf.expand_dims(tf.math.argmax(ab_hot, axis=-1),-1)
+        ab_ind = tf.expand_dims(tf.math.argmax(ab_hot, axis=-1), -1)
         ab = tf.cast(tf.gather_nd(self.cc, ab_ind), dtype=tf.float32)
         ab = (ab+128.0)/255.0
         lab_img = tf.concat([l, ab], axis=-1)
