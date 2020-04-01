@@ -60,10 +60,9 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
     return (z)
 
 def generate_and_save_images_compare_seq(model, test_input, file_name_head='image', path='./'):
-    print(test_input.shape)
     x_logits = model.reconstruct(test_input)
-    print(x_logits.shape)
-
+    test_input = np.squeeze(test_input)
+    x_logits = np.squeeze(x_logits)
     test_input_0 = test_input[:2, 0, :, :, :]
     test_input_5 = test_input[:2, 5, :, :, :]
     test_input_10 = test_input[:2, 10, :, :, :]
