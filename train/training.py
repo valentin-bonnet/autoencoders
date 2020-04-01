@@ -312,7 +312,10 @@ class Training():
         np.save(t_acc_path, np.asarray(self.t_acc))
         np.save(v_loss_path, np.asarray(self.v_loss))
         np.save(v_acc_path, np.asarray(self.v_acc))
-        print("Saved checkpoint for step {}: {}".format(int(self.ckpt.step), save_path))
+        if self.step_is_epoch:
+            print("Saved checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path))
+        else:
+            print("Saved checkpoint for step {}: {}".format(int(self.ckpt.step), save_path))
 
 
 
