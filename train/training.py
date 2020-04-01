@@ -16,11 +16,11 @@ import construct_model
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 class Training():
-    def __init__(self, dataset, batch_size, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch):
+    def __init__(self, dataset, batch_size, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch, is_seq=True):
         self.batch_size = batch_size
-        self.train_ds = dataset.train_ds.shuffle(buffer_size=10000).batch(batch_size).prefetch(buffer_size=AUTOTUNE)
+        self.train_ds = dataset.train_ds.shuffle(buffer_size=10000).batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
         self.train_size = dataset.train_size//batch_size
-        self.val_ds = dataset.val_ds.shuffle(buffer_size=10000).batch(batch_size).prefetch(buffer_size=AUTOTUNE)
+        self.val_ds = dataset.val_ds.shuffle(buffer_size=10000).batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
         self.val_size = dataset.val_size//batch_size
         self.model = model
         #self.model_view = model_view
@@ -36,6 +36,7 @@ class Training():
         self.img_path = os.path.join(self.path, 'imgs')
         self.save_steps = save_steps
         self.step_is_epoch = step_is_epoch
+        self.is_seq = is_seq
 
         self.t_loss = None
         self.t_acc = None
@@ -119,7 +120,13 @@ class Training():
 
                 if i != 0 and i % (epoch_percent_train*self.save_steps) == 0:
                     for val_x in self.val_ds.take(1):
-                        image_saver.generate_and_save_images_compare_lab(self.model, val_x,
+                        if self.is_seq:
+                            image_saver.generate_and_save_images_compare_seq(self.model, val_x,
+                                                                             self.name + '_epoch_{:03d}_step_{:03d}_test'.format(
+                                                                                 epoch, i // epoch_percent_train),
+                                                                             self.img_path)
+                        else:
+                            image_saver.generate_and_save_images_compare_lab(self.model, val_x,
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_test'.format(epoch, i//epoch_percent_train), self.img_path)
                     print('i :', i)
                     print('epoch percent train: ', epoch_percent_train)

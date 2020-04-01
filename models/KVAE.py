@@ -199,8 +199,9 @@ class KVAE(tf.keras.Model):
         a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float32)
 
 
-        z_smooth_arr, std_smooth_arr, a_arr, A, C, _, _ = self.smooth(images, z0, std0, a0)
-
+        z_smooth_arr, std_smooth_arr, a_arr, A, C, last_z, last_std = self.smooth(images, z0, std0, a0)
+        last_z.mark_used()
+        last_std.mark_used()
         _, A = tf.split(tf.transpose(A.stack(), [1, 0, 2, 3]), num_or_size_splits=[1, self.seq_size-1], axis=1)
         C, _ = tf.split(tf.transpose(C.stack(), [1, 0, 2, 3]), num_or_size_splits=[self.seq_size-1, 1], axis=1)
         a_arr, _ = tf.split(tf.transpose(a_arr.stack(), [1, 0, 2]), num_or_size_splits=[self.seq_size - 1, 1], axis=1)
@@ -352,6 +353,36 @@ class KVAE(tf.keras.Model):
         #return tf.reduce_sum(tf.square(x - x_logit))
         """
         return loss
+
+    def reconstruct(self, imgs):
+        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float32)
+        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float32)  # z*z
+        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float32)
+
+        z_smooth, std_smooth, a_arr, A, C, last_z, last_std = self.smooth(imgs, z0, std0, a0)
+        a_arr.mark_used()
+        A.mark_used()
+
+        z = tf.concat([tf.transpose(z_smooth.stack(), [1, 0, 2]), tf.expand_dims(last_z, 1)], 1)
+        std = tf.concat([tf.transpose(std_smooth.stack(), [1, 0, 2, 3]), tf.expand_dims(last_std, 1)], 1)
+        std = (std + tf.transpose(std, [0, 1, 3, 2])) / 2
+
+        mvn = tfp.distributions.MultivariateNormalTriL(z, tf.linalg.cholesky(std))
+        samples = mvn.sample()
+
+        a = tf.squeeze(tf.matmul(tf.transpose(C.stack(), [1, 0, 2, 3]), tf.expand_dims(samples, -1)))
+        a = tf.reshape(a, [self.batch_size * self.seq_size, self.dim_a])
+
+        # mu_a, logvar_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, img_size, img_size, 1]))
+        # a = model.reparameterize(mu_a, logvar_a)
+        im_logit = tf.reshape(self.decode(a), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        return im_logit
+
+    def predict_seq(self, imgs, mask):
+        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float32)
+        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float32)  # z*z
+        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float32)
+
 
     def compute_apply_gradients(self, x, optimizer):
         with tf.GradientTape() as tape:

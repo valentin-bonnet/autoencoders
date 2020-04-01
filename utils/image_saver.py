@@ -59,6 +59,43 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
     z = cv2.cvtColor(np.float32(z), cv2.COLOR_Lab2RGB)
     return (z)
 
+def generate_and_save_images_compare_seq(model, test_input, file_name_head='image', path='./'):
+    print(test_input.shape)
+    x_logits = model.reconstruct(test_input)
+    print(x_logits.shape)
+
+    test_input_0 = test_input[:2, 0, :, :, :]
+    test_input_5 = test_input[:2, 5, :, :, :]
+    test_input_10 = test_input[:2, 10, :, :, :]
+    test_input_15 = test_input[:2, 15, :, :, :]
+    test_input_19 = test_input[:2, 19, :, :, :]
+    test_inputs = [test_input_0, test_input_5, test_input_10, test_input_15, test_input_19]
+    x_logit_0 = x_logits[:2, 0, :, :, :]
+    x_logit_5 = x_logits[:2, 5, :, :, :]
+    x_logit_10 = x_logits[:2, 10, :, :, :]
+    x_logit_15 = x_logits[:2, 15, :, :, :]
+    x_logit_19 = x_logits[:2, 19, :, :, :]
+    x_logits = [x_logit_0, x_logit_5, x_logit_10, x_logit_15, x_logit_19]
+    # predictions = model.sample(test_input)
+    fig = plt.figure(figsize=(4, 4))
+
+    nb_imgs = len(test_inputs)
+
+    for i in range(2):
+        for j in range(nb_imgs):
+            plt.subplot(nb_imgs, 4, nb_imgs*2*i + j + 1)
+            plt.imshow(test_inputs[j][i])
+            plt.axis('off')
+        for j in range(nb_imgs):
+            plt.subplot(nb_imgs, 4, nb_imgs*(2*i+1) + j + 1)
+            plt.imshow(x_logits[j][i])
+            plt.axis('off')
+
+    # tight_layout minimizes the overlap between 2 sub-plots
+    if not os.path.isdir(path):
+        os.makedirs(path)
+    file_path = os.path.join(path, file_name_head)
+    plt.savefig(file_path + '.png')
 
 def generate_and_save_images_compare_lab(model, test_input, file_name_head='image', path='./'):
     print(test_input.shape)
