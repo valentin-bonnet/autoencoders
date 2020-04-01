@@ -83,11 +83,11 @@ def generate_and_save_images_compare_seq(model, test_input, file_name_head='imag
 
     for i in range(2):
         for j in range(nb_imgs):
-            plt.subplot(nb_imgs, 4, nb_imgs*2*i + j + 1)
+            plt.subplot(4, nb_imgs, nb_imgs*2*i + j + 1)
             plt.imshow(test_inputs[j][i])
             plt.axis('off')
         for j in range(nb_imgs):
-            plt.subplot(nb_imgs, 4, nb_imgs*(2*i+1) + j + 1)
+            plt.subplot(4, nb_imgs, nb_imgs*(2*i+1) + j + 1)
             plt.imshow(x_logits[j][i])
             plt.axis('off')
 
