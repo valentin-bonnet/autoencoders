@@ -275,8 +275,9 @@ filename = 'batch_normalization'
 #filename = 'ae_sbae'
 
 
-datasets = Dataset.Dataset('imagenetresized32')
-model1 = construct_model.get_model('SBAE_cl', [96, 256, 384, 384, 256], 2048, 32, False)
+datasets = Dataset.Dataset('moving_mnist')
+
+model1 = construct_model.get_model('KVAE', [96, 256, 384, 384, 256], 2048, 64)
 
 
 models = [model1]
@@ -288,12 +289,13 @@ def lr_fn(lr, step):
     else:
         return lr
 lrs_fn = [lr_fn]
-batch_size = 128
+batch_size = 64
 epochs_max = [40]
 saves_epochs = [10]
+#directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'SBAE_Deep_CL_Priors'
-step_is_epoch = False
+path_to_directory = directory_path+'KVAE_First'
+step_is_epoch = True
 
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 print("Multitraining Done")

@@ -8,12 +8,13 @@ sys.path.append(curr_dir)
 import cifarLoader
 import DAVISLoader
 import ImagenetResizedLoader
+import MovingMnist
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 
 class Dataset():
-    def __init__(self, dataset_name, batch_size=128, buffer_size=10000, use_Lab=False):
+    def __init__(self, dataset_name, batch_size=128, buffer_size=10000, use_Lab=True):
         self.train_ds = None
         self.val_ds = None
         self.test_ds = None
@@ -51,6 +52,13 @@ class Dataset():
             self.shape = 64
             self.train_size = 1281167
             self.val_size = 50000
+
+        elif dataset_name == 'moving_mnist':
+            self.train_ds, self.val_ds = MovingMnist.movingMnist()
+            self.shape = 64
+            self.train_size = 9000
+            self.val_size = 1000
+            self.sequence_length = 20
 
         else:
             print("No good dataset selected")

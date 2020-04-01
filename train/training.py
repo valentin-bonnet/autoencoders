@@ -158,7 +158,9 @@ class Training():
         v_loss_mean = tf.keras.metrics.Mean(name='v_loss')
         v_acc_mean = tf.keras.metrics.Mean(name='v_acc')
 
-        starting_epoch = self.ckpt.epoch
+        starting_epoch = int(self.ckpt.epoch)
+
+        print(starting_epoch)
 
         for epoch in range(starting_epoch, self.epoch_max + 1):
             len_train = self.train_size

@@ -8,9 +8,10 @@ import cvae
 import vae
 import sbvae
 import sbae
+import KVAE
 
 
-def get_model(model_type, layers, latent_dim, input_shape, use_bn, std=0.05):
+def get_model(model_type, layers, latent_dim, input_shape, use_bn=False, std=0.05):
 
     if model_type == 'AE':
         model = ae.AE(layers, latent_dim, input_shape, use_bn)
@@ -27,8 +28,11 @@ def get_model(model_type, layers, latent_dim, input_shape, use_bn, std=0.05):
     elif model_type == 'SBAE':
         model = sbae.SBAE(layers, latent_dim, input_shape, use_bn)
 
-    elif model_type =='SBAE_cl':
+    elif model_type == 'SBAE_cl':
         model = sbae.SBAE(layers, latent_dim, input_shape, use_bn, classification=True)
+
+    elif model_type == 'KVAE':
+        model = KVAE.KVAE(layers, latent_dim, input_shape, sequence_length=20, dim_a=5, dim_z=10, dim_u=10, std=0.05, use_bn=False)
 
     else:
         print("Model type is not good")
