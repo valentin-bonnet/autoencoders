@@ -76,9 +76,10 @@ def generate_and_save_images_compare_seq(model, test_input, file_name_head='imag
     x_logit_19 = x_logits[:2, 19, :, :]
     x_logits = [x_logit_0, x_logit_5, x_logit_10, x_logit_15, x_logit_19]
     # predictions = model.sample(test_input)
-    fig = plt.figure(figsize=(4, 4))
-
     nb_imgs = len(test_inputs)
+    fig = plt.figure(figsize=(nb_imgs, 4))
+
+
 
     for i in range(2):
         for j in range(nb_imgs):
