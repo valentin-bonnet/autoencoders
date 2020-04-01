@@ -200,7 +200,13 @@ class Training():
 
             img_name = 'epoch_' + str(epoch)
             for val_x in self.val_ds.take(1):
-                image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
+                if self.is_seq:
+                    #image_saver.compare_images_seq(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
+                    image_saver.generate_and_save_images_compare_seq(self.model, val_x,
+                                                                     self.name + '_epoch_{:03d}_test'.format(epoch),
+                                                                     self.img_path)
+                else:
+                    image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
 
 
             t_loss_mean.reset_states()
