@@ -284,8 +284,9 @@ class KVAE(tf.keras.Model):
         std = tf.sqrt(tf.matmul(std, tf.transpose(std, [0, 1, 3, 2])))
         print("std shape: ", std.shape)
         print("std :", std[0, 19, :, :])
+        print("std min : ", tf.reduce_min(std))
         cholesky = tf.linalg.cholesky(std)
-        mvn = tfp.distributions.MultivariateNormalTriL(z, cholesky)
+        mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
         samples = mvn.sample()
 
 
