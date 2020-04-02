@@ -206,7 +206,8 @@ class KVAE(tf.keras.Model):
 
         z_smooth_arr = tf.transpose(z_smooth_arr.stack(), [1, 0, 2])
         std_smooth_arr = tf.transpose(std_smooth_arr.stack(), [1, 0, 2, 3])
-        cov_matrix_smooth = tf.sqrt(tf.matmul(std_smooth_arr, tf.transpose(std_smooth_arr, [0, 1, 3, 2])))
+        #cov_matrix_smooth = tf.sqrt(tf.matmul(std_smooth_arr, tf.transpose(std_smooth_arr, [0, 1, 3, 2])))
+        cov_matrix_smooth = tf.exp((std_smooth_arr + tf.transpose(std_smooth_arr, [0, 1, 3, 2]))/2)
         mvn_smooth = tfp.distributions.MultivariateNormalTriL(loc=z_smooth_arr, scale_tril=tf.linalg.cholesky(cov_matrix_smooth))
         #mvn_smooth = tfp.distributions.MultivariateNormalFullCovariance(z_smooth_arr, tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2))
         smooth_sample = mvn_smooth.sample()
