@@ -196,7 +196,7 @@ class Training():
             image_saver.curves([self.t_loss, self.v_loss], ['Training', 'Validation'],
                                'training_validation_loss', self.img_path, 'Steps', 'Loss')
             image_saver.curves([self.t_acc, self.v_acc], ['Training', 'Validation'],
-                               'training_validation_loss', self.img_path, 'Steps', 'Loss')
+                               'training_validation_accuracy', self.img_path, 'Steps', 'Loss')
 
             img_name = 'epoch_' + str(epoch)
             for val_x in self.val_ds.take(1):
