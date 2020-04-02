@@ -207,7 +207,7 @@ class KVAE(tf.keras.Model):
         z_smooth_arr = tf.transpose(z_smooth_arr.stack(), [1, 0, 2])
         std_smooth_arr = tf.transpose(std_smooth_arr.stack(), [1, 0, 2, 3])
         cov_matrix_smooth = tf.matmul(std_smooth_arr, tf.transpose(std_smooth_arr, [0, 1, 3, 2])) + 1e-6
-        cov_matrix_smooth = tf.math.max(cov_matrix_smooth, 1e-4)
+        cov_matrix_smooth = tf.math.maximum(cov_matrix_smooth, 1e-4)
         #cov_matrix_smooth = tf.exp((std_smooth_arr + tf.transpose(std_smooth_arr, [0, 1, 3, 2]))/2)
         mvn_smooth = tfp.distributions.MultivariateNormalTriL(loc=z_smooth_arr, scale_tril=tf.linalg.cholesky(cov_matrix_smooth))
         #mvn_smooth = tfp.distributions.MultivariateNormalFullCovariance(z_smooth_arr, tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2))
@@ -289,7 +289,7 @@ class KVAE(tf.keras.Model):
         #print("std shape: ", std.shape)
         #print("std :", std[0, 19, :, :])
         #print("std min : ", tf.reduce_min(std))
-        std = tf.math.max(std, 1e-4)
+        std = tf.math.maximum(std, 1e-4)
         cholesky = tf.linalg.cholesky(std)
         mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
         samples = mvn.sample()
