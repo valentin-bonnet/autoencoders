@@ -276,8 +276,7 @@ class KVAE(tf.keras.Model):
 
         z = tf.concat([tf.transpose(z_smooth.stack(), [1, 0, 2]), tf.expand_dims(last_z, 1)], 1)
         std = tf.concat([tf.transpose(std_smooth.stack(), [1, 0, 2, 3]), tf.expand_dims(last_std, 1)], 1)
-        std = (std+tf.transpose(std, [0, 1, 3, 2]))/2
-        std = tf.math.maximum(std, 1e-4)
+        std = tf.exp((std+tf.transpose(std, [0, 1, 3, 2]))/2)
         cholesky = tf.linalg.cholesky(std)
         mvn = tfp.distributions.MultivariateNormalTriL(z, cholesky)
         samples = mvn.sample()
