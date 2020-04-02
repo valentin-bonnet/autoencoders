@@ -206,19 +206,23 @@ class KVAE(tf.keras.Model):
 
         z_smooth_arr = tf.transpose(z_smooth_arr.stack(), [1, 0, 2])
         std_smooth_arr = tf.transpose(std_smooth_arr.stack(), [1, 0, 2, 3])
-
-        mvn_smooth = tfp.distributions.MultivariateNormalFullCovariance(z_smooth_arr, tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2))
+        cov_matrix_smooth = tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2)
+        mvn_smooth = tfp.distributions.MultivariateNormalTriL(loc=z_smooth_arr, scale_tril=tf.linalg.cholesky(cov_matrix_smooth))
+        #mvn_smooth = tfp.distributions.MultivariateNormalFullCovariance(z_smooth_arr, tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2))
         smooth_sample = mvn_smooth.sample()
         #return tf.reduce_mean(self.decode(tf.reshape(a_arr, [self.batch_size*(self.seq_size-1), self.dim_a])))+tf.reduce_mean(z_smooth_arr)+tf.reduce_mean(smooth_sample)
         z_transition = tf.squeeze(tf.matmul(A, tf.expand_dims(smooth_sample, -1)))
 
-        mvn_transition = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_z), self.Q)
+        mvn_transition = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_z), scale_tril=tf.linalg.cholesky(self.Q))
+        #mvn_transition = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_z), self.Q)
         log_prob_transition = mvn_transition.log_prob(smooth_sample - z_transition)
 
-        mvn_emission = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_a), self.R)
+        mvn_emission = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_a), scale_tril=tf.linalg.cholesky(self.R))
+        #mvn_emission = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_a), self.R)
         log_prob_emission = mvn_emission.log_prob(a_arr - tf.squeeze(tf.matmul(C, tf.expand_dims(smooth_sample, -1))))
 
-        mvn_0 = tfp.distributions.MultivariateNormalFullCovariance(z0, std0)
+        mvn_0 = tfp.distributions.MultivariateNormalTriL(loc=z0, scale_tril=tf.linalg.cholesky(std0))
+        #mvn_0 = tfp.distributions.MultivariateNormalFullCovariance(z0, std0)
         log_prob_0 = mvn_0.log_prob(smooth_sample[:, 0])
 
         entropy = - mvn_smooth.log_prob(smooth_sample)
