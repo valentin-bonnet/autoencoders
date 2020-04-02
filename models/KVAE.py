@@ -68,7 +68,7 @@ class KVAE(tf.keras.Model):
                 self.generative_net.add(tf.keras.layers.BatchNormalization())
             self.generative_net.add(tf.keras.layers.ReLU())
 
-        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, strides=1, activation=tf.nn.relu, padding='same'))
+        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, strides=1, activation=tf.nn.sigmoid, padding='same'))
 
         print("####")
         self.inference_net.summary()
@@ -273,7 +273,7 @@ class KVAE(tf.keras.Model):
         z = tf.concat([tf.transpose(z_smooth.stack(), [1, 0, 2]), tf.expand_dims(last_z, 1)], 1)
         std = tf.concat([tf.transpose(std_smooth.stack(), [1, 0, 2, 3]), tf.expand_dims(last_std, 1)], 1)
         std = (std+tf.transpose(std, [0, 1, 3, 2]))/2
-
+        std = tf.max(std, 1e-4)
         mvn = tfp.distributions.MultivariateNormalTriL(z, tf.linalg.cholesky(std))
         samples = mvn.sample()
 
