@@ -11,7 +11,7 @@ class KVAE(tf.keras.Model):
     def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=64, sequence_length=20, dim_a=5, dim_z=10, dim_u=10, std=0.05, use_bn=False):
         super(KVAE, self).__init__()
         self.model_type = 'KVAE'
-        self.batch_size = 64
+        self.batch_size = 3
         self.architecture = layers.copy()
         self.latent_dim = latent_dim
         self.std = std
@@ -208,6 +208,7 @@ class KVAE(tf.keras.Model):
         std_smooth_arr = tf.transpose(std_smooth_arr.stack(), [1, 0, 2, 3])
         cov_matrix_smooth = tf.matmul(std_smooth_arr, tf.transpose(std_smooth_arr, [0, 1, 3, 2])) + 1e-6
         cov_matrix_smooth = tf.math.maximum(cov_matrix_smooth, 1e-4)
+        print(cov_matrix_smooth)
         #cov_matrix_smooth = tf.exp((std_smooth_arr + tf.transpose(std_smooth_arr, [0, 1, 3, 2]))/2)
         mvn_smooth = tfp.distributions.MultivariateNormalTriL(loc=z_smooth_arr, scale_tril=tf.linalg.cholesky(cov_matrix_smooth))
         #mvn_smooth = tfp.distributions.MultivariateNormalFullCovariance(z_smooth_arr, tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2))
