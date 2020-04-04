@@ -284,15 +284,16 @@ class KVAE(tf.keras.Model):
 
         z = tf.concat([tf.transpose(z_smooth.stack(), [1, 0, 2]), tf.expand_dims(last_z, 1)], 1)
         std = tf.concat([tf.transpose(std_smooth.stack(), [1, 0, 2, 3]), tf.expand_dims(last_std, 1)], 1)
-        std = tf.matmul(std, tf.transpose(std, [0, 1, 3, 2])) + (tf.eye(self.dim_z)*1e-10)
+        #std = tf.matmul(std, tf.transpose(std, [0, 1, 3, 2])) + (tf.eye(self.dim_z)*1e-10)
         #std = tf.exp((std + tf.transpose(std, perm=[0, 1, 3, 2]))/2)
         #print("z shape: ", z.shape)
         #print("std shape: ", std.shape)
         #print("std :", std[0, 19, :, :])
         #print("std min : ", tf.reduce_min(std))
         std = tf.math.maximum(std, 1e-4)
-        cholesky = tf.linalg.cholesky(std)
-        mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
+        #cholesky = tf.linalg.cholesky(std)
+        #mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
+        mvn = tfp.distributions.MultivariateNormalFullCovariance(loc=z, scale_tril=std)
         samples = mvn.sample()
 
 
