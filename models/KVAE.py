@@ -293,7 +293,7 @@ class KVAE(tf.keras.Model):
         std = tf.math.maximum(std, 1e-4)
         #cholesky = tf.linalg.cholesky(std)
         #mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
-        mvn = tfp.distributions.MultivariateNormalFullCovariance(loc=z, scale_tril=std)
+        mvn = tfp.distributions.MultivariateNormalFullCovariance(z, std)
         samples = mvn.sample()
 
 
