@@ -158,6 +158,9 @@ class KVAE(tf.keras.Model):
             std_prev = post_std
             post_z_arr = post_z_arr.write(i, post_z)
             post_std_arr = post_std_arr.write(i, post_std)
+            if not tf.reduce_all(tf.linalg.eigvalsh(post_std) > 0):
+                print("NO SMOOTH : eigen < 0")
+                #print(post_std)
 
 
         last_z_filt = post_z_arr.read(self.seq_size-1)
@@ -296,7 +299,7 @@ class KVAE(tf.keras.Model):
         #std = tf.math.maximum(std, 1e-4)
         if not tf.reduce_all(tf.linalg.eigvalsh(std) > 0):
             print("eigen < 0")
-            print(std)
+            #print(std)
         cholesky = tf.linalg.cholesky(std)
         mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
         #mvn = tfp.distributions.MultivariateNormalFullCovariance(z, std)
