@@ -11,7 +11,7 @@ class KVAE(tf.keras.Model):
     def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=64, sequence_length=20, dim_a=5, dim_z=10, dim_u=10, std=0.05, use_bn=False):
         super(KVAE, self).__init__()
         self.model_type = 'KVAE'
-        self.batch_size = 3
+        self.batch_size = 64
         self.architecture = layers.copy()
         self.latent_dim = latent_dim
         self.std = std
@@ -68,7 +68,7 @@ class KVAE(tf.keras.Model):
                 self.generative_net.add(tf.keras.layers.BatchNormalization())
             self.generative_net.add(tf.keras.layers.ReLU())
 
-        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, strides=1, activation=tf.nn.sigmoid, padding='same'))
+        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=1, kernel_size=4, strides=1, padding='same'))
 
         print("####")
         self.inference_net.summary()
@@ -212,22 +212,22 @@ class KVAE(tf.keras.Model):
         #cov_matrix_smooth = tf.math.maximum(cov_matrix_smooth, 1e-4)
         #print(cov_matrix_smooth)
         #cov_matrix_smooth = tf.exp((std_smooth_arr + tf.transpose(std_smooth_arr, [0, 1, 3, 2]))/2)
-        #mvn_smooth = tfp.distributions.MultivariateNormalTriL(loc=z_smooth_arr, scale_tril=tf.linalg.cholesky(cov_matrix_smooth))
-        mvn_smooth = tfp.distributions.MultivariateNormalFullCovariance(z_smooth_arr, tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2))
+        mvn_smooth = tfp.distributions.MultivariateNormalTriL(loc=z_smooth_arr, scale_tril=tf.linalg.cholesky(std_smooth_arr))
+        #mvn_smooth = tfp.distributions.MultivariateNormalFullCovariance(z_smooth_arr, tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2))
         smooth_sample = mvn_smooth.sample()
         #return tf.reduce_mean(self.decode(tf.reshape(a_arr, [self.batch_size*(self.seq_size-1), self.dim_a])))+tf.reduce_mean(z_smooth_arr)+tf.reduce_mean(smooth_sample)
         z_transition = tf.squeeze(tf.matmul(A, tf.expand_dims(smooth_sample, -1)))
 
-        #mvn_transition = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_z), scale_tril=tf.linalg.cholesky(self.Q))
-        mvn_transition = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_z), self.Q)
+        mvn_transition = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_z), scale_tril=tf.linalg.cholesky(self.Q))
+        #mvn_transition = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_z), self.Q)
         log_prob_transition = mvn_transition.log_prob(smooth_sample - z_transition)
 
-        #mvn_emission = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_a), scale_tril=tf.linalg.cholesky(self.R))
-        mvn_emission = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_a), self.R)
+        mvn_emission = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_a), scale_tril=tf.linalg.cholesky(self.R))
+        #mvn_emission = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_a), self.R)
         log_prob_emission = mvn_emission.log_prob(a_arr - tf.squeeze(tf.matmul(C, tf.expand_dims(smooth_sample, -1))))
 
-        #mvn_0 = tfp.distributions.MultivariateNormalTriL(loc=z0, scale_tril=tf.linalg.cholesky(std0))
-        mvn_0 = tfp.distributions.MultivariateNormalFullCovariance(z0, std0)
+        mvn_0 = tfp.distributions.MultivariateNormalTriL(loc=z0, scale_tril=tf.linalg.cholesky(std0))
+        #mvn_0 = tfp.distributions.MultivariateNormalFullCovariance(z0, std0)
         log_prob_0 = mvn_0.log_prob(smooth_sample[:, 0])
 
         entropy = - mvn_smooth.log_prob(smooth_sample)
@@ -293,10 +293,10 @@ class KVAE(tf.keras.Model):
         #print("std :", std[0, 19, :, :])
         #print("std min : ", tf.reduce_min(std))
         #std = tf.math.maximum(std, 1e-4)
-        if tf.reduce_all(tf.linalg.eigvalsh(std) > 0):
-            print("eigen > 0")
-        else:
-            print("eigen < 0")
+        #if tf.reduce_all(tf.linalg.eigvalsh(std) > 0):
+        #    print("eigen > 0")
+        #else:
+        #    print("eigen < 0")
             #print(std)
         cholesky = tf.linalg.cholesky(std)
         mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
@@ -311,7 +311,7 @@ class KVAE(tf.keras.Model):
 
         #mu_a, logvar_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, img_size, img_size, 1]))
         #a = model.reparameterize(mu_a, logvar_a)
-        im_logit = tf.reshape(self.decode(a), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        im_logit = tf.reshape(self.decode(a, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
         accuracy = tf.reduce_mean(tf.square(im_logit - im))
 
         return accuracy
@@ -399,7 +399,7 @@ class KVAE(tf.keras.Model):
 
         # mu_a, logvar_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, img_size, img_size, 1]))
         # a = model.reparameterize(mu_a, logvar_a)
-        im_logit = tf.reshape(self.decode(a), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        im_logit = tf.reshape(self.decode(a, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
         return im_logit
 
     def predict_seq(self, imgs, mask):
