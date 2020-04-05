@@ -340,7 +340,7 @@ class KVAE(tf.keras.Model):
 
         return logits
 
-    def log_bernoulli(x, p, eps=0.0):
+    def log_bernoulli(self, x, p, eps=0.0):
         p = tf.clip_by_value(p, eps, 1.0 - eps)
         return x * tf.log(p) + (1 - x) * tf.log(1 - p)
 
