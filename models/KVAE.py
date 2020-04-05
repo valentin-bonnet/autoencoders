@@ -113,8 +113,10 @@ class KVAE(tf.keras.Model):
         K = tf.matmul(std_hat, tf.transpose(C, perm=[0, 2, 1]))
         K = tf.matmul(K, tf.linalg.inv(residual_std))
         post_z = z_hat + tf.squeeze(tf.matmul(K, tf.expand_dims(residual, -1)))
-        post_std = (tf.eye(self.dim_z, dtype=tf.float32) - tf.matmul(K, C))
-        post_std = tf.matmul(post_std, std_hat)
+        #post_std = (tf.eye(self.dim_z, dtype=tf.float32) - tf.matmul(K, C))
+        #post_std = tf.matmul(post_std, std_hat)
+        IKC = (tf.eye(self.dim_z, dtype=tf.float32) - tf.matmul(K, C))
+        post_std = IKC @ std_hat @ tf.transpose(IKC, [0, 2, 1]) + K @ self.R @ tf.transpose(K, [0, 2, 1])
         return post_z, post_std
 
     def smooth(self, images, z0, std0, a0):
@@ -134,8 +136,8 @@ class KVAE(tf.keras.Model):
         # for i, img in enumerate(images):
         self.lgssm_parameters_inference.reset_states()
         for i in tf.range(self.seq_size):
-            ABC = self.lgssm_parameters_inference(a_prev)
-            Ai, Ci = tf.split(ABC, num_or_size_splits=[self.dim_z ** 2, self.dim_a * self.dim_z], axis=-1)
+            AC = self.lgssm_parameters_inference(a_prev)
+            Ai, Ci = tf.split(AC, num_or_size_splits=[self.dim_z ** 2, self.dim_a * self.dim_z], axis=-1)
             Ai = tf.reshape(Ai, [self.batch_size, self.dim_z, self.dim_z])
             Ci = tf.reshape(Ci, [self.batch_size, self.dim_a, self.dim_z])
 
