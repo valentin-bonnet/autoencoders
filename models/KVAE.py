@@ -291,9 +291,10 @@ class KVAE(tf.keras.Model):
         #print("std :", std[0, 19, :, :])
         #print("std min : ", tf.reduce_min(std))
         #std = tf.math.maximum(std, 1e-4)
-        #cholesky = tf.linalg.cholesky(std)
-        #mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
-        mvn = tfp.distributions.MultivariateNormalFullCovariance(z, std)
+        print(std)
+        cholesky = tf.linalg.cholesky(std)
+        mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
+        #mvn = tfp.distributions.MultivariateNormalFullCovariance(z, std)
         samples = mvn.sample()
 
 
