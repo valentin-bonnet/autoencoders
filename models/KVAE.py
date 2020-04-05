@@ -260,12 +260,13 @@ class KVAE(tf.keras.Model):
         #return elbo_kf + tf.reduce_mean(lnpdf)
         im_logit = tf.reshape(self.decode(a_seq), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
 
-        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=im_logit, labels=im)
-        log_px_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3, ])
+        #cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=im_logit, labels=im)
+        #log_px_a = -tf.reduce_sum(cross_ent, axis=[1, 2, 3, ])
+        log_px_a = self.log_bernouilli(im, im_logit, eps=1e-6)
 
 
         #tf.print((elbo_kf + log_px_z - log_qa_x).shape)
-        loss = -tf.reduce_mean(elbo_kf + log_px_z - log_qa_x)
+        loss = -tf.reduce_mean(elbo_kf + log_px_a - log_qa_x)
 
         return loss
 
@@ -338,6 +339,10 @@ class KVAE(tf.keras.Model):
             return probs
 
         return logits
+
+    def log_bernoulli(x, p, eps=0.0):
+        p = tf.clip_by_value(p, eps, 1.0 - eps)
+        return x * tf.log(p) + (1 - x) * tf.log(1 - p)
 
     def log_normal_pdf(self, sample, mean, logvar, raxis=1):
       log2pi = tf.math.log(2. * np.pi)
