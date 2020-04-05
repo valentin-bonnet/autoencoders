@@ -8,7 +8,7 @@ tfd = tfp.distributions
 
 
 class KVAE(tf.keras.Model):
-    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=64, sequence_length=20, dim_a=5, dim_z=10, dim_u=10, std=0.05, use_bn=False):
+    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=64, sequence_length=20, dim_a=20, dim_z=20, dim_u=10, std=0.05, use_bn=False):
         super(KVAE, self).__init__()
         self.model_type = 'KVAE'
         self.batch_size = 64
@@ -293,9 +293,7 @@ class KVAE(tf.keras.Model):
         #print("std :", std[0, 19, :, :])
         #print("std min : ", tf.reduce_min(std))
         #std = tf.math.maximum(std, 1e-4)
-        if tf.reduce_all(tf.linalg.eigvalsh(std) > 0):
-            print("eigen > 0")
-        else:
+        if not tf.reduce_all(tf.linalg.eigvalsh(std) > 0):
             print("eigen < 0")
             print(std)
         cholesky = tf.linalg.cholesky(std)
