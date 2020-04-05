@@ -297,7 +297,7 @@ class KVAE(tf.keras.Model):
             print("eigen > 0")
         else:
             print("eigen < 0")
-            print(std)
+            #print(std)
         cholesky = tf.linalg.cholesky(std)
         mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
         #mvn = tfp.distributions.MultivariateNormalFullCovariance(z, std)
