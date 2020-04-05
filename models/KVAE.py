@@ -8,7 +8,7 @@ tfd = tfp.distributions
 
 
 class KVAE(tf.keras.Model):
-    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=64, sequence_length=20, dim_a=20, dim_z=20, dim_u=10, std=0.05, use_bn=False):
+    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=64, sequence_length=20, dim_a=40, dim_z=20, dim_u=10, std=0.05, use_bn=False):
         super(KVAE, self).__init__()
         self.model_type = 'KVAE'
         self.batch_size = 64
@@ -33,7 +33,7 @@ class KVAE(tf.keras.Model):
         self.lgssm_parameters_inference = tf.keras.Sequential()
 
         self.lgssm_parameters_inference.add(tf.keras.layers.Input(shape=(None, self.dim_a), batch_size=self.batch_size))
-        self.lgssm_parameters_inference.add(tf.keras.layers.LSTM(128, stateful=True))
+        self.lgssm_parameters_inference.add(tf.keras.layers.LSTM(256, stateful=True))
         self.lgssm_parameters_inference.add(tf.keras.layers.Flatten())
         #self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.dim_z ** 2 + self.dim_z * self.dim_u + self.dim_a * self.dim_z))
         self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.dim_z ** 2 + self.dim_a * self.dim_z))
