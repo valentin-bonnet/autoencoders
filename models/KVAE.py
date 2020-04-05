@@ -342,7 +342,7 @@ class KVAE(tf.keras.Model):
 
     def log_bernoulli(self, x, p, eps=0.0):
         p = tf.clip_by_value(p, eps, 1.0 - eps)
-        return x * tf.log(p) + (1 - x) * tf.log(1 - p)
+        return x * tf.math.log(p) + (1 - x) * tf.math.log(1 - p)
 
     def log_normal_pdf(self, sample, mean, logvar, raxis=1):
       log2pi = tf.math.log(2. * np.pi)
