@@ -294,7 +294,7 @@ epochs_max = [40]
 saves_epochs = [2]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'KVAE_3'
+path_to_directory = directory_path+'KVAE_float64'
 step_is_epoch = True
 
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
