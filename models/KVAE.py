@@ -273,7 +273,8 @@ class KVAE(tf.keras.Model):
         #print("std_a seq shape: ", std_a.shape)
         #print("a seq shape: ", a_seq.shape)
         log_qa_x = mvn_a.log_prob(a_seq)
-        log_qa_x = tf.reduce_sum(tf.reshape(log_qa_x, [self.batch_size, self.seq_size]), [1])
+        log_qa_x = tf.cast(tf.reduce_sum(tf.reshape(log_qa_x, [self.batch_size, self.seq_size]), [1]), dtype=tf.float64)
+
 
         #return tf.reduce_mean(elbo_kf)+tf.reduce_mean(log_qa_x)
 
