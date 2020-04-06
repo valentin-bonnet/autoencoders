@@ -281,7 +281,7 @@ class KVAE(tf.keras.Model):
         #lnpdf = self.log_normal_pdf(a_seq, mu_a, logvar_a)
         #log_qa_x = tf.reduce_sum(tf.reshape(self.log_normal_pdf(a_seq, mu_a, logvar_a), [self.batch_size, self.seq_size]), [1])
         #return elbo_kf + tf.reduce_mean(lnpdf)
-        im_logit = tf.reshape(self.decode(a_seq), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        im_logit = tf.cast(tf.reshape(self.decode(a_seq), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1]), tf.float64)
 
         #cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=im_logit, labels=im)
         #log_px_a = -tf.reduce_sum(cross_ent, axis=[1, 2, 3, ])
