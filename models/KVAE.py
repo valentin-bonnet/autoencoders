@@ -310,6 +310,9 @@ class KVAE(tf.keras.Model):
         if tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
             print("acc : eigen < 0")
             u, s, v = tf.linalg.svd(std)
+            print(v.shape)
+            print(s.shape)
+            print(tf.linalg.diag(s).shape)
             h = v @ tf.linalg.diag(s) @ tf.transpose(v, [0, 1, 3, 2])
             std = (std + tf.transpose(std, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2]))/4.0
         if tf.reduce_any(tf.linalg.eigvalsh(std) == 0):
