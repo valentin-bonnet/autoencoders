@@ -286,7 +286,7 @@ class KVAE(tf.keras.Model):
 
         #cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=im_logit, labels=im)
         #log_px_a = -tf.reduce_sum(cross_ent, axis=[1, 2, 3, ])
-        log_px_a = self.log_bernoulli(im, im_logit, eps=1e-6)
+        log_px_a = tf.cast(self.log_bernoulli(im, im_logit, eps=1e-6), dtype=tf.float64)
 
         #print("elbo : ", tf.reduce_sum(elbo_kf))
         #print("log_px|a : ", tf.reduce_sum(log_px_a))
