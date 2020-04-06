@@ -268,6 +268,7 @@ class KVAE(tf.keras.Model):
         #tf.print(std_a.shape)
         mvn_a = tfp.distributions.MultivariateNormalTriL(mu_a, std_a)
         a_seq = mvn_a.sample()
+        print("a seq shape: ", a_seq.shape)
         log_qa_x = mvn_a.log_prob(a_seq)
         log_qa_x = tf.reduce_sum(tf.reshape(log_qa_x, [self.batch_size, self.seq_size]), [1])
 
