@@ -263,7 +263,7 @@ class KVAE(tf.keras.Model):
 
 
     def get_loss(self, im):
-        elbo_kf = tf.reduce_mean(self.get_elbo(im))
+        elbo_kf = tf.reduce_sum(self.get_elbo(im))
         mu_a, std_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, self.im_shape, self.im_shape]))
         #tf.print(std_a.shape)
         mvn_a = tfp.distributions.MultivariateNormalTriL(mu_a, std_a)
@@ -286,12 +286,12 @@ class KVAE(tf.keras.Model):
         #log_px_a = -tf.reduce_sum(cross_ent, axis=[1, 2, 3, ])
         log_px_a = self.log_bernoulli(im, im_logit, eps=1e-6)
 
-        print("elbo : ", tf.reduce_mean(elbo_kf))
-        print("log_px|a : ", tf.reduce_mean(log_px_a))
-        print("log qa|x : ", tf.reduce_mean(log_qa_x))
+        print("elbo : ", tf.reduce_sum(elbo_kf))
+        print("log_px|a : ", tf.reduce_sum(log_px_a))
+        print("log qa|x : ", tf.reduce_sum(log_qa_x))
 
         #tf.print((elbo_kf + log_px_z - log_qa_x).shape)
-        loss = -tf.reduce_mean(elbo_kf + log_px_a - log_qa_x)
+        loss = -tf.reduce_sum(elbo_kf + log_px_a - log_qa_x)
 
         return loss
 
