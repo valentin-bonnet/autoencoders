@@ -126,7 +126,7 @@ class KVAE(tf.keras.Model):
         post_z_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
         post_std_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
         a_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
-        std_min = tf.eye(self.dim_z, self.dim_z, [self.batch_size])*1e-4
+        std_min = tf.cast(tf.eye(self.dim_z, self.dim_z, [self.batch_size])*1e-4, dtype=tf.float64)
         z_prev = z0
         std_prev = std0
         a_prev = a0
