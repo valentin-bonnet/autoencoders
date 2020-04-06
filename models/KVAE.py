@@ -23,8 +23,8 @@ class KVAE(tf.keras.Model):
         #self.dim_u = dim_u
         self.latent_dim = self.dim_a + (self.dim_a * (self.dim_a + 1) // 2)
 
-        self.Q = tf.constant(tf.eye(self.dim_z, dtype=tf.float32) * 0.08)  # z*z
-        self.R = tf.constant(tf.eye(self.dim_a, dtype=tf.float32) * 0.03)
+        self.Q = tf.constant(tf.eye(self.dim_z, dtype=tf.float64) * 0.08)  # z*z
+        self.R = tf.constant(tf.eye(self.dim_a, dtype=tf.float64) * 0.03)
 
         str_arch = '_'.join(str(x) for x in self.architecture)
         str_bn = 'BN' if use_bn else ''
@@ -115,24 +115,24 @@ class KVAE(tf.keras.Model):
         post_z = z_hat + tf.squeeze(tf.matmul(K, tf.expand_dims(residual, -1)))
         #post_std = (tf.eye(self.dim_z, dtype=tf.float32) - tf.matmul(K, C))
         #post_std = tf.matmul(post_std, std_hat)
-        IKC = (tf.eye(self.dim_z, dtype=tf.float32) - tf.matmul(K, C))
+        IKC = (tf.eye(self.dim_z, dtype=tf.float64) - tf.matmul(K, C))
         post_std = IKC @ std_hat @ tf.transpose(IKC, [0, 2, 1]) + K @ self.R @ tf.transpose(K, [0, 2, 1])
         return post_z, post_std
 
     def smooth(self, images, z0, std0, a0):
 
-        z_hat_arr = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
-        std_hat_arr = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
-        post_z_arr = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
-        post_std_arr = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
-        a_arr = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
+        z_hat_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
+        std_hat_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
+        post_z_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
+        post_std_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
+        a_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
         std_min = tf.eye(self.dim_z, self.dim_z, [self.batch_size])*1e-4
         z_prev = z0
         std_prev = std0
         a_prev = a0
 
-        A = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
-        C = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
+        A = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
+        C = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
         # for i, img in enumerate(images):
         self.lgssm_parameters_inference.reset_states()
         for i in tf.range(self.seq_size):
@@ -171,8 +171,8 @@ class KVAE(tf.keras.Model):
 
 
 
-        z_smooth_arr = tf.TensorArray(tf.float32, size=self.seq_size - 1, clear_after_read=False)
-        std_smooth_arr = tf.TensorArray(tf.float32, size=self.seq_size - 1, clear_after_read=False)
+        z_smooth_arr = tf.TensorArray(tf.float64, size=self.seq_size - 1, clear_after_read=False)
+        std_smooth_arr = tf.TensorArray(tf.float64, size=self.seq_size - 1, clear_after_read=False)
         # tf.reverse(self.A, axis=0)
         for j in tf.range(self.seq_size-1, 0, -1):
             # print(post_std_arr.read(i).shape)
@@ -201,9 +201,9 @@ class KVAE(tf.keras.Model):
         return z_smooth_arr, std_smooth_arr, a_arr, A, C, last_z_filt, last_std_filt
 
     def get_elbo(self, images):
-        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float32)
-        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float32)  # z*z
-        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float32)
+        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float64)
+        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64)  # z*z
+        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float64)
 
 
         z_smooth_arr, std_smooth_arr, a_arr, A, C, last_z, last_std = self.smooth(images, z0, std0, a0)
@@ -297,9 +297,9 @@ class KVAE(tf.keras.Model):
 
     def get_accuracy(self, im):
 
-        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float32)
-        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float32)  # z*z
-        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float32)
+        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float64)
+        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64)  # z*z
+        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float64)
 
         z_smooth, std_smooth, a_arr, A, C, last_z, last_std = self.smooth(im, z0, std0, a0)
         a_arr.mark_used()
@@ -418,9 +418,9 @@ class KVAE(tf.keras.Model):
         return loss
 
     def reconstruct(self, imgs):
-        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float32)
-        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float32)  # z*z
-        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float32)
+        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float64)
+        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64)  # z*z
+        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float64)
 
         z_smooth, std_smooth, a_arr, A, C, last_z, last_std = self.smooth(imgs, z0, std0, a0)
         a_arr.mark_used()
@@ -442,9 +442,9 @@ class KVAE(tf.keras.Model):
         return im_logit
 
     def predict_seq(self, imgs, mask):
-        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float32)
-        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float32)  # z*z
-        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float32)
+        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float64)
+        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64)  # z*z
+        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float64)
 
 
     def compute_apply_gradients(self, x, optimizer):

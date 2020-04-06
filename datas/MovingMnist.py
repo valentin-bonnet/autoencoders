@@ -9,7 +9,7 @@ AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 def movingMnist():
     train_dataset, test_dataset = tfds.load(name='moving_mnist', data_dir='/content/drive/My Drive/Colab Data/Datasets/', split=['test[10%:100%]', 'test[0%:10%]'])
-    train_dataset = train_dataset.map(lambda x: float(x['image_sequence']) / 255.0, num_parallel_calls=AUTOTUNE)
-    test_dataset = test_dataset.map(lambda x: float(x['image_sequence']) / 255.0, num_parallel_calls=AUTOTUNE)
+    train_dataset = train_dataset.map(lambda x: np.float64(x['image_sequence']) / 255.0, num_parallel_calls=AUTOTUNE)
+    test_dataset = test_dataset.map(lambda x: np.float64(x['image_sequence']) / 255.0, num_parallel_calls=AUTOTUNE)
 
     return train_dataset, test_dataset
