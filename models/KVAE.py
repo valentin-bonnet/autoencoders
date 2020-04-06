@@ -281,6 +281,9 @@ class KVAE(tf.keras.Model):
         #log_px_a = -tf.reduce_sum(cross_ent, axis=[1, 2, 3, ])
         log_px_a = self.log_bernoulli(im, im_logit, eps=1e-6)
 
+        print("elbo : ", elbo_kf)
+        print("log_px|a : ", log_px_a)
+        print("log qa|x : ", log_qa_x)
 
         #tf.print((elbo_kf + log_px_z - log_qa_x).shape)
         loss = -tf.reduce_mean(elbo_kf + log_px_a - log_qa_x)
