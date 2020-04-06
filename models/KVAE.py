@@ -239,11 +239,11 @@ class KVAE(tf.keras.Model):
         #return tf.reduce_mean(self.decode(tf.reshape(a_arr, [self.batch_size*(self.seq_size-1), self.dim_a])))+tf.reduce_mean(z_smooth_arr)+tf.reduce_mean(smooth_sample)
         z_transition = tf.squeeze(tf.matmul(A, tf.expand_dims(smooth_sample, -1)))
 
-        mvn_transition = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_z), scale_tril=tf.linalg.cholesky(self.Q))
+        mvn_transition = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_z, dtype=tf.float64), scale_tril=tf.linalg.cholesky(self.Q))
         #mvn_transition = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_z), self.Q)
         log_prob_transition = mvn_transition.log_prob(smooth_sample - z_transition)
 
-        mvn_emission = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_a), scale_tril=tf.linalg.cholesky(self.R))
+        mvn_emission = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_a, dtype=tf.float64), scale_tril=tf.linalg.cholesky(self.R))
         #mvn_emission = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_a), self.R)
         log_prob_emission = mvn_emission.log_prob(a_arr - tf.squeeze(tf.matmul(C, tf.expand_dims(smooth_sample, -1))))
 
