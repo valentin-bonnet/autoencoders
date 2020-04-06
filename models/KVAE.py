@@ -297,9 +297,9 @@ class KVAE(tf.keras.Model):
         #print("std :", std[0, 19, :, :])
         #print("std min : ", tf.reduce_min(std))
         #std = tf.math.maximum(std, 1e-4)
-        if tf.reduce_all(tf.linalg.eigvalsh(std) < 0):
+        if not tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
             print("eigen < 0")
-        if tf.reduce_all(tf.linalg.eigvalsh(std) == 0):
+        if tf.reduce_any(tf.linalg.eigvalsh(std) == 0):
             print("eigen == 0")
         cholesky = tf.linalg.cholesky(std)
         mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
