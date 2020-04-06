@@ -223,6 +223,8 @@ class KVAE(tf.keras.Model):
             #print(tf.linalg.diag(s).shape)
             h = v @ s @ tf.transpose(v, [0, 1, 3, 2])
             std_smooth_arr = (std_smooth_arr + tf.transpose(std_smooth_arr, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2]))/4.0
+        if tf.reduce_any(tf.linalg.eigvalsh(std_smooth_arr) < 0):
+            print("acc : eigen < 0")
         if tf.reduce_any(tf.linalg.eigvalsh(std_smooth_arr) == 0):
             print("acc : eigen == 0")
         mvn_smooth = tfp.distributions.MultivariateNormalTriL(loc=z_smooth_arr, scale_tril=tf.linalg.cholesky(std_smooth_arr))
@@ -315,6 +317,8 @@ class KVAE(tf.keras.Model):
             #print(tf.linalg.diag(s).shape)
             h = v @ s @ tf.transpose(v, [0, 1, 3, 2])
             std = (std + tf.transpose(std, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2]))/4.0
+        if tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
+            print("acc : eigen < 0")
         if tf.reduce_any(tf.linalg.eigvalsh(std) == 0):
             print("acc : eigen == 0")
         cholesky = tf.linalg.cholesky(std)
