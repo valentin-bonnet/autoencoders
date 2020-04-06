@@ -32,7 +32,7 @@ def get_model(model_type, layers, latent_dim, input_shape, use_bn=False, std=0.0
         model = sbae.SBAE(layers, latent_dim, input_shape, use_bn, classification=True)
 
     elif model_type == 'KVAE':
-        model = KVAE.KVAE(layers, latent_dim, input_shape, sequence_length=20, dim_a=5, dim_z=10, dim_u=10, std=0.05, use_bn=False)
+        model = KVAE.KVAE(layers, latent_dim, input_shape)
 
     else:
         print("Model type is not good")
