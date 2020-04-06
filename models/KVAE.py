@@ -158,7 +158,7 @@ class KVAE(tf.keras.Model):
             std_prev = post_std
             post_z_arr = post_z_arr.write(i, post_z)
             post_std_arr = post_std_arr.write(i, post_std)
-            if not tf.reduce_all(tf.linalg.eigvalsh(post_std) > 0):
+            if tf.reduce_any(tf.linalg.eigvalsh(post_std) < 0):
                 print("NO SMOOTH : eigen < 0")
                 #print(post_std)
 
@@ -189,6 +189,8 @@ class KVAE(tf.keras.Model):
             z_smooth = post_z_arr.read(j-1) + temp
             temp = tf.matmul(D, (prev_std_smooth - std_hat_arr.read(j)))
             std_smooth = post_std_arr.read(j-1) + tf.matmul(temp, tf.transpose(D, perm=[0, 2, 1]))
+            if tf.reduce_any(tf.linalg.eigvalsh(std_smooth) < 0):
+                print("AFTER SMOOTH : eigen < 0")
 
             prev_z_smooth = z_smooth
             prev_std_smooth = std_smooth
