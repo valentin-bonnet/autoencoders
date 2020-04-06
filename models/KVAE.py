@@ -217,7 +217,7 @@ class KVAE(tf.keras.Model):
         #cov_matrix_smooth = tf.exp((std_smooth_arr + tf.transpose(std_smooth_arr, [0, 1, 3, 2]))/2)
         if tf.reduce_any(tf.linalg.eigvalsh(std_smooth_arr) < 0):
             print("acc : eigen < 0")
-            u, s, v = tf.linalg.svd(std_smooth_arr)
+            s, u, v = tf.linalg.svd(std_smooth_arr)
             print(v.shape)
             print(s.shape)
             #print(tf.linalg.diag(s).shape)
@@ -311,7 +311,7 @@ class KVAE(tf.keras.Model):
         #std = tf.math.maximum(std, 1e-4)
         if tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
             print("acc : eigen < 0")
-            u, s, v = tf.linalg.svd(std)
+            s, u, v = tf.linalg.svd(std)
             print(v.shape)
             print(s.shape)
             #print(tf.linalg.diag(s).shape)
