@@ -299,6 +299,9 @@ class KVAE(tf.keras.Model):
         #std = tf.math.maximum(std, 1e-4)
         if tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
             print("eigen < 0")
+            u, s, v = tf.linalg.svd(std)
+            h = v @ tf.linalg.diag(s) @ tf.transpose(v, [0, 1, 3, 2])
+            std = (std + tf.transpose(std, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2]))/4.0
         if tf.reduce_any(tf.linalg.eigvalsh(std) == 0):
             print("eigen == 0")
         cholesky = tf.linalg.cholesky(std)
