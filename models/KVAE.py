@@ -220,8 +220,8 @@ class KVAE(tf.keras.Model):
             s, u, v = tf.linalg.svd(std_smooth_arr)
             print(v.shape)
             print(s.shape)
-            #print(tf.linalg.diag(s).shape)
-            h = v @ s @ tf.transpose(v, [0, 1, 3, 2])
+            print(tf.linalg.diag(s).shape)
+            h = v @ tf.linalg.diag(s) @ tf.transpose(v, [0, 1, 3, 2])
             std_smooth_arr = (std_smooth_arr + tf.transpose(std_smooth_arr, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2]))/4.0
         if tf.reduce_any(tf.linalg.eigvalsh(std_smooth_arr) < 0):
             print("acc : eigen < 0")
@@ -314,8 +314,8 @@ class KVAE(tf.keras.Model):
             s, u, v = tf.linalg.svd(std)
             print(v.shape)
             print(s.shape)
-            #print(tf.linalg.diag(s).shape)
-            h = v @ s @ tf.transpose(v, [0, 1, 3, 2])
+            print(tf.linalg.diag(s).shape)
+            h = v @ tf.linalg.diag(s) @ tf.transpose(v, [0, 1, 3, 2])
             std = (std + tf.transpose(std, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2]))/4.0
         if tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
             print("acc : eigen < 0")
