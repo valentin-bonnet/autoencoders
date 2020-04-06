@@ -32,7 +32,7 @@ class KVAE(tf.keras.Model):
 
         self.lgssm_parameters_inference = tf.keras.Sequential()
 
-        self.lgssm_parameters_inference.add(tf.keras.layers.Input(shape=(None, self.dim_a), batch_size=self.batch_size))
+        self.lgssm_parameters_inference.add(tf.keras.layers.Input(shape=(None, self.dim_a), batch_size=self.batch_size, dtype='float64'))
         self.lgssm_parameters_inference.add(tf.keras.layers.LSTM(256, stateful=True))
         self.lgssm_parameters_inference.add(tf.keras.layers.Flatten())
         #self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.dim_z ** 2 + self.dim_z * self.dim_u + self.dim_a * self.dim_z))
