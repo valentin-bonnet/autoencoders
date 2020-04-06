@@ -349,6 +349,8 @@ class KVAE(tf.keras.Model):
         #mu_a, logvar_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, img_size, img_size, 1]))
         #a = model.reparameterize(mu_a, logvar_a)
         im_logit = tf.reshape(self.decode(a, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        im_logit = tf.cast(im_logit, dtype=tf.float64)
+        im = tf.cast(im, dtype=tf.float64)
         accuracy = tf.reduce_mean(tf.square(im_logit - im))
 
         return accuracy
