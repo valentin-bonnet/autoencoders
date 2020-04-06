@@ -146,6 +146,8 @@ class KVAE(tf.keras.Model):
             C = C.write(i, Ci)
 
             a_prev, _ = self.encode(images[:, i])
+            print(a_prev.dtype)
+            a_prev = tf.cast(a_prev, dtype=tf.float64)
             a_arr = a_arr.write(i, a_prev)
             a_prev = tf.expand_dims(a_prev, 1)
 
