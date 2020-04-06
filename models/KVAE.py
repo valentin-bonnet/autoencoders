@@ -136,11 +136,8 @@ class KVAE(tf.keras.Model):
         # for i, img in enumerate(images):
         self.lgssm_parameters_inference.reset_states()
         for i in tf.range(self.seq_size):
-            print("a_prev: ", a_prev.dtype)
-            AC = self.lgssm_parameters_inference(a_prev)
-            print("AC: ", AC.dtype)
+            AC = tf.cast(self.lgssm_parameters_inference(a_prev), dtype=tf.float64)
             Ai, Ci = tf.split(AC, num_or_size_splits=[self.dim_z ** 2, self.dim_a * self.dim_z], axis=-1)
-            print("Ai: ", Ai.dtype)
             Ai = tf.reshape(Ai, [self.batch_size, self.dim_z, self.dim_z])
             Ci = tf.reshape(Ci, [self.batch_size, self.dim_a, self.dim_z])
 
