@@ -421,22 +421,29 @@ class KVAE(tf.keras.Model):
         a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float64)
 
         z_smooth, std_smooth, a_arr, A, C, last_z, last_std = self.smooth(imgs, z0, std0, a0)
-        a_arr.mark_used()
+        #a_arr.mark_used()
         A.mark_used()
 
-        z = tf.concat([tf.transpose(z_smooth.stack(), [1, 0, 2]), tf.expand_dims(last_z, 1)], 1)
-        std = tf.concat([tf.transpose(std_smooth.stack(), [1, 0, 2, 3]), tf.expand_dims(last_std, 1)], 1)
-        std = (std + tf.transpose(std, [0, 1, 3, 2])) / 2
+        a_arr, _ = tf.split(tf.transpose(a_arr.stack(), [1, 0, 2]), num_or_size_splits=[self.seq_size - 1, 1], axis=1)
 
-        mvn = tfp.distributions.MultivariateNormalTriL(z, tf.linalg.cholesky(std))
-        samples = mvn.sample()
+        #z = tf.concat([tf.transpose(z_smooth.stack(), [1, 0, 2]), tf.expand_dims(last_z, 1)], 1)
+        #std = tf.concat([tf.transpose(std_smooth.stack(), [1, 0, 2, 3]), tf.expand_dims(last_std, 1)], 1)
+        #if tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
+        #    s, u, v = tf.linalg.svd(std)
+        #    h = v @ tf.linalg.diag(s) @ tf.transpose(v, [0, 1, 3, 2])
+        #    std = (std + tf.transpose(std, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2])) / 4.0 + (tf.eye(self.dim_z, dtype=tf.float64) * 1e-6)
 
-        a = tf.squeeze(tf.matmul(tf.transpose(C.stack(), [1, 0, 2, 3]), tf.expand_dims(samples, -1)))
-        a = tf.reshape(a, [self.batch_size * self.seq_size, self.dim_a])
+        #mvn = tfp.distributions.MultivariateNormalTriL(z, tf.linalg.cholesky(std))
+        #samples = mvn.sample()
+
+        #a = tf.squeeze(tf.matmul(tf.transpose(C.stack(), [1, 0, 2, 3]), tf.expand_dims(samples, -1)))
+        #a = tf.reshape(a, [self.batch_size * self.seq_size, self.dim_a])
+
+        print("\n a_arr.shape: ", a_arr.shape)
 
         # mu_a, logvar_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, img_size, img_size, 1]))
         # a = model.reparameterize(mu_a, logvar_a)
-        im_logit = tf.reshape(self.decode(a, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        im_logit = tf.reshape(self.decode(a_arr, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
         return im_logit
 
     def predict_seq(self, imgs, mask):
