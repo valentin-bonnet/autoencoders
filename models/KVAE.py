@@ -424,7 +424,7 @@ class KVAE(tf.keras.Model):
         #a_arr.mark_used()
         A.mark_used()
 
-        a_arr, _ = tf.transpose(a_arr.stack(), [1, 0, 2])
+        a_arr= tf.transpose(a_arr.stack(), [1, 0, 2])
 
         #z = tf.concat([tf.transpose(z_smooth.stack(), [1, 0, 2]), tf.expand_dims(last_z, 1)], 1)
         #std = tf.concat([tf.transpose(std_smooth.stack(), [1, 0, 2, 3]), tf.expand_dims(last_std, 1)], 1)
