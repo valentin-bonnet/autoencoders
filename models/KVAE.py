@@ -39,6 +39,7 @@ class KVAE(tf.keras.Model):
         self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.dim_z ** 2 + self.dim_a * self.dim_z))
 
         ## ENCODER
+        tf.keras.backend.set_floatx('float64')
         self.inference_net = tf.keras.Sequential()
         self.inference_net.add(tf.keras.layers.Input(shape=(input_shape, input_shape, 1)))
         for l in layers:
