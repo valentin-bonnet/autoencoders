@@ -11,7 +11,7 @@ class KVAE(tf.keras.Model):
     def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=64, sequence_length=20, dim_a=30, dim_z=4, dim_u=10, std=0.05, use_bn=False):
         super(KVAE, self).__init__()
         self.model_type = 'KVAE'
-        self.batch_size = 32
+        self.batch_size = 16
         self.architecture = layers.copy()
         self.latent_dim = latent_dim
         self.std = std
