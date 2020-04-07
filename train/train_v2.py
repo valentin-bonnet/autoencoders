@@ -277,7 +277,7 @@ filename = 'batch_normalization'
 
 datasets = Dataset.Dataset('moving_mnist')
 
-model1 = construct_model.get_model('KVAE', [96, 256, 384, 384, 256], 2048, 64)
+model1 = construct_model.get_model('KVAE', [96, 256, 384], 2048, 64)
 
 
 models = [model1]

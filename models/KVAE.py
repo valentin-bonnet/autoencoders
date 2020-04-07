@@ -127,7 +127,7 @@ class KVAE(tf.keras.Model):
         post_z_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
         post_std_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
         a_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
-        std_min = tf.cast(tf.eye(self.dim_z, self.dim_z, [self.batch_size])*1e-4, dtype=tf.float64)
+        std_min = tf.eye(self.dim_z, self.dim_z, [self.batch_size], dtype=tf.float64)*1e-4
         z_prev = z0
         std_prev = std0
         a_prev = a0
@@ -137,7 +137,7 @@ class KVAE(tf.keras.Model):
         # for i, img in enumerate(images):
         self.lgssm_parameters_inference.reset_states()
         for i in tf.range(self.seq_size):
-            AC = tf.cast(self.lgssm_parameters_inference(a_prev), dtype=tf.float64)
+            AC = self.lgssm_parameters_inference(a_prev)
             Ai, Ci = tf.split(AC, num_or_size_splits=[self.dim_z ** 2, self.dim_a * self.dim_z], axis=-1)
             Ai = tf.reshape(Ai, [self.batch_size, self.dim_z, self.dim_z])
             Ci = tf.reshape(Ci, [self.batch_size, self.dim_a, self.dim_z])
@@ -147,7 +147,6 @@ class KVAE(tf.keras.Model):
             C = C.write(i, Ci)
 
             a_prev, _ = self.encode(images[:, i])
-            a_prev = tf.cast(a_prev, dtype=tf.float64)
             a_arr = a_arr.write(i, a_prev)
             a_prev = tf.expand_dims(a_prev, 1)
 
@@ -274,7 +273,7 @@ class KVAE(tf.keras.Model):
         #print("std_a seq shape: ", std_a.shape)
         #print("a seq shape: ", a_seq.shape)
         log_qa_x = mvn_a.log_prob(a_seq)
-        log_qa_x = tf.cast(tf.reduce_sum(tf.reshape(log_qa_x, [self.batch_size, self.seq_size]), [1]), dtype=tf.float64)
+        log_qa_x = tf.reduce_sum(tf.reshape(log_qa_x, [self.batch_size, self.seq_size]), [1])
 
 
         #return tf.reduce_mean(elbo_kf)+tf.reduce_mean(log_qa_x)
@@ -283,11 +282,11 @@ class KVAE(tf.keras.Model):
         #lnpdf = self.log_normal_pdf(a_seq, mu_a, logvar_a)
         #log_qa_x = tf.reduce_sum(tf.reshape(self.log_normal_pdf(a_seq, mu_a, logvar_a), [self.batch_size, self.seq_size]), [1])
         #return elbo_kf + tf.reduce_mean(lnpdf)
-        im_logit = tf.cast(tf.reshape(self.decode(a_seq), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1]), tf.float64)
+        im_logit = tf.reshape(self.decode(a_seq), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
 
         #cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=im_logit, labels=im)
         #log_px_a = -tf.reduce_sum(cross_ent, axis=[1, 2, 3, ])
-        log_px_a = tf.cast(self.log_bernoulli(im, im_logit, eps=1e-6), dtype=tf.float64)
+        log_px_a = self.log_bernoulli(im, im_logit, eps=1e-6)
 
         #print("elbo : ", tf.reduce_sum(elbo_kf))
         #print("log_px|a : ", tf.reduce_sum(log_px_a))
@@ -350,8 +349,6 @@ class KVAE(tf.keras.Model):
         #mu_a, logvar_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, img_size, img_size, 1]))
         #a = model.reparameterize(mu_a, logvar_a)
         im_logit = tf.reshape(self.decode(a, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
-        im_logit = tf.cast(im_logit, dtype=tf.float64)
-        im = tf.cast(im, dtype=tf.float64)
         accuracy = tf.reduce_mean(tf.square(im_logit - im))
 
         return accuracy
