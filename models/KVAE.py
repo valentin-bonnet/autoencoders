@@ -422,9 +422,14 @@ class KVAE(tf.keras.Model):
 
         z_smooth, std_smooth, a_arr, A, C, last_z, last_std = self.smooth(imgs, z0, std0, a0)
         #a_arr.mark_used()
-        A.mark_used()
 
-        a_arr= tf.transpose(a_arr.stack(), [1, 0, 2])
+        A.mark_used()
+        C.mark_used()
+        z_smooth.mark_used()
+        std_smooth.mark_used()
+
+
+        a_arr = tf.transpose(a_arr.stack(), [1, 0, 2])
 
         #z = tf.concat([tf.transpose(z_smooth.stack(), [1, 0, 2]), tf.expand_dims(last_z, 1)], 1)
         #std = tf.concat([tf.transpose(std_smooth.stack(), [1, 0, 2, 3]), tf.expand_dims(last_std, 1)], 1)
