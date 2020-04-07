@@ -145,7 +145,9 @@ class KVAE(tf.keras.Model):
             A = A.write(i, Ai)
             C = C.write(i, Ci)
 
-            a_prev, _ = self.encode(images[:, i])
+            mu_a, std_a = self.encode(images[:, i])
+            mvn_a = tfp.distributions.MultivariateNormalTriL(mu_a, std_a)
+            a_prev = mvn_a.sample()
             a_arr = a_arr.write(i, a_prev)
             a_prev = tf.expand_dims(a_prev, 1)
 
