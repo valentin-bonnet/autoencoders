@@ -42,7 +42,7 @@ class KVAE(tf.keras.Model):
         self.inference_net = tf.keras.Sequential()
         self.inference_net.add(tf.keras.layers.Input(shape=(input_shape, input_shape, 1)))
         for l in layers:
-            self.inference_net.add(tf.keras.layers.Conv2D(filters=l, kernel_size=5, strides=1, padding='same'))
+            self.inference_net.add(tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, padding='same'))
             if use_bn:
                 self.inference_net.add(tf.keras.layers.BatchNormalization())
             self.inference_net.add(tf.keras.layers.ReLU())
@@ -63,7 +63,7 @@ class KVAE(tf.keras.Model):
 
 
         for l in layers:
-            self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=5, strides=1, padding='same'))
+            self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
             if use_bn:
                 self.generative_net.add(tf.keras.layers.BatchNormalization())
             self.generative_net.add(tf.keras.layers.ReLU())
