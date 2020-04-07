@@ -278,7 +278,7 @@ filename = 'batch_normalization'
 tf.keras.backend.set_floatx('float64')
 datasets = Dataset.Dataset('moving_mnist')
 
-model1 = construct_model.get_model('KVAE', [96, 256, 384], 2048, 64)
+model1 = construct_model.get_model('KVAE', [16, 32, 64], 2048, 64)
 
 
 models = [model1]
@@ -295,7 +295,7 @@ epochs_max = [40]
 saves_epochs = [20]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'KVAE_float64'
+path_to_directory = directory_path+'KVAE_float64_2'
 step_is_epoch = False
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 print("Multitraining Done")
