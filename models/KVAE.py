@@ -204,7 +204,7 @@ class KVAE(tf.keras.Model):
 
     def get_elbo(self, images):
         z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float64)
-        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64)  # z*z
+        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64)*20.0  # z*z
         a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float64)
 
 
@@ -306,7 +306,7 @@ class KVAE(tf.keras.Model):
     def get_accuracy(self, im):
 
         z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float64)
-        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64)  # z*z
+        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64)*20.0  # z*z
         a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float64)
 
         z_smooth, std_smooth, a_arr, A, C, last_z, last_std = self.smooth(im, z0, std0, a0)
@@ -370,6 +370,7 @@ class KVAE(tf.keras.Model):
         mean, std = tf.split(a_inf, num_or_size_splits=[self.dim_a, self.dim_a * (self.dim_a + 1) // 2], axis=1)
         fill_t = tfp.bijectors.FillTriangular()
         std = fill_t.forward(std)
+        std = tf.nn.sigmoid(std)
         return mean, std
 
     def reparameterize(self, mean, logvar):
@@ -427,7 +428,7 @@ class KVAE(tf.keras.Model):
 
     def reconstruct(self, imgs):
         z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float64)
-        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64)  # z*z
+        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64)*20.0  # z*z
         a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float64)
 
         z_smooth, std_smooth, a_arr, A, C, last_z, last_std = self.smooth(imgs, z0, std0, a0)
