@@ -507,9 +507,9 @@ class KVAE(tf.keras.Model):
             loss = self.compute_loss(x)
         gradients = tape.gradient(loss, self.trainable_variables)
         optimizer.apply_gradients(zip(gradients, self.trainable_variables))
-        print("\n\n\n ###################\n\n")
-        print(self.trainable_variables)
-        print("\n\n ###################\n\n\n")
+        #print("\n\n\n ###################\n\n")
+        #print(self.trainable_variables)
+        #print("\n\n ###################\n\n\n")
         return loss
 
     def compute_accuracy(self, x):
