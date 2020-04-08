@@ -450,6 +450,7 @@ class KVAE(tf.keras.Model):
 
         # mu_a, logvar_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, img_size, img_size, 1]))
         # a = model.reparameterize(mu_a, logvar_a)
+        print("decode a_arr :", self.decode(a_arr, True).shape)
         im_logit = tf.reshape(self.decode(a_arr, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
         return im_logit
 
