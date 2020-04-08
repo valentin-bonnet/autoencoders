@@ -160,9 +160,6 @@ class KVAE(tf.keras.Model):
             std_prev = post_std
             post_z_arr = post_z_arr.write(i, post_z)
             post_std_arr = post_std_arr.write(i, post_std)
-            if tf.reduce_any(tf.linalg.eigvalsh(post_std) < 0):
-                print("NO SMOOTH : eigen < 0")
-                #print(post_std)
 
 
         last_z_filt = post_z_arr.read(self.seq_size-1)
