@@ -261,10 +261,10 @@ class KVAE(tf.keras.Model):
                      tf.reduce_sum(entropy, axis=[1])]
 
         #kf_elbo = tf.reduce_sum(log_probs, axis=[2])
-        print("\nlog_prob_transition: ", tf.reduce_sum(log_prob_transition))
-        print("log_prob_emission: ", tf.reduce_sum(log_prob_emission))
-        print("log_prob_0: ", tf.reduce_sum(log_prob_0))
-        print("entropy: ", tf.reduce_sum(entropy))
+        #print("\nlog_prob_transition: ", tf.reduce_sum(log_prob_transition))
+        #print("log_prob_emission: ", tf.reduce_sum(log_prob_emission))
+        #print("log_prob_0: ", tf.reduce_sum(log_prob_0))
+        #print("entropy: ", tf.reduce_sum(entropy))
         kf_elbo = tf.reduce_sum(log_prob_transition, axis=[1]) + tf.reduce_sum(log_prob_emission, axis=[1]) + log_prob_0 + tf.reduce_sum(entropy, axis=[1])
 
         return kf_elbo
@@ -276,7 +276,7 @@ class KVAE(tf.keras.Model):
         #tf.print(std_a.shape)
         mvn_a = tfp.distributions.MultivariateNormalTriL(mu_a, std_a)
         a_seq = mvn_a.sample()
-        print("\na_seq shape: ", a_seq.shape)
+        #print("\na_seq shape: ", a_seq.shape)
         #print("mu_a seq shape: ", mu_a.shape)
         #print("std_a seq shape: ", std_a.shape)
         #print("a seq shape: ", a_seq.shape)
@@ -301,9 +301,9 @@ class KVAE(tf.keras.Model):
         #print("log qa|x : ", tf.reduce_sum(log_qa_x))
 
         #tf.print((elbo_kf + log_px_z - log_qa_x).shape)
-        print("\nelbo_kf :", -tf.reduce_sum(elbo_kf))
-        print("log_px_a :", -tf.reduce_sum(log_px_a))
-        print("log_qa_x :", tf.reduce_sum(log_qa_x))
+        #print("\nelbo_kf :", -tf.reduce_sum(elbo_kf))
+        #print("log_px_a :", -tf.reduce_sum(log_px_a))
+        #print("log_qa_x :", tf.reduce_sum(log_qa_x))
 
         KL = tfp.distributions.kl_divergence(mvn_a, tfp.distributions.MultivariateNormalTriL(0, tf.linalg.cholesky(tf.eye(self.dim_a, batch_shape=[self.batch_size*self.seq_size], dtype=tf.float64))))
 
