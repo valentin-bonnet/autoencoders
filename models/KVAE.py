@@ -293,8 +293,8 @@ class KVAE(tf.keras.Model):
 
         #tf.print((elbo_kf + log_px_z - log_qa_x).shape)
         print("\nelbo_kf :", -tf.reduce_sum(elbo_kf))
-        print("\nlog_px_a :", -tf.reduce_sum(log_px_a))
-        print("\nlog_qa_x :", tf.reduce_sum(log_qa_x))
+        print("log_px_a :", -tf.reduce_sum(log_px_a))
+        print("log_qa_x :", tf.reduce_sum(log_qa_x))
         loss = -tf.reduce_sum(elbo_kf + log_px_a - log_qa_x)
 
         return loss
