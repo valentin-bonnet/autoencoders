@@ -217,7 +217,7 @@ class KVAE(tf.keras.Model):
         a_arr = tf.transpose(a_arr.stack(), [1, 0, 2])
 
         z_smooth_arr = tf.concat([tf.transpose(z_smooth_arr.stack(), [1, 0, 2]), tf.expand_dims(last_z, 1)], axis=1)
-        std_smooth_arr = tf.transpose(std_smooth_arr.stack(), [1, 0, 2, 3])
+        std_smooth_arr = tf.concat([tf.transpose(std_smooth_arr.stack(), [1, 0, 2, 3]), tf.expand_dims(last_std, 1)], axis=1)
         #cov_matrix_smooth = tf.matmul(std_smooth_arr, tf.transpose(std_smooth_arr, [0, 1, 3, 2])) + (tf.eye(self.dim_z)*1e-10)
         #cov_matrix_smooth = tf.math.maximum(cov_matrix_smooth, 1e-4)
         #print(cov_matrix_smooth)
