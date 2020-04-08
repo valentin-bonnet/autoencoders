@@ -280,7 +280,7 @@ class KVAE(tf.keras.Model):
         #lnpdf = self.log_normal_pdf(a_seq, mu_a, logvar_a)
         #log_qa_x = tf.reduce_sum(tf.reshape(self.log_normal_pdf(a_seq, mu_a, logvar_a), [self.batch_size, self.seq_size]), [1])
         #return elbo_kf + tf.reduce_mean(lnpdf)
-        im_logit = tf.reshape(self.decode(a_seq, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        im_logit = tf.reshape(self.decode(a_seq, False), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
 
         #cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=im_logit, labels=im)
         #log_px_a = -tf.reduce_sum(cross_ent, axis=[1, 2, 3, ])
@@ -346,7 +346,8 @@ class KVAE(tf.keras.Model):
 
         #mu_a, logvar_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, img_size, img_size, 1]))
         #a = model.reparameterize(mu_a, logvar_a)
-        im_logit = tf.reshape(self.decode(a, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        im_logit = tf.reshape(self.decode(a, False), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        im_logit = tf.clip_by_value(im_logit, 0.0, 1.0)
         accuracy = tf.reduce_mean(tf.square(im_logit - im))
 
         return accuracy
@@ -450,7 +451,8 @@ class KVAE(tf.keras.Model):
 
         # mu_a, logvar_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, img_size, img_size, 1]))
         # a = model.reparameterize(mu_a, logvar_a)
-        im_logit = tf.reshape(self.decode(a_arr, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        im_logit = tf.reshape(self.decode(a_arr, False), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        im_logit = tf.clip_by_value(im_logit, 0.0, 1.0)
         return im_logit
 
     def predict_seq(self, imgs, mask):
