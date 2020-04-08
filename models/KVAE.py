@@ -305,7 +305,7 @@ class KVAE(tf.keras.Model):
         print("log_px_a :", -tf.reduce_sum(log_px_a))
         print("log_qa_x :", tf.reduce_sum(log_qa_x))
 
-        KL = tfp.distributions.kl_divergence(mvn_a, tfp.distributions.MultivariateNormalTriL(0, tf.linalg.cholesky(tf.eye(self.dim_z, batch_shape=[self.batch_size*self.seq_size], dtype=tf.float64))))
+        KL = tfp.distributions.kl_divergence(mvn_a, tfp.distributions.MultivariateNormalTriL(0, tf.linalg.cholesky(tf.eye(self.dim_a, batch_shape=[self.batch_size*self.seq_size], dtype=tf.float64))))
 
         #loss = -tf.reduce_sum(elbo_kf + log_px_a - log_qa_x)
         loss = tf.reduce_sum(-elbo_kf + log_px_a - KL)
