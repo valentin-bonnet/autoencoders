@@ -8,7 +8,7 @@ tfd = tfp.distributions
 
 
 class KVAE(tf.keras.Model):
-    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=64, sequence_length=20, dim_a=100, dim_z=4, dim_u=10, std=0.05, use_bn=False):
+    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=64, sequence_length=20, dim_a=20, dim_z=4, dim_u=10, std=0.05, use_bn=False):
         super(KVAE, self).__init__()
         self.model_type = 'KVAE'
         self.batch_size = 8
@@ -160,6 +160,9 @@ class KVAE(tf.keras.Model):
             std_prev = post_std
             post_z_arr = post_z_arr.write(i, post_z)
             post_std_arr = post_std_arr.write(i, post_std)
+            if tf.reduce_any(tf.linalg.eigvalsh(post_std) < 0):
+                print("NO SMOOTH : eigen < 0")
+                #print(post_std)
 
 
         last_z_filt = post_z_arr.read(self.seq_size-1)
@@ -188,7 +191,8 @@ class KVAE(tf.keras.Model):
             z_smooth = post_z_arr.read(j-1) + temp
             temp = tf.matmul(D, (prev_std_smooth - std_hat_arr.read(j)))
             std_smooth = post_std_arr.read(j-1) + tf.matmul(temp, tf.transpose(D, perm=[0, 2, 1]))
-
+            if tf.reduce_any(tf.linalg.eigvalsh(std_smooth) < 0):
+                print("AFTER SMOOTH : eigen < 0")
 
             prev_z_smooth = z_smooth
             prev_std_smooth = std_smooth
@@ -303,8 +307,8 @@ class KVAE(tf.keras.Model):
 
         KL = tfp.distributions.kl_divergence(mvn_a, tfp.distributions.MultivariateNormalTriL(0, tf.linalg.cholesky(tf.eye(self.dim_a, batch_shape=[self.batch_size*self.seq_size], dtype=tf.float64))))
 
-        #loss = -tf.reduce_sum(elbo_kf + log_px_a - log_qa_x)
-        loss = -tf.reduce_sum(elbo_kf) + tf.reduce_sum(log_px_a) - tf.reduce_sum(log_qa_x) - tf.reduce_sum(KL)
+        loss = -tf.reduce_sum(elbo_kf + log_px_a - log_qa_x)
+        #loss = tf.reduce_sum(-elbo_kf + log_px_a - KL)
 
         return loss
 
