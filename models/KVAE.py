@@ -267,7 +267,7 @@ class KVAE(tf.keras.Model):
         #tf.print(std_a.shape)
         mvn_a = tfp.distributions.MultivariateNormalTriL(mu_a, std_a)
         a_seq = mvn_a.sample()
-        print("a_seq shape: ", a_seq.shape)
+        print("\na_seq shape: ", a_seq.shape)
         #print("mu_a seq shape: ", mu_a.shape)
         #print("std_a seq shape: ", std_a.shape)
         #print("a seq shape: ", a_seq.shape)
