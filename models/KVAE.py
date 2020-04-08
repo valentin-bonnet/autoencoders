@@ -369,8 +369,8 @@ class KVAE(tf.keras.Model):
             eps = tf.random.normal(shape=(100, self.latent_dim))
         return self.decode(eps, apply_sigmoid=True)
 
-    def encode(self, a):
-        a_inf = self.inference_net(a)
+    def encode(self, x):
+        a_inf = self.inference_net(x)
         # tf.print("x_inf : ", x_inf[0])
         mean, std = tf.split(a_inf, num_or_size_splits=[self.dim_a, self.dim_a * (self.dim_a + 1) // 2], axis=1)
         fill_t = tfp.bijectors.FillTriangular()
