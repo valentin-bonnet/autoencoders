@@ -232,9 +232,9 @@ class KVAE(tf.keras.Model):
             print("elbo : eigen == 0")
         mvn_smooth = tfp.distributions.MultivariateNormalTriL(loc=z_smooth_arr, scale_tril=tf.linalg.cholesky(std_smooth_arr))
         #mvn_smooth = tfp.distributions.MultivariateNormalFullCovariance(z_smooth_arr, tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2))
-        smooth_sample = mvn_smooth.sample()
+        smooth_sample = mvn_smooth.sample()[:, 1:, :]
         #return tf.reduce_mean(self.decode(tf.reshape(a_arr, [self.batch_size*(self.seq_size-1), self.dim_a])))+tf.reduce_mean(z_smooth_arr)+tf.reduce_mean(smooth_sample)
-        z_transition = tf.squeeze(tf.matmul(A, tf.expand_dims(smooth_sample, -1)))
+        z_transition = tf.squeeze(tf.matmul(A[:, :-1, :], tf.expand_dims(smooth_sample[:, :-1, :], -1)))
 
         mvn_transition = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_z, dtype=tf.float64), scale_tril=tf.linalg.cholesky(self.Q))
         #mvn_transition = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_z), self.Q)
