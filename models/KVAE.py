@@ -440,12 +440,40 @@ class KVAE(tf.keras.Model):
         #a_arr.mark_used()
 
         A.mark_used()
-        C.mark_used()
-        z_smooth.mark_used()
-        std_smooth.mark_used()
 
+        z = tf.concat([tf.transpose(z_smooth.stack(), [1, 0, 2]), tf.expand_dims(last_z, 1)], 1)
+        std = tf.concat([tf.transpose(std_smooth.stack(), [1, 0, 2, 3]), tf.expand_dims(last_std, 1)], 1)
+        # std = tf.matmul(std, tf.transpose(std, [0, 1, 3, 2])) + (tf.eye(self.dim_z)*1e-10)
+        # std = tf.exp((std + tf.transpose(std, perm=[0, 1, 3, 2]))/2)
+        # print("z shape: ", z.shape)
+        # print("std shape: ", std.shape)
+        # print("std :", std[0, 19, :, :])
+        # print("std min : ", tf.reduce_min(std))
+        # std = tf.math.maximum(std, 1e-4)
+        if tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
+            print("rec : eigen < 0")
+            print(tf.reduce_min(tf.linalg.eigvalsh(std)))
+            s, u, v = tf.linalg.svd(std)
+            print(v.shape)
+            print(s.shape)
+            print(tf.linalg.diag(s).shape)
+            h = v @ tf.linalg.diag(s) @ tf.transpose(v, [0, 1, 3, 2])
+            std = (std + tf.transpose(std, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2])) / 4.0 + (
+                        tf.eye(self.dim_z, dtype=tf.float64) * 1e-6)
+        if tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
+            print("rec : eigen < 0")
+            print(tf.reduce_min(tf.linalg.eigvalsh(std)))
+        if tf.reduce_any(tf.linalg.eigvalsh(std) == 0):
+            print("rec : eigen == 0")
+        cholesky = tf.linalg.cholesky(std)
+        mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
+        # mvn = tfp.distributions.MultivariateNormalFullCovariance(z, std)
+        samples = mvn.sample()
 
-        a_arr = tf.transpose(a_arr.stack(), [1, 0, 2])
+        a = tf.squeeze(tf.matmul(tf.transpose(C.stack(), [1, 0, 2, 3]), tf.expand_dims(samples, -1)))
+        a = tf.reshape(a, [self.batch_size * self.seq_size, self.dim_a])
+
+        #a_arr = tf.transpose(a_arr.stack(), [1, 0, 2])
 
         #z = tf.concat([tf.transpose(z_smooth.stack(), [1, 0, 2]), tf.expand_dims(last_z, 1)], 1)
         #std = tf.concat([tf.transpose(std_smooth.stack(), [1, 0, 2, 3]), tf.expand_dims(last_std, 1)], 1)
@@ -460,7 +488,7 @@ class KVAE(tf.keras.Model):
         #a = tf.squeeze(tf.matmul(tf.transpose(C.stack(), [1, 0, 2, 3]), tf.expand_dims(samples, -1)))
         #a = tf.reshape(a, [self.batch_size * self.seq_size, self.dim_a])
 
-        a_arr = tf.reshape(a_arr, [self.batch_size*self.seq_size, self.dim_a])
+        a_arr = tf.reshape(a, [self.batch_size*self.seq_size, self.dim_a])
 
         # mu_a, logvar_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, img_size, img_size, 1]))
         # a = model.reparameterize(mu_a, logvar_a)
@@ -479,6 +507,9 @@ class KVAE(tf.keras.Model):
             loss = self.compute_loss(x)
         gradients = tape.gradient(loss, self.trainable_variables)
         optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+        print("\n\n\n ###################\n\n")
+        print(self.trainable_variables)
+        print("\n\n ###################\n\n\n")
         return loss
 
     def compute_accuracy(self, x):

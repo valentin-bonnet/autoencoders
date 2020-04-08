@@ -414,9 +414,7 @@ class KVAE(tf.keras.Model):
         a = tf.squeeze(tf.matmul(tf.transpose(C.stack(), [1, 0, 2, 3]), tf.expand_dims(samples, -1)))
         a = tf.reshape(a, [self.batch_size * self.seq_size, self.dim_a])
 
-        mu_a, std_a = self.encode(tf.reshape(imgs, [self.batch_size*self.seq_size, 64, 64, 1]))
-        mvn_a = tfp.distributions.MultivariateNormalTriL(mu_a, std_a)
-        a = mvn_a.sample()
+        # mu_a, logvar_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, img_size, img_size, 1]))
         # a = model.reparameterize(mu_a, logvar_a)
         im_logit = tf.reshape(self.decode(a, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
         return im_logit
@@ -432,7 +430,6 @@ class KVAE(tf.keras.Model):
             loss = self.compute_loss(x)
         gradients = tape.gradient(loss, self.trainable_variables)
         optimizer.apply_gradients(zip(gradients, self.trainable_variables))
-        print(self.trainable_variables)
         return loss
 
     def compute_accuracy(self, x):
