@@ -256,6 +256,10 @@ class KVAE(tf.keras.Model):
                      tf.reduce_sum(entropy, axis=[1])]
 
         #kf_elbo = tf.reduce_sum(log_probs, axis=[2])
+        print("\nlog_prob_transition: ", tf.reduce_sum(log_prob_transition))
+        print("log_prob_emission: ", tf.reduce_sum(log_prob_emission))
+        print("log_prob_0: ", tf.reduce_sum(log_prob_0))
+        print("entropy: ", tf.reduce_sum(entropy))
         kf_elbo = tf.reduce_sum(log_prob_transition, axis=[1]) + tf.reduce_sum(log_prob_emission, axis=[1]) + log_prob_0 + tf.reduce_sum(entropy, axis=[1])
 
         return kf_elbo
