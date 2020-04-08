@@ -234,6 +234,8 @@ class KVAE(tf.keras.Model):
         #mvn_smooth = tfp.distributions.MultivariateNormalFullCovariance(z_smooth_arr, tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2))
         smooth_sample = mvn_smooth.sample()[:, 1:, :]
         #return tf.reduce_mean(self.decode(tf.reshape(a_arr, [self.batch_size*(self.seq_size-1), self.dim_a])))+tf.reduce_mean(z_smooth_arr)+tf.reduce_mean(smooth_sample)
+        print("A shape: ", A.shape)
+        print("smooth_sample shape: ", smooth_sample.shape)
         z_transition = tf.squeeze(tf.matmul(A[:, :-1, :], tf.expand_dims(smooth_sample[:, :-1, :], -1)))
 
         mvn_transition = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_z, dtype=tf.float64), scale_tril=tf.linalg.cholesky(self.Q))
