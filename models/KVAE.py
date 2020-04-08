@@ -216,7 +216,7 @@ class KVAE(tf.keras.Model):
         C = tf.transpose(C.stack(), [1, 0, 2, 3])
         a_arr = tf.transpose(a_arr.stack(), [1, 0, 2])
 
-        z_smooth_arr = tf.transpose(z_smooth_arr.stack(), [1, 0, 2])
+        z_smooth_arr = tf.concat([tf.transpose(z_smooth_arr.stack(), [1, 0, 2]), last_z], axis=1)
         std_smooth_arr = tf.transpose(std_smooth_arr.stack(), [1, 0, 2, 3])
         #cov_matrix_smooth = tf.matmul(std_smooth_arr, tf.transpose(std_smooth_arr, [0, 1, 3, 2])) + (tf.eye(self.dim_z)*1e-10)
         #cov_matrix_smooth = tf.math.maximum(cov_matrix_smooth, 1e-4)
@@ -235,7 +235,7 @@ class KVAE(tf.keras.Model):
             print("elbo : eigen == 0")
         mvn_smooth = tfp.distributions.MultivariateNormalTriL(loc=z_smooth_arr, scale_tril=tf.linalg.cholesky(std_smooth_arr))
         #mvn_smooth = tfp.distributions.MultivariateNormalFullCovariance(z_smooth_arr, tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2))
-        smooth_sample = mvn_smooth.sample()[:, 1:, :]
+        smooth_sample = mvn_smooth.sample()
         #return tf.reduce_mean(self.decode(tf.reshape(a_arr, [self.batch_size*(self.seq_size-1), self.dim_a])))+tf.reduce_mean(z_smooth_arr)+tf.reduce_mean(smooth_sample)
         print("A shape: ", A.shape)
         print("smooth_sample shape: ", smooth_sample.shape)
@@ -243,7 +243,7 @@ class KVAE(tf.keras.Model):
 
         mvn_transition = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_z, dtype=tf.float64), scale_tril=tf.linalg.cholesky(self.Q))
         #mvn_transition = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_z), self.Q)
-        log_prob_transition = mvn_transition.log_prob(smooth_sample - z_transition)
+        log_prob_transition = mvn_transition.log_prob(smooth_sample[:, 1:, :] - z_transition)
 
         mvn_emission = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_a, dtype=tf.float64), scale_tril=tf.linalg.cholesky(self.R))
         #mvn_emission = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_a), self.R)
