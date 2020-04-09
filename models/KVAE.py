@@ -294,7 +294,8 @@ class KVAE(tf.keras.Model):
         print("a_seq : ", a_seq.shape)
         log_qa_x = self.log_gaussian(a_seq, mu_a, std_a)
         print("log_qa_x : ", log_qa_x.shape)
-        log_qa_x = tf.reduce_sum(tf.reshape(log_qa_x, [self.batch_size, self.seq_size]), [1])
+        #log_qa_x = tf.reshape(tf.reduce_sum(log_qa_x, 1), [self.batch_size, self.seq_size])
+        log_qa_x = tf.reduce_sum(log_qa_x)
 
 
         #return tf.reduce_mean(elbo_kf)+tf.reduce_mean(log_qa_x)
@@ -307,7 +308,7 @@ class KVAE(tf.keras.Model):
 
         #cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=im_logit, labels=im)
         #log_px_a = -tf.reduce_sum(cross_ent, axis=[1, 2, 3, ])
-        log_px_a = self.log_bernoulli(im, im_logit, eps=1e-6)
+        log_px_a = tf.reduce_sum(self.log_bernoulli(im, im_logit, eps=1e-6))
 
         #print("elbo : ", tf.reduce_sum(elbo_kf))
         #print("log_px|a : ", tf.reduce_sum(log_px_a))
@@ -320,7 +321,7 @@ class KVAE(tf.keras.Model):
 
         #KL = tfp.distributions.kl_divergence(mvn_a, tfp.distributions.MultivariateNormalTriL(0, tf.linalg.cholesky(tf.eye(self.dim_a, batch_shape=[self.batch_size*self.seq_size], dtype=tf.float64))))
 
-        loss = -tf.reduce_sum(elbo_kf + log_px_a - log_qa_x)
+        loss = -(elbo_kf + log_px_a - log_qa_x)
         #loss = tf.reduce_sum(-elbo_kf + log_px_a - KL)
 
         return loss
