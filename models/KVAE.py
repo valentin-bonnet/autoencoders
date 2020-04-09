@@ -22,7 +22,7 @@ class KVAE(tf.keras.Model):
         self.dim_z = dim_z
         #self.dim_u = dim_u
         self.K = 3
-        self.latent_dim = self.dim_a + (self.dim_a * (self.dim_a + 1) // 2)
+        self.latent_dim = self.dim_a
 
         init_A = tf.eye(self.dim_z, batch_shape=[self.K], dtype=tf.float64)
         init_C = tf.random.normal(shape=[self.K, self.dim_a, self.dim_z], dtype=tf.float64)*0.05
