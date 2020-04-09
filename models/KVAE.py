@@ -283,6 +283,9 @@ class KVAE(tf.keras.Model):
         #print("std_a seq shape: ", std_a.shape)
         #print("a seq shape: ", a_seq.shape)
         #log_qa_x = mvn_a.log_prob(a_seq)
+        a_seq = tf.reshape(a_seq, [self.batch_size*self.seq_size, self.im_shape*self.im_shape])
+        mu_a = tf.reshape(mu_a, [self.batch_size*self.seq_size, self.im_shape*self.im_shape])
+        std_a = tf.reshape(std_a, [self.batch_size*self.seq_size, self.im_shape*self.im_shape])
         log_qa_x = self.log_gaussian(a_seq, mu_a, std_a)
         log_qa_x = tf.reduce_sum(tf.reshape(log_qa_x, [self.batch_size, self.seq_size]), [1])
 
