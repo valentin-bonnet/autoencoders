@@ -461,7 +461,7 @@ class KVAE(tf.keras.Model):
     def reconstruct(self, imgs):
 
         z_smooth, std_smooth, a_arr, A, C, last_z, last_std = self.smooth(imgs)
-        #a_arr.mark_used()
+        a_arr.mark_used()
 
 
         #a_arr = tf.transpose(a_arr.stack(), [1, 0, 2])
