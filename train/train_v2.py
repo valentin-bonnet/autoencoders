@@ -278,7 +278,7 @@ filename = 'batch_normalization'
 tf.keras.backend.set_floatx('float64')
 datasets = Dataset.Dataset('moving_mnist')
 
-model1 = construct_model.get_model('KVAE', [128, 252, 314], 2048, 64)
+model1 = construct_model.get_model('KVAE', [32, 32, 32], 2048, 64)
 
 
 models = [model1]

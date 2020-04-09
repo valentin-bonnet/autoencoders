@@ -45,7 +45,7 @@ class KVAE(tf.keras.Model):
         self.inference_net = tf.keras.Sequential()
         self.inference_net.add(tf.keras.layers.Input(shape=(input_shape, input_shape, 1)))
         for l in layers:
-            self.inference_net.add(tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, padding='same'))
+            self.inference_net.add(tf.keras.layers.Conv2D(filters=l, kernel_size=5, strides=1, padding='same'))
             if use_bn:
                 self.inference_net.add(tf.keras.layers.BatchNormalization())
             self.inference_net.add(tf.keras.layers.ReLU())
@@ -66,7 +66,7 @@ class KVAE(tf.keras.Model):
 
 
         for l in layers:
-            self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
+            self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=5, strides=1, padding='same'))
             if use_bn:
                 self.generative_net.add(tf.keras.layers.BatchNormalization())
             self.generative_net.add(tf.keras.layers.ReLU())
@@ -148,8 +148,7 @@ class KVAE(tf.keras.Model):
             C = C.write(i, Ci)
 
             mu_a, std_a = self.encode(images[:, i])
-            mvn_a = tfp.distributions.MultivariateNormalDiag(mu_a, std_a)
-            a_prev = mvn_a.sample()
+            a_prev = self.reparameterize(mu_a, std_a)
             a_arr = a_arr.write(i, a_prev)
             a_prev = tf.expand_dims(a_prev, 1)
 
@@ -276,13 +275,15 @@ class KVAE(tf.keras.Model):
         elbo_kf = tf.reduce_sum(self.get_elbo(im))
         mu_a, std_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, self.im_shape, self.im_shape]))
         #tf.print(std_a.shape)
-        mvn_a = tfp.distributions.MultivariateNormalDiag(mu_a, std_a)
-        a_seq = mvn_a.sample()
+        #mvn_a = tfp.distributions.MultivariateNormalDiag(mu_a, std_a)
+        #a_seq = mvn_a.sample()
+        a_seq = self.reparameterize(mu_a, std_a)
         #print("\na_seq shape: ", a_seq.shape)
         #print("mu_a seq shape: ", mu_a.shape)
         #print("std_a seq shape: ", std_a.shape)
         #print("a seq shape: ", a_seq.shape)
-        log_qa_x = mvn_a.log_prob(a_seq)
+        #log_qa_x = mvn_a.log_prob(a_seq)
+        log_qa_x = self.log_gaussian(a_seq, mu_a, tf.math.log(std_a))
         log_qa_x = tf.reduce_sum(tf.reshape(log_qa_x, [self.batch_size, self.seq_size]), [1])
 
 
@@ -401,6 +402,11 @@ class KVAE(tf.keras.Model):
     def log_normal_pdf(self, sample, mean, logvar, raxis=1):
       log2pi = tf.math.log(2. * np.pi)
       return tf.reduce_sum(-.5 * ((sample - mean) ** 2. * tf.exp(-logvar) + logvar + log2pi), axis=raxis)
+
+    def log_gaussian(self, x, mean, var):
+        const_log_pdf = (- 0.5 * np.log(2 * np.pi)).astype('float64')
+        # return - 0.5 * tf.log(2*np.pi) - var / 2 - tf.square((x - mean)) / (2 * tf.exp(var) + 1e-8)
+        return const_log_pdf - tf.math.log(var) / 2 - tf.square(x - mean) / (2 * var)
 
     def compute_loss(self, x):
         loss = self.get_loss(x)
