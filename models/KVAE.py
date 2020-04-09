@@ -142,7 +142,7 @@ class KVAE(tf.keras.Model):
             alpha = self.lgssm_parameters_inference(a_prev)
             #Ai, Ci = tf.split(AC, num_or_size_splits=[self.dim_z ** 2, self.dim_a * self.dim_z], axis=-1)
             Ai = tf.reshape(tf.matmul(alpha, tf.reshape(self.A, [-1, self.dim_z*self.dim_z])), [-1, self.dim_z, self.dim_z])
-            Ci = tf.reshape(tf.matmul(alpha, tf.reshape(self.C, [-1, self.dim_z * self.dim_z])), [-1, self.dim_z, self.dim_z])
+            Ci = tf.reshape(tf.matmul(alpha, tf.reshape(self.C, [-1, self.dim_a * self.dim_z])), [-1, self.dim_a, self.dim_z])
 
             A = A.write(i, Ai)
             C = C.write(i, Ci)
