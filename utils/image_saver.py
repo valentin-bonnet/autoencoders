@@ -63,7 +63,7 @@ def generate_and_save_images_compare_seq(model, test_input, file_name_head='imag
     x_logits = model.reconstruct(test_input)
     test_input = np.squeeze(test_input)
     x_logits = np.squeeze(x_logits)
-    print(x_logits)
+    #print(x_logits)
     #print("\n\n#######\n input:\n", test_input[0, 5, :, :])
     #print("max: ", tf.reduce_max(test_input[0, 5, :, :]))
     #print("\n\n#######\n output:\n", x_logits[0, 5, :, :])
