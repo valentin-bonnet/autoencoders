@@ -21,7 +21,11 @@ class KVAE(tf.keras.Model):
         self.dim_a = dim_a
         self.dim_z = dim_z
         #self.dim_u = dim_u
+        self.K = 3
         self.latent_dim = self.dim_a + (self.dim_a * (self.dim_a + 1) // 2)
+
+        self.A = tf.eye(self.dim_z, batch_shape=[self.batch_size, self.K], dtype=tf.float64)
+        self.C = tf.random.normal(shape=[self.batch_size, self.K, self.dim_a, self.dim_z], dtype=tf.float64)
 
         self.Q = tf.constant(tf.eye(self.dim_z, dtype=tf.float64) * 0.08)  # z*z
         self.R = tf.constant(tf.eye(self.dim_a, dtype=tf.float64) * 0.03)
@@ -33,16 +37,16 @@ class KVAE(tf.keras.Model):
         self.lgssm_parameters_inference = tf.keras.Sequential()
 
         self.lgssm_parameters_inference.add(tf.keras.layers.Input(shape=(None, self.dim_a), batch_size=self.batch_size, dtype='float64'))
-        self.lgssm_parameters_inference.add(tf.keras.layers.LSTM(128, stateful=True, dtype='float64'))
+        self.lgssm_parameters_inference.add(tf.keras.layers.LSTM(50, stateful=True, dtype='float64'))
         self.lgssm_parameters_inference.add(tf.keras.layers.Flatten())
         #self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.dim_z ** 2 + self.dim_z * self.dim_u + self.dim_a * self.dim_z))
-        self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.dim_z ** 2 + self.dim_a * self.dim_z, dtype='float64'))
+        self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.K, activation=tf.nn.softmax, dtype='float64'))
 
         ## ENCODER
         self.inference_net = tf.keras.Sequential()
         self.inference_net.add(tf.keras.layers.Input(shape=(input_shape, input_shape, 1)))
         for l in layers:
-            self.inference_net.add(tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, padding='same'))
+            self.inference_net.add(tf.keras.layers.Conv2D(filters=l, kerne_lsize=4, strides=2, padding='same'))
             if use_bn:
                 self.inference_net.add(tf.keras.layers.BatchNormalization())
             self.inference_net.add(tf.keras.layers.ReLU())
@@ -131,13 +135,13 @@ class KVAE(tf.keras.Model):
         std_prev = std0
         a_prev = a0
 
-        A = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
-        C = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
+        #A = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
+        #C = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
         # for i, img in enumerate(images):
         self.lgssm_parameters_inference.reset_states()
         for i in tf.range(self.seq_size):
-            AC = self.lgssm_parameters_inference(a_prev)
-            Ai, Ci = tf.split(AC, num_or_size_splits=[self.dim_z ** 2, self.dim_a * self.dim_z], axis=-1)
+            alpha = self.lgssm_parameters_inference(a_prev)
+            #Ai, Ci = tf.split(AC, num_or_size_splits=[self.dim_z ** 2, self.dim_a * self.dim_z], axis=-1)
             Ai = tf.reshape(Ai, [self.batch_size, self.dim_z, self.dim_z])
             Ci = tf.reshape(Ci, [self.batch_size, self.dim_a, self.dim_z])
 
