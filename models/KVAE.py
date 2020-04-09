@@ -34,10 +34,10 @@ class KVAE(tf.keras.Model):
 
         self.A = tf.Variable(initial_value=init_A)
         self.C = tf.Variable(initial_value=init_C)
-        self.Q = tf.Variable(initial_value=init_Q)
-        self.R = tf.Variable(initial_value=init_R)
-        self.z0 = tf.Variable(initial_value=init_z0)
-        self.std0 = tf.Variable(initial_value=init_std0)
+        self.Q = tf.Variable(initial_value=init_Q, trainable=False)
+        self.R = tf.Variable(initial_value=init_R, trainable=False)
+        self.z0 = tf.Variable(initial_value=init_z0, trainable=False)
+        self.std0 = tf.Variable(initial_value=init_std0, trainable=False)
         self.a0 = tf.Variable(initial_value=init_a0)
 
         str_arch = '_'.join(str(x) for x in self.architecture)
@@ -390,7 +390,7 @@ class KVAE(tf.keras.Model):
 
     def sample(self, eps=None):
         if eps is None:
-            eps = tf.random.normal(shape=(100, self.latent_dim))
+            eps = tf.random.normal(shape=(100, self.dim_a*2))
         return self.decode(eps, apply_sigmoid=True)
 
     def encode(self, a):
