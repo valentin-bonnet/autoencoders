@@ -8,7 +8,7 @@ tfd = tfp.distributions
 
 
 class KVAE(tf.keras.Model):
-    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=64, sequence_length=20, dim_a=20, dim_z=4, dim_u=10, std=0.05, use_bn=False):
+    def __init__(self, layers=[64, 128, 512], latent_dim=1024, input_shape=64, sequence_length=20, dim_a=2, dim_z=4, dim_u=10, std=0.05, use_bn=False):
         super(KVAE, self).__init__()
         self.model_type = 'KVAE'
         self.batch_size = 8
@@ -141,7 +141,7 @@ class KVAE(tf.keras.Model):
         post_z_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
         post_std_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
         a_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
-        std_min = tf.eye(self.dim_z, self.dim_z, [self.batch_size], dtype=tf.float64)*1e-4
+        #std_min = tf.eye(self.dim_z, self.dim_z, [self.batch_size], dtype=tf.float64)*1e-4
         z_prev = self.z0
         std_prev = self.std0
         a_prev = self.a0
@@ -167,7 +167,8 @@ class KVAE(tf.keras.Model):
 
             z_hat, std_hat = self.prediction(z_prev, std_prev, A.read(i))
             z_hat_arr = z_hat_arr.write(i, z_hat)
-            std_hat_arr = std_hat_arr.write(i, tf.maximum(std_hat, std_min))
+            #std_hat_arr = std_hat_arr.write(i, tf.maximum(std_hat, std_min))
+            std_hat_arr = std_hat_arr.write(i, std_hat)
             post_z, post_std = self.update(a_prev, z_hat, std_hat, C.read(i))
             z_prev = post_z
             std_prev = post_std

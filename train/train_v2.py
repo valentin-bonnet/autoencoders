@@ -282,7 +282,7 @@ model1 = construct_model.get_model('KVAE', [32, 32, 32], 2048, 64)
 
 
 models = [model1]
-lrs = [1e-4]
+lrs = [1e-3]
 optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
 def lr_fn(lr, step):
     if step == 30 or step == 50:
