@@ -276,7 +276,7 @@ class KVAE(tf.keras.Model):
         elbo_kf = tf.reduce_sum(self.get_elbo(im))
         mu_a, std_a = self.encode(tf.reshape(im, [self.batch_size*self.seq_size, self.im_shape, self.im_shape]))
         #tf.print(std_a.shape)
-        mvn_a = tfp.distributions.MultivariateNormalTriL(mu_a, std_a)
+        mvn_a = tfp.distributions.MultivariateNormalDiag(mu_a, std_a)
         a_seq = mvn_a.sample()
         #print("\na_seq shape: ", a_seq.shape)
         #print("mu_a seq shape: ", mu_a.shape)
