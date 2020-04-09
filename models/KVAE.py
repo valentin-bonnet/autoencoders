@@ -277,7 +277,7 @@ class KVAE(tf.keras.Model):
         #tf.print(std_a.shape)
         #mvn_a = tfp.distributions.MultivariateNormalDiag(mu_a, std_a)
         #a_seq = mvn_a.sample()
-        a_seq = self.reparameterize(mu_a, std_a)
+        a_seq = self.reparameterize(mu_a, tf.math.log(std_a))
         #print("\na_seq shape: ", a_seq.shape)
         #print("mu_a seq shape: ", mu_a.shape)
         #print("std_a seq shape: ", std_a.shape)
