@@ -479,7 +479,7 @@ class KVAE(tf.keras.Model):
         a = tf.squeeze(tf.matmul(tf.transpose(C.stack(), [1, 0, 2, 3]), tf.expand_dims(samples, -1)))
         a = tf.reshape(a, [self.batch_size * self.seq_size, self.dim_a])
 
-        a_arr = tf.reshape(a_arr, [self.batch_size*self.seq_size, self.dim_a])
+        #a_arr = tf.reshape(a_arr, [self.batch_size*self.seq_size, self.dim_a])
 
         #mu_a, logvar_a = self.encode(tf.reshape(imgs, [self.batch_size*self.seq_size, self.im_shape, self.im_shape, 1]))
         #a = self.reparameterize(mu_a, logvar_a)
