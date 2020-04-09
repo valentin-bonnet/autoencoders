@@ -24,9 +24,8 @@ class KVAE(tf.keras.Model):
         self.K = 3
         self.latent_dim = self.dim_a + (self.dim_a * (self.dim_a + 1) // 2)
 
-        self.A = tf.eye(self.dim_z, batch_shape=[self.batch_size, self.K], dtype=tf.float64)
-        self.C = tf.random.normal(shape=[self.batch_size, self.K, self.dim_a, self.dim_z], dtype=tf.float64)
-
+        self.A = tf.eye(self.dim_z, batch_shape=[self.K], dtype=tf.float64)
+        self.C = tf.random.normal(shape=[self.K, self.dim_a, self.dim_z], dtype=tf.float64)*0.05
         self.Q = tf.constant(tf.eye(self.dim_z, dtype=tf.float64) * 0.08)  # z*z
         self.R = tf.constant(tf.eye(self.dim_a, dtype=tf.float64) * 0.03)
 
@@ -52,7 +51,7 @@ class KVAE(tf.keras.Model):
             self.inference_net.add(tf.keras.layers.ReLU())
 
         self.inference_net.add(tf.keras.layers.Flatten())
-        self.inference_net.add(tf.keras.layers.Dense(self.latent_dim))
+        self.inference_net.add(tf.keras.layers.Dense(self.dim_a*2))
 
         ## DECODER
 
@@ -135,22 +134,21 @@ class KVAE(tf.keras.Model):
         std_prev = std0
         a_prev = a0
 
-        #A = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
-        #C = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
+        A = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
+        C = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
         # for i, img in enumerate(images):
         self.lgssm_parameters_inference.reset_states()
         for i in tf.range(self.seq_size):
             alpha = self.lgssm_parameters_inference(a_prev)
             #Ai, Ci = tf.split(AC, num_or_size_splits=[self.dim_z ** 2, self.dim_a * self.dim_z], axis=-1)
-            Ai = tf.reshape(Ai, [self.batch_size, self.dim_z, self.dim_z])
-            Ci = tf.reshape(Ci, [self.batch_size, self.dim_a, self.dim_z])
-
+            Ai = tf.reshape(tf.matmul(alpha, tf.reshape(self.A, [-1, self.dim_z*self.dim_z])), [-1, self.dim_z, self.dim_z])
+            Ci = tf.reshape(tf.matmul(alpha, tf.reshape(self.C, [-1, self.dim_z * self.dim_z])), [-1, self.dim_z, self.dim_z])
 
             A = A.write(i, Ai)
             C = C.write(i, Ci)
 
             mu_a, std_a = self.encode(images[:, i])
-            mvn_a = tfp.distributions.MultivariateNormalTriL(mu_a, std_a)
+            mvn_a = tfp.distributions.MultivariateNormalDiag(mu_a, std_a)
             a_prev = mvn_a.sample()
             a_arr = a_arr.write(i, a_prev)
             a_prev = tf.expand_dims(a_prev, 1)
@@ -380,9 +378,7 @@ class KVAE(tf.keras.Model):
     def encode(self, a):
         a_inf = self.inference_net(a)
         # tf.print("x_inf : ", x_inf[0])
-        mean, std = tf.split(a_inf, num_or_size_splits=[self.dim_a, self.dim_a * (self.dim_a + 1) // 2], axis=1)
-        fill_t = tfp.bijectors.FillTriangular()
-        std = fill_t.forward(std)
+        mean, std = tf.split(a_inf, num_or_size_splits=[self.dim_a, self.dim_a], axis=1)
         std = tf.nn.sigmoid(std)
         return mean, std
 
