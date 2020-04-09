@@ -56,7 +56,8 @@ class KVAE(tf.keras.Model):
         ## DECODER
 
         layers.reverse()
-        size_decoded_frame = int(input_shape//(2**len(layers)))
+        #size_decoded_frame = int(input_shape//(2**len(layers)))
+        size_decoded_frame = self.im_shape**2
         size_decoded_layers = int(layers[0]//2)
 
         self.generative_net = tf.keras.Sequential()
