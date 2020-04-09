@@ -277,7 +277,10 @@ class KVAE(tf.keras.Model):
         #tf.print(std_a.shape)
         #mvn_a = tfp.distributions.MultivariateNormalDiag(mu_a, std_a)
         #a_seq = mvn_a.sample()
+        print("mu_a : ", mu_a.shape)
+        print("std_a : ", std_a.shape)
         a_seq = self.reparameterize(mu_a, tf.math.log(std_a))
+        print("a_seq : ", a_seq.shape)
         #print("\na_seq shape: ", a_seq.shape)
         #print("mu_a seq shape: ", mu_a.shape)
         #print("std_a seq shape: ", std_a.shape)
@@ -286,7 +289,11 @@ class KVAE(tf.keras.Model):
         a_seq = tf.reshape(a_seq, [self.batch_size*self.seq_size, self.dim_a])
         mu_a = tf.reshape(mu_a, [self.batch_size*self.seq_size, self.dim_a])
         std_a = tf.reshape(std_a, [self.batch_size*self.seq_size, self.dim_a])
+        print("mu_a : ", mu_a.shape)
+        print("std_a : ", std_a.shape)
+        print("a_seq : ", a_seq.shape)
         log_qa_x = self.log_gaussian(a_seq, mu_a, std_a)
+        print("log_qa_x : ", log_qa_x.shape)
         log_qa_x = tf.reduce_sum(tf.reshape(log_qa_x, [self.batch_size, self.seq_size]), [1])
 
 
@@ -383,7 +390,7 @@ class KVAE(tf.keras.Model):
         a_inf = self.inference_net(a)
         # tf.print("x_inf : ", x_inf[0])
         mean, std = tf.split(a_inf, num_or_size_splits=[self.dim_a, self.dim_a], axis=1)
-        std = tf.nn.sigmoid(std)
+        std = tf.nn.sigmoid(std)*0.03
         return mean, std
 
     def reparameterize(self, mean, logvar):
