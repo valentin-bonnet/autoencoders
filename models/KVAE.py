@@ -383,7 +383,7 @@ class KVAE(tf.keras.Model):
         return mean, std
 
     def reparameterize(self, mean, logvar):
-        eps = tf.random.normal(shape=mean.shape)
+        eps = tf.random.normal(shape=mean.shape, dtype=tf.float64)
         return eps * tf.exp(logvar * .5) + mean
 
     def decode(self, z, apply_sigmoid=False):
