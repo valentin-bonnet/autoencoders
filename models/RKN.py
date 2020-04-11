@@ -100,7 +100,7 @@ class RKN(tf.keras.Model):
         A_pred = tf.concat([tf.concat([B11, B12], -1),
                             tf.concat([B21, B22], -1)], -2)
         z_prior = A_pred @ z_post
-        std_u =
+        std_u = 0
 
 
 
