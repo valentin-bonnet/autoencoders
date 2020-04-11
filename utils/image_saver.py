@@ -3,6 +3,7 @@ import tensorflow as tf
 import numpy as np
 import os
 import cv2
+from PIL import Image
 
 
 def generate_and_save_images(model, epoch, test_input):
@@ -18,6 +19,24 @@ def generate_and_save_images(model, epoch, test_input):
     plt.savefig('..\imgs\image_at_epoch_{:04d}.png'.format(epoch))
     # plt.show()
 
+def generate_gif(images, file_name_head='image', path='./'):
+    im = []
+    for image in images:
+        im.append(Image.fromarray(image))
+
+    if not os.path.isdir(path):
+        os.makedirs(path)
+    file_path = os.path.join(path, file_name_head)
+    im[0].save(file_path+'.gif', save_all=True, append_images=[im[1:]])
+    plt.savefig(file_path + '.png')
+
+def generate_gif_concat(model, input, file_name_head='image', path='./'):
+    output = model.reconstruct(input)
+    input = tf.squeeze(input[0, ...]) #(seq_size, im_shape, im_shape)
+    output = tf.squeeze(output[0, ...]) #(seq_size, im_shape, im_shape)
+    concated_images = tf.concat([input, output], axis=1) ##(seq_size, im_shape*2, im_shape) # The image are concated horizontally
+
+    generate_gif(concated_images, file_name_head, path)
 
 def generate_and_save_images_compare(model, test_input, file_name_head='image', path='./'):
     x_logits = model.reconstruct(test_input)

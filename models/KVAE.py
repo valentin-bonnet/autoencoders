@@ -21,16 +21,16 @@ class KVAE(tf.keras.Model):
         self.dim_a = dim_a
         self.dim_z = dim_z
         #self.dim_u = dim_u
-        self.K = 3
+        self.K = 5
         self.latent_dim = self.dim_a
 
-        init_A = tf.eye(self.dim_z, batch_shape=[self.K], dtype=tf.float64)
-        init_C = tf.random.normal(shape=[self.K, self.dim_a, self.dim_z], dtype=tf.float64)*0.05
-        init_Q = tf.constant(tf.eye(self.dim_z, dtype=tf.float64) * 0.08)  # z*z
-        init_R = tf.constant(tf.eye(self.dim_a, dtype=tf.float64) * 0.03)
-        init_z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float64)
-        init_std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64) * 20.0  # z*z
-        init_a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float64)
+        init_A = tf.eye(self.dim_z, batch_shape=[self.K], dtype=tf.float32)
+        init_C = tf.random.normal(shape=[self.K, self.dim_a, self.dim_z], dtype=tf.float32)*0.05
+        init_Q = tf.constant(tf.eye(self.dim_z, dtype=tf.float32) * 0.08)  # z*z
+        init_R = tf.constant(tf.eye(self.dim_a, dtype=tf.float32) * 0.03)
+        init_z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float32)
+        init_std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float32) * 20.0  # z*z
+        init_a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float32)
 
         self.A = tf.Variable(initial_value=init_A)
         self.C = tf.Variable(initial_value=init_C)
@@ -46,11 +46,11 @@ class KVAE(tf.keras.Model):
 
         self.lgssm_parameters_inference = tf.keras.Sequential()
 
-        self.lgssm_parameters_inference.add(tf.keras.layers.Input(shape=(None, self.dim_a), batch_size=self.batch_size, dtype='float64'))
-        self.lgssm_parameters_inference.add(tf.keras.layers.LSTM(50, stateful=True, dtype='float64'))
+        self.lgssm_parameters_inference.add(tf.keras.layers.Input(shape=(None, self.dim_a), batch_size=self.batch_size))
+        self.lgssm_parameters_inference.add(tf.keras.layers.LSTM(50, stateful=True))
         self.lgssm_parameters_inference.add(tf.keras.layers.Flatten())
         #self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.dim_z ** 2 + self.dim_z * self.dim_u + self.dim_a * self.dim_z))
-        self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.K, activation=tf.nn.softmax, dtype='float64'))
+        self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.K, activation=tf.nn.softmax))
 
         ## ENCODER
         self.inference_net = tf.keras.Sequential()
@@ -130,24 +130,24 @@ class KVAE(tf.keras.Model):
         post_z = z_hat + tf.squeeze(tf.matmul(K, tf.expand_dims(residual, -1)))
         #post_std = (tf.eye(self.dim_z, dtype=tf.float32) - tf.matmul(K, C))
         #post_std = tf.matmul(post_std, std_hat)
-        IKC = (tf.eye(self.dim_z, dtype=tf.float64) - tf.matmul(K, C))
+        IKC = (tf.eye(self.dim_z, dtype=tf.float32) - tf.matmul(K, C))
         post_std = IKC @ std_hat @ tf.transpose(IKC, [0, 2, 1]) + K @ self.R @ tf.transpose(K, [0, 2, 1])
         return post_z, post_std
 
     def smooth(self, images):
 
-        z_hat_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
-        std_hat_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
-        post_z_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
-        post_std_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
-        a_arr = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
+        z_hat_arr = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
+        std_hat_arr = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
+        post_z_arr = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
+        post_std_arr = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
+        a_arr = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
         #std_min = tf.eye(self.dim_z, self.dim_z, [self.batch_size], dtype=tf.float64)*1e-4
         z_prev = self.z0
         std_prev = self.std0
         a_prev = self.a0
 
-        A = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
-        C = tf.TensorArray(tf.float64, size=self.seq_size, clear_after_read=False)
+        A = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
+        C = tf.TensorArray(tf.float32, size=self.seq_size, clear_after_read=False)
         # for i, img in enumerate(images):
         self.lgssm_parameters_inference.reset_states()
         for i in tf.range(self.seq_size):
@@ -187,8 +187,8 @@ class KVAE(tf.keras.Model):
 
 
 
-        z_smooth_arr = tf.TensorArray(tf.float64, size=self.seq_size - 1, clear_after_read=False)
-        std_smooth_arr = tf.TensorArray(tf.float64, size=self.seq_size - 1, clear_after_read=False)
+        z_smooth_arr = tf.TensorArray(tf.float32, size=self.seq_size - 1, clear_after_read=False)
+        std_smooth_arr = tf.TensorArray(tf.float32, size=self.seq_size - 1, clear_after_read=False)
         # tf.reverse(self.A, axis=0)
         for j in tf.range(self.seq_size-1, 0, -1):
             # print(post_std_arr.read(i).shape)
@@ -234,17 +234,19 @@ class KVAE(tf.keras.Model):
         #cov_matrix_smooth = tf.math.maximum(cov_matrix_smooth, 1e-4)
         #print(cov_matrix_smooth)
         #cov_matrix_smooth = tf.exp((std_smooth_arr + tf.transpose(std_smooth_arr, [0, 1, 3, 2]))/2)
+        """
         if tf.reduce_any(tf.linalg.eigvalsh(std_smooth_arr) < 0):
             print("elbo : eigen < 0")
             print(tf.reduce_min(tf.linalg.eigvalsh(std_smooth_arr)))
             s, u, v = tf.linalg.svd(std_smooth_arr)
             h = v @ tf.linalg.diag(s) @ tf.transpose(v, [0, 1, 3, 2])
-            std_smooth_arr = (std_smooth_arr + tf.transpose(std_smooth_arr, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2]))/4.0 + (tf.eye(self.dim_z, dtype=tf.float64)*1e-6)
+            std_smooth_arr = (std_smooth_arr + tf.transpose(std_smooth_arr, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2]))/4.0 + (tf.eye(self.dim_z, dtype=tf.float32)*1e-6)
         if tf.reduce_any(tf.linalg.eigvalsh(std_smooth_arr) < 0):
             print("elbo : eigen < 0")
             print(tf.reduce_min(tf.linalg.eigvalsh(std_smooth_arr)))
         if tf.reduce_any(tf.linalg.eigvalsh(std_smooth_arr) == 0):
             print("elbo : eigen == 0")
+        """
         mvn_smooth = tfp.distributions.MultivariateNormalTriL(loc=z_smooth_arr, scale_tril=tf.linalg.cholesky(std_smooth_arr))
         #mvn_smooth = tfp.distributions.MultivariateNormalFullCovariance(z_smooth_arr, tf.exp(std_smooth_arr+tf.transpose(std_smooth_arr, [0, 1, 3, 2])/2))
         smooth_sample = mvn_smooth.sample()
@@ -253,11 +255,11 @@ class KVAE(tf.keras.Model):
         #print("smooth_sample shape: ", smooth_sample.shape)
         z_transition = tf.squeeze(tf.matmul(A[:, :-1, :], tf.expand_dims(smooth_sample[:, :-1, :], -1)))
 
-        mvn_transition = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_z, dtype=tf.float64), scale_tril=tf.linalg.cholesky(self.Q))
+        mvn_transition = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_z, dtype=tf.float32), scale_tril=tf.linalg.cholesky(self.Q))
         #mvn_transition = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_z), self.Q)
         log_prob_transition = mvn_transition.log_prob(smooth_sample[:, 1:, :] - z_transition)
 
-        mvn_emission = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_a, dtype=tf.float64), scale_tril=tf.linalg.cholesky(self.R))
+        mvn_emission = tfp.distributions.MultivariateNormalTriL(loc=tf.zeros(self.dim_a, dtype=tf.float32), scale_tril=tf.linalg.cholesky(self.R))
         #mvn_emission = tfp.distributions.MultivariateNormalFullCovariance(tf.zeros(self.dim_a), self.R)
         log_prob_emission = mvn_emission.log_prob(a_arr - tf.squeeze(tf.matmul(C, tf.expand_dims(smooth_sample, -1))))
 
@@ -356,6 +358,7 @@ class KVAE(tf.keras.Model):
         #print("std :", std[0, 19, :, :])
         #print("std min : ", tf.reduce_min(std))
         #std = tf.math.maximum(std, 1e-4)
+        """
         if tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
             print("acc : eigen < 0")
             #print(tf.reduce_min(tf.linalg.eigvalsh(std)))
@@ -364,12 +367,13 @@ class KVAE(tf.keras.Model):
             #print(s.shape)
             #print(tf.linalg.diag(s).shape)
             h = v @ tf.linalg.diag(s) @ tf.transpose(v, [0, 1, 3, 2])
-            std = (std + tf.transpose(std, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2]))/4.0 + (tf.eye(self.dim_z, dtype=tf.float64)*1e-6)
+            std = (std + tf.transpose(std, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2]))/4.0 + (tf.eye(self.dim_z, dtype=tf.float32)*1e-6)
         if tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
             print("acc : eigen < 0")
             print(tf.reduce_min(tf.linalg.eigvalsh(std)))
         if tf.reduce_any(tf.linalg.eigvalsh(std) == 0):
             print("acc : eigen == 0")
+        """
         cholesky = tf.linalg.cholesky(std)
         mvn = tfp.distributions.MultivariateNormalTriL(loc=z, scale_tril=cholesky)
         #mvn = tfp.distributions.MultivariateNormalFullCovariance(z, std)
@@ -401,7 +405,7 @@ class KVAE(tf.keras.Model):
         return mean, std
 
     def reparameterize(self, mean, logvar):
-        eps = tf.random.normal(shape=mean.shape, dtype=tf.float64)
+        eps = tf.random.normal(shape=mean.shape, dtype=tf.float32)
         return eps * tf.exp(logvar * .5) + mean
 
     def decode(self, z, apply_sigmoid=False):
@@ -471,7 +475,7 @@ class KVAE(tf.keras.Model):
         if tf.reduce_any(tf.linalg.eigvalsh(std) < 0):
             s, u, v = tf.linalg.svd(std)
             h = v @ tf.linalg.diag(s) @ tf.transpose(v, [0, 1, 3, 2])
-            std = (std + tf.transpose(std, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2])) / 4.0 + (tf.eye(self.dim_z, dtype=tf.float64) * 1e-6)
+            std = (std + tf.transpose(std, [0, 1, 3, 2]) + h + tf.transpose(h, [0, 1, 3, 2])) / 4.0 + (tf.eye(self.dim_z, dtype=tf.float32) * 1e-6)
 
         mvn = tfp.distributions.MultivariateNormalTriL(z, tf.linalg.cholesky(std))
         samples = mvn.sample()
@@ -488,9 +492,9 @@ class KVAE(tf.keras.Model):
         return im_logit
 
     def predict_seq(self, imgs, mask):
-        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float64)
-        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float64)  # z*z
-        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float64)
+        z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float32)
+        std0 = tf.eye(self.dim_z, batch_shape=[self.batch_size], dtype=tf.float32)  # z*z
+        a0 = tf.zeros((self.batch_size, 1, self.dim_a), dtype=tf.float32)
 
 
     def compute_apply_gradients(self, x, optimizer):
