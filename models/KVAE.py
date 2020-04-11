@@ -425,7 +425,7 @@ class KVAE(tf.keras.Model):
       return tf.reduce_sum(-.5 * ((sample - mean) ** 2. * tf.exp(-logvar) + logvar + log2pi), axis=raxis)
 
     def log_gaussian(self, x, mean, var):
-        const_log_pdf = (- 0.5 * np.log(2 * np.pi)).astype('float64')
+        const_log_pdf = (- 0.5 * np.log(2 * np.pi)).astype('float32')
         # return - 0.5 * tf.log(2*np.pi) - var / 2 - tf.square((x - mean)) / (2 * tf.exp(var) + 1e-8)
         return const_log_pdf - tf.math.log(var) / 2 - tf.square(x - mean) / (2 * var)
 
