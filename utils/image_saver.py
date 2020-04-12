@@ -27,7 +27,7 @@ def generate_gif(images, file_name_head='image', path='./'):
     if not os.path.isdir(path):
         os.makedirs(path)
     file_path = os.path.join(path, file_name_head)
-    im[0].save(file_path+'.gif', save_all=True, append_images=[im[1:]])
+    im[0].save(file_path+'.gif', save_all=True, append_images=im[1:], duration=150)
     plt.savefig(file_path + '.png')
 
 def generate_gif_concat(model, input, file_name_head='image', path='./'):
