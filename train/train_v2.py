@@ -291,7 +291,7 @@ def lr_fn(lr, step):
 lrs_fn = [lr_fn]
 batch_size = 16
 epochs_max = [40]
-saves_epochs = [10]
+saves_epochs = [50]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
 path_to_directory = directory_path+'KVAE_fast_lr'
