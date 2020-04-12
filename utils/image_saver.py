@@ -110,21 +110,21 @@ def generate_and_save_images_compare_seq(model, test_input, file_name_head='imag
     x_logits_vae = [x_logit_vae_0, x_logit_vae_5, x_logit_vae_10, x_logit_vae_15, x_logit_vae_19]
     # predictions = model.sample(test_input)
     nb_imgs = len(test_inputs)
-    fig = plt.figure(figsize=(nb_imgs, 4))
+    fig = plt.figure(figsize=(nb_imgs, 6))
 
 
 
     for i in range(2):
         for j in range(nb_imgs):
-            plt.subplot(4, nb_imgs, nb_imgs*3*i + j + 1)
+            plt.subplot(6, nb_imgs, nb_imgs*3*i + j + 1)
             plt.imshow(test_inputs[j][i])
             plt.axis('off')
         for j in range(nb_imgs):
-            plt.subplot(4, nb_imgs, nb_imgs*(3*i+1) + j + 1)
+            plt.subplot(6, nb_imgs, nb_imgs*(3*i+1) + j + 1)
             plt.imshow(x_logits[j][i])
             plt.axis('off')
         for j in range(nb_imgs):
-            plt.subplot(4, nb_imgs, nb_imgs*(3*i+2) + j + 1)
+            plt.subplot(6, nb_imgs, nb_imgs*(3*i+2) + j + 1)
             plt.imshow(x_logits_vae[j][i])
             plt.axis('off')
 
