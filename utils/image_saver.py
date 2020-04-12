@@ -22,7 +22,7 @@ def generate_and_save_images(model, epoch, test_input):
 def generate_gif(images, file_name_head='image', path='./'):
     im = []
     for image in images:
-        im.append(Image.fromarray(image))
+        im.append(Image.fromarray(image.numpy()))
 
     if not os.path.isdir(path):
         os.makedirs(path)
