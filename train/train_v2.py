@@ -281,10 +281,10 @@ model1 = construct_model.get_model('KVAE', [16, 32, 48, 64, 96], 2048, 64)
 
 
 models = [model1]
-lrs = [1e-4]
+lrs = [1e-3]
 optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
 def lr_fn(lr, step):
-    if step == 10 or step == 20:
+    if step == 5 or step == 10:
         return lr*0.1
     else:
         return lr
@@ -294,7 +294,7 @@ epochs_max = [40]
 saves_epochs = [50]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'KVAE_float32_lr00001'
+path_to_directory = directory_path+'KVAE_fast_lr'
 step_is_epoch = False
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 print("Multitraining Done")

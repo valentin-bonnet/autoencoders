@@ -80,6 +80,7 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
 
 def generate_and_save_images_compare_seq(model, test_input, file_name_head='image', path='./'):
     x_logits = model.reconstruct(test_input)
+    x_logits_vae = model.reconstruct_vae(test_input)
     test_input = np.squeeze(test_input)
     x_logits = np.squeeze(x_logits)
     #print(x_logits)
@@ -100,6 +101,12 @@ def generate_and_save_images_compare_seq(model, test_input, file_name_head='imag
     x_logit_15 = x_logits[:2, 15, :, :]
     x_logit_19 = x_logits[:2, 19, :, :]
     x_logits = [x_logit_0, x_logit_5, x_logit_10, x_logit_15, x_logit_19]
+    x_logit_vae_0 = x_logits_vae[:2, 0, :, :]
+    x_logit_vae_5 = x_logits_vae[:2, 5, :, :]
+    x_logit_vae_10 = x_logits_vae[:2, 10, :, :]
+    x_logit_vae_15 = x_logits_vae[:2, 15, :, :]
+    x_logit_vae_19 = x_logits_vae[:2, 19, :, :]
+    x_logits_vae = [x_logit_vae_0, x_logit_vae_5, x_logit_vae_10, x_logit_vae_15, x_logit_vae_19]
     # predictions = model.sample(test_input)
     nb_imgs = len(test_inputs)
     fig = plt.figure(figsize=(nb_imgs, 4))
@@ -108,12 +115,16 @@ def generate_and_save_images_compare_seq(model, test_input, file_name_head='imag
 
     for i in range(2):
         for j in range(nb_imgs):
-            plt.subplot(4, nb_imgs, nb_imgs*2*i + j + 1)
+            plt.subplot(4, nb_imgs, nb_imgs*3*i + j + 1)
             plt.imshow(test_inputs[j][i])
             plt.axis('off')
         for j in range(nb_imgs):
-            plt.subplot(4, nb_imgs, nb_imgs*(2*i+1) + j + 1)
+            plt.subplot(4, nb_imgs, nb_imgs*(3*i+1) + j + 1)
             plt.imshow(x_logits[j][i])
+            plt.axis('off')
+        for j in range(nb_imgs):
+            plt.subplot(4, nb_imgs, nb_imgs*(3*i+2) + j + 1)
+            plt.imshow(x_logits_vae[j][i])
             plt.axis('off')
 
     # tight_layout minimizes the overlap between 2 sub-plots

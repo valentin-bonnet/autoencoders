@@ -21,7 +21,7 @@ class KVAE(tf.keras.Model):
         self.dim_a = dim_a
         self.dim_z = dim_z
         #self.dim_u = dim_u
-        self.K = 5
+        self.K = 8
         self.latent_dim = self.dim_a
 
         init_A = tf.eye(self.dim_z, batch_shape=[self.K], dtype=tf.float32)
@@ -490,6 +490,13 @@ class KVAE(tf.keras.Model):
         #print("decode a_arr :", self.decode(a_arr, True).shape)
         im_logit = tf.reshape(self.decode(a, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
         return im_logit
+
+    def reconstruct_vae(self, imgs):
+        mu_a, logvar_a = self.encode(tf.reshape(imgs, [self.batch_size*self.seq_size, self.im_shape, self.im_shape, 1]))
+        a = self.reparameterize(mu_a, logvar_a)
+        im_logit = tf.reshape(self.decode(a, True), [self.batch_size, self.seq_size, self.im_shape, self.im_shape, 1])
+        return im_logit
+
 
     def predict_seq(self, imgs, mask):
         z0 = tf.zeros((self.batch_size, self.dim_z), dtype=tf.float32)
