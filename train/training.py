@@ -125,6 +125,9 @@ class Training():
                                                                              self.name + '_epoch_{:03d}_step_{:03d}_test'.format(
                                                                                  epoch, i // epoch_percent_train),
                                                                              self.img_path)
+                            image_saver.generate_gif_concat(self.model, val_x,
+                                                            self.name + '_epoch_{:03d}_test_gif'.format(epoch),
+                                                            self.img_path)
                         else:
                             image_saver.generate_and_save_images_compare_lab(self.model, val_x,
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_test'.format(epoch, i//epoch_percent_train), self.img_path)
