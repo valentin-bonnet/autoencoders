@@ -34,7 +34,7 @@ def generate_gif_concat(model, input, file_name_head='image', path='./'):
     output = model.reconstruct(input)
     input = tf.squeeze(input[0, ...]) #(seq_size, im_shape, im_shape)
     output = tf.squeeze(output[0, ...]) #(seq_size, im_shape, im_shape)
-    concated_images = tf.concat([input, output], axis=1) ##(seq_size, im_shape*2, im_shape) # The image are concated horizontally
+    concated_images = tf.concat([input, output], axis=3) ##(seq_size, im_shape, im_shape*2) # The image are concated horizontally
 
     generate_gif(concated_images, file_name_head, path)
 
