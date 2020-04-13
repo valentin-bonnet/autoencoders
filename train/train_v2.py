@@ -281,7 +281,7 @@ model1 = construct_model.get_model('RKN', [16, 32, 48, 64, 96], 2048, 64)
 
 
 models = [model1]
-lrs = [1e-3]
+lrs = [3e-4]
 optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
 def lr_fn(lr, step):
     if step == 20 or step == 40:
