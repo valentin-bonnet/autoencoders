@@ -94,8 +94,7 @@ class RKN(tf.keras.Model):
 
     def pred(self, z_post, std_u, std_l, std_s):
         print("z_post shape: ", z_post.shape)
-        z_post = tf.expand_dims(z_post, 1)
-        alpha = self.lgssm_parameters_inference(z_post) # (bs, K)
+        alpha = self.lgssm_parameters_inference(tf.expand_dims(z_post, 1)) # (bs, K)
         print("alpha shape: ", alpha.shape)
         B11 = tf.reshape(alpha @ tf.reshape(self.B11, [-1, self.M*self.M]), [-1, self.M, self.M]) # (bs, M, M)
         B12 = tf.reshape(alpha @ tf.reshape(self.B12, [-1, self.M*self.M]), [-1, self.M, self.M]) # (bs, M, M)
@@ -103,7 +102,7 @@ class RKN(tf.keras.Model):
         B22 = tf.reshape(alpha @ tf.reshape(self.B22, [-1, self.M*self.M]), [-1, self.M, self.M]) # (bs, M, M)
         A_pred = tf.concat([tf.concat([B11, B12], -1),
                             tf.concat([B21, B22], -1)], -2)
-        z_prior = A_pred @ z_post
+        z_prior = A_pred @ tf.expand_dims(z_post, -1)
         std_u_prior = tf.reduce_sum(tf.square(B11), -1)* std_u + 2*tf.reduce_sum(B11*B12, -1)* std_s + tf.reduce_sum(tf.square(B12), -1)*std_l + self.std_trans_u
         std_l_prior = tf.reduce_sum(tf.square(B21), -1)* std_u + 2*tf.reduce_sum(B22*B21, -1)* std_s + tf.reduce_sum(tf.square(B22), -1)*std_l + self.std_trans_l
         std_s_prior = tf.reduce_sum(B21*B11, -1)* std_u + tf.reduce_sum(B22*B11, -1)* std_s + tf.reduce_sum(B21*B12, -1)* std_s +tf.reduce_sum(B22*B12, -1)*std_l
