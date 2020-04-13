@@ -93,9 +93,7 @@ class RKN(tf.keras.Model):
         self.lgssm_parameters_inference.summary()
 
     def pred(self, z_post, std_u, std_l, std_s):
-        print("z_post shape: ", z_post.shape)
         alpha = self.lgssm_parameters_inference(tf.expand_dims(z_post, 1)) # (bs, K)
-        print("alpha shape: ", alpha.shape)
         B11 = tf.reshape(alpha @ tf.reshape(self.B11, [-1, self.M*self.M]), [-1, self.M, self.M]) # (bs, M, M)
         B12 = tf.reshape(alpha @ tf.reshape(self.B12, [-1, self.M*self.M]), [-1, self.M, self.M]) # (bs, M, M)
         B21 = tf.reshape(alpha @ tf.reshape(self.B21, [-1, self.M*self.M]), [-1, self.M, self.M]) # (bs, M, M)
