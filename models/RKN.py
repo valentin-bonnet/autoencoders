@@ -28,10 +28,10 @@ class RKN(tf.keras.Model):
         init_std_trans_u = tf.ones((self.batch_size, self.M)) * 1.1
         init_std_trans_l = tf.ones((self.batch_size, self.M)) * 1.1
 
-        B11_init = tf.eye(self.M, batch_shape=[self.batch_size, self.K])
-        B12_init = tf.eye(self.M, batch_shape=[self.batch_size, self.K]) * 0.2
-        B21_init = tf.eye(self.M, batch_shape=[self.batch_size, self.K]) * -0.2
-        B22_init = tf.eye(self.M, batch_shape=[self.batch_size, self.K])
+        B11_init = tf.eye(self.M, batch_shape=[self.K])
+        B12_init = tf.eye(self.M, batch_shape=[self.K]) * 0.2
+        B21_init = tf.eye(self.M, batch_shape=[self.K]) * -0.2
+        B22_init = tf.eye(self.M, batch_shape=[self.K])
 
         self.z0 = tf.Variable(initial_value=init_z0, trainable=False)
         self.std_u = tf.Variable(initial_value=init_std_u, trainable=False)
@@ -96,10 +96,10 @@ class RKN(tf.keras.Model):
         print("z_post shape: ", z_post.shape)
         z_post = tf.expand_dims(z_post, 1)
         alpha = self.lgssm_parameters_inference(z_post) # (bs, K)
-        B11 = alpha @ self.B11 # (bs, N, N)
-        B12 = alpha @ self.B12 # (bs, N, N)
-        B21 = alpha @ self.B21 # (bs, N, N)
-        B22 = alpha @ self.B22 # (bs, N, N)
+        B11 = tf.reshape(alpha @ tf.reshape(self.B11, [-1, self.M*self.M]), [-1, self.M, self.M]) # (bs, M, M)
+        B12 = tf.reshape(alpha @ tf.reshape(self.B12, [-1, self.M*self.M]), [-1, self.M, self.M]) # (bs, M, M)
+        B21 = tf.reshape(alpha @ tf.reshape(self.B21, [-1, self.M*self.M]), [-1, self.M, self.M]) # (bs, M, M)
+        B22 = tf.reshape(alpha @ tf.reshape(self.B22, [-1, self.M*self.M]), [-1, self.M, self.M]) # (bs, M, M)
         A_pred = tf.concat([tf.concat([B11, B12], -1),
                             tf.concat([B21, B22], -1)], -2)
         z_prior = A_pred @ z_post
