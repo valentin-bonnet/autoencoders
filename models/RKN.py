@@ -138,7 +138,7 @@ class RKN(tf.keras.Model):
             std_s_prev = std_s_post
 
             im_logit = self.decode(z_post, True)
-            loss += tf.reduce_sum(self.log_bernoulli(images[:, 1], im_logit, eps=1e-6))
+            loss -= tf.reduce_sum(self.log_bernoulli(images[:, 1], im_logit, eps=1e-6))
 
         return loss
 
