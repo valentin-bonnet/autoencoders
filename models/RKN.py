@@ -22,11 +22,11 @@ class RKN(tf.keras.Model):
         self.description = '_'.join(filter(None, ['KVAE', str_arch, 'lat' + str(self.M), 'seq' + str(self.seq_size), str_bn]))
 
         init_z0 = tf.zeros((self.batch_size, self.N))
-        init_std_u = tf.ones((self.batch_size, self.N/2)) * 10.0  # z*z
-        init_std_l = tf.ones((self.batch_size, self.N/2)) * 10.0  # z*z
-        init_std_s = tf.zeros((self.batch_size, self.N/2))
-        init_std_trans_u = tf.ones(tf.ones((self.batch_size, self.N/2))) * 1.1
-        init_std_trans_l = tf.ones(tf.ones((self.batch_size, self.N/2))) * 1.1
+        init_std_u = tf.ones((self.batch_size, self.M)) * 10.0  # z*z
+        init_std_l = tf.ones((self.batch_size, self.M)) * 10.0  # z*z
+        init_std_s = tf.zeros((self.batch_size, self.M))
+        init_std_trans_u = tf.ones(tf.ones((self.batch_size, self.M))) * 1.1
+        init_std_trans_l = tf.ones(tf.ones((self.batch_size, self.M))) * 1.1
 
         B11_init = tf.eye(self.M, batch_shape=[self.batch_size, self.K])
         B12_init = tf.eye(self.M, batch_shape=[self.batch_size, self.K]) * 0.2
@@ -110,7 +110,7 @@ class RKN(tf.keras.Model):
     def update(self, z_prior, std_u_prior, std_l_prior, std_s_prior, a_mean, a_std):
         q_u = std_u_prior / (std_u_prior + a_std)
         q_l = std_s_prior / (std_u_prior + a_std)
-        residual = a_mean - z_prior[:self.N/2]
+        residual = a_mean - z_prior[:self.M]
 
         z_post = z_prior + tf.concat([q_u*residual, q_l*residual], -1)
 
