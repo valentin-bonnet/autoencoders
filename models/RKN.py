@@ -165,6 +165,29 @@ class RKN(tf.keras.Model):
 
         return acc
 
+    def reconstruct(self, images):
+        z_prev = self.z0
+        std_u_prev = self.std_u
+        std_l_prev = self.std_l
+        std_s_prev = self.std_s
+        self.lgssm_parameters_inference.reset_states()
+        output = []
+        for i in tf.range(self.seq_size):
+            z_prior, std_u_prior, std_l_prior, std_s_prior = self.pred(z_prev, std_u_prev, std_l_prev, std_s_prev)
+            mu_a, std_a = self.encode(images[:, i])
+            z_post, std_u_post, std_l_post, std_s_post = self.update(z_prior, std_u_prior, std_l_prior, std_s_prior,
+                                                                     mu_a, std_a)
+
+            z_prev = z_post
+            std_u_prev = std_u_post
+            std_l_prev = std_l_post
+            std_s_prev = std_s_post
+
+            im_temp = self.decode(z_post, True)
+            output.append(im_temp)
+        images = tf.stack(output, axis=1)
+        return images
+
     def compute_apply_gradients(self, x, optimizer):
         with tf.GradientTape() as tape:
             loss = self.compute_loss(x)
