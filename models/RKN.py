@@ -25,8 +25,8 @@ class RKN(tf.keras.Model):
         init_std_u = tf.ones((self.batch_size, self.M)) * 10.0  # z*z
         init_std_l = tf.ones((self.batch_size, self.M)) * 10.0  # z*z
         init_std_s = tf.zeros((self.batch_size, self.M))
-        init_std_trans_u = tf.ones(tf.ones((self.batch_size, self.M))) * 1.1
-        init_std_trans_l = tf.ones(tf.ones((self.batch_size, self.M))) * 1.1
+        init_std_trans_u = tf.ones((self.batch_size, self.M)) * 1.1
+        init_std_trans_l = tf.ones((self.batch_size, self.M)) * 1.1
 
         B11_init = tf.eye(self.M, batch_shape=[self.batch_size, self.K])
         B12_init = tf.eye(self.M, batch_shape=[self.batch_size, self.K]) * 0.2
