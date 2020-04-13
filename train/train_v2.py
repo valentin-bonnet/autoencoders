@@ -284,12 +284,12 @@ models = [model1]
 lrs = [1e-3]
 optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
 def lr_fn(lr, step):
-    if step == 5 or step == 10:
+    if step == 20 or step == 40:
         return lr*0.1
     else:
         return lr
 lrs_fn = [lr_fn]
-batch_size = 16
+batch_size = 128
 epochs_max = [40]
 saves_epochs = [50]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
