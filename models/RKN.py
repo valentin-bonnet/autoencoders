@@ -126,7 +126,7 @@ class RKN(tf.keras.Model):
         std_l_prev = self.std_l
         std_s_prev = self.std_s
         loss = 0
-
+        self.lgssm_parameters_inference.reset_states()
         for i in range(self.seq_size):
             z_prior, std_u_prior, std_l_prior, std_s_prior = self.pred(z_prev, std_u_prev, std_l_prev, std_s_prev)
             mu_a, std_a = self.encode(images[:, i])
