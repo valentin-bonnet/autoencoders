@@ -182,7 +182,7 @@ class RKN(tf.keras.Model):
     def encode(self, a):
         a_inf = self.inference_net(a)
         # tf.print("x_inf : ", x_inf[0])
-        mean, std = tf.split(a_inf, num_or_size_splits=[self.dim_a, self.dim_a], axis=1)
+        mean, std = tf.split(a_inf, num_or_size_splits=[self.M, self.M], axis=1)
         std = tf.nn.sigmoid(std) * 0.03
         return mean, std
 
