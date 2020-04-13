@@ -165,6 +165,13 @@ class RKN(tf.keras.Model):
 
         return acc
 
+    def compute_apply_gradients(self, x, optimizer):
+        with tf.GradientTape() as tape:
+            loss = self.compute_loss(x)
+        gradients = tape.gradient(loss, self.trainable_variables)
+        optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+        return loss
+
     def log_bernoulli(self, x, p, eps=0.0):
         p = tf.clip_by_value(p, eps, 1.0 - eps)
         return x * tf.math.log(p) + (1 - x) * tf.math.log(1 - p)
