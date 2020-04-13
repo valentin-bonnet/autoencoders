@@ -21,10 +21,6 @@ class RKN(tf.keras.Model):
         str_bn = 'BN' if use_bn else ''
         self.description = '_'.join(filter(None, ['KVAE', str_arch, 'lat' + str(self.M), 'seq' + str(self.seq_size), str_bn]))
 
-        H0 = tf.eye(self.M, batch_shape=[self.batch_size])
-        H1 = tf.zeros((self.batch_size, self.M))
-        self.H = tf.concat([H0, H1], axis=1)
-
         init_z0 = tf.zeros((self.batch_size, self.N))
         init_std_u = tf.ones((self.batch_size, self.N/2)) * 10.0  # z*z
         init_std_l = tf.ones((self.batch_size, self.N/2)) * 10.0  # z*z
