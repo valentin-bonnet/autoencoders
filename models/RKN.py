@@ -61,7 +61,7 @@ class RKN(tf.keras.Model):
             self.inference_net.add(tf.keras.layers.ReLU())
 
         self.inference_net.add(tf.keras.layers.Flatten())
-        self.inference_net.add(tf.keras.layers.Dense(self.M))
+        self.inference_net.add(tf.keras.layers.Dense(2*self.M))
 
         ## DECODER
 
