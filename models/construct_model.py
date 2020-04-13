@@ -9,6 +9,7 @@ import vae
 import sbvae
 import sbae
 import KVAE
+import RKN
 
 
 def get_model(model_type, layers, latent_dim, input_shape, use_bn=False, std=0.05):
@@ -33,6 +34,9 @@ def get_model(model_type, layers, latent_dim, input_shape, use_bn=False, std=0.0
 
     elif model_type == 'KVAE':
         model = KVAE.KVAE(layers, latent_dim, input_shape)
+
+    elif model_type == 'RKN':
+        model = RKN.RKN(layers, latent_dim, input_shape)
 
     else:
         print("Model type is not good")

@@ -277,7 +277,7 @@ filename = 'batch_normalization'
 
 datasets = Dataset.Dataset('moving_mnist')
 
-model1 = construct_model.get_model('KVAE', [16, 32, 48, 64, 96], 2048, 64)
+model1 = construct_model.get_model('RKN', [16, 32, 48, 64, 96], 2048, 64)
 
 
 models = [model1]
@@ -294,7 +294,7 @@ epochs_max = [40]
 saves_epochs = [50]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'KVAE_fast_lr'
+path_to_directory = directory_path+'RKN_first'
 step_is_epoch = False
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 print("Multitraining Done")
