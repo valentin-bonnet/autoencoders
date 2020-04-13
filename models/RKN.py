@@ -94,6 +94,7 @@ class RKN(tf.keras.Model):
 
     def pred(self, z_post, std_u, std_l, std_s):
         print("z_post shape: ", z_post.shape)
+        z_post = tf.expand_dims(z_post, 1)
         alpha = self.lgssm_parameters_inference(z_post) # (bs, K)
         B11 = alpha @ self.B11 # (bs, N, N)
         B12 = alpha @ self.B12 # (bs, N, N)
