@@ -93,6 +93,7 @@ class RKN(tf.keras.Model):
         self.lgssm_parameters_inference.summary()
 
     def pred(self, z_post, std_u, std_l, std_s):
+        print("z_post shape: ", z_post.shape)
         alpha = self.lgssm_parameters_inference(z_post) # (bs, K)
         B11 = alpha @ self.B11 # (bs, N, N)
         B12 = alpha @ self.B12 # (bs, N, N)
@@ -148,8 +149,8 @@ class RKN(tf.keras.Model):
         std_l_prev = self.std_l
         std_s_prev = self.std_s
         acc = 0
-
-        for i in range(self.seq_size):
+        self.lgssm_parameters_inference.reset_states()
+        for i in tf.range(self.seq_size):
             z_prior, std_u_prior, std_l_prior, std_s_prior = self.pred(z_prev, std_u_prev, std_l_prev, std_s_prev)
             mu_a, std_a = self.encode(images[:, i])
             z_post, std_u_post, std_l_post, std_s_post = self.update(z_prior, std_u_prior, std_l_prior, std_s_prior,
