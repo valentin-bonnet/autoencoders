@@ -112,7 +112,7 @@ class RKN(tf.keras.Model):
     def update(self, z_prior, std_u_prior, std_l_prior, std_s_prior, a_mean, a_std):
         q_u = std_u_prior / (std_u_prior + a_std)
         q_l = std_s_prior / (std_u_prior + a_std)
-        residual = a_mean - z_prior[:self.M]
+        residual = a_mean - z_prior[:, self.M]
 
         z_post = z_prior + tf.concat([q_u*residual, q_l*residual], -1)
 
