@@ -284,7 +284,7 @@ models = [model1]
 lrs = [3e-4]
 optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
 def lr_fn(lr, step):
-    if step == 20 or step == 40:
+    if step == 10 or step == 20:
         return lr*0.1
     else:
         return lr
