@@ -83,8 +83,6 @@ def generate_and_save_images_compare_seq(model, test_input, file_name_head='imag
     #x_logits_vae = model.reconstruct_vae(test_input)
     test_input = np.squeeze(test_input)
     x_logits = np.squeeze(x_logits)
-    print(x_logits.shape)
-    print(x_logits[0, 0])
     #x_logits_vae = np.squeeze(x_logits_vae)
     #print(x_logits)
     #print("\n\n#######\n input:\n", test_input[0, 5, :, :])
