@@ -284,18 +284,18 @@ models = [model1]
 lrs = [3e-4]
 optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
 def lr_fn(lr, step):
-    if step == 10 or step == 20:
+    if step == 40 or step == 60:
         return lr*0.1
     else:
         return lr
 lrs_fn = [lr_fn]
-batch_size = 128
-epochs_max = [40]
-saves_epochs = [50]
+batch_size = 256
+epochs_max = [100]
+saves_epochs = [10]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
 path_to_directory = directory_path+'RKN_Small'
-step_is_epoch = False
+step_is_epoch = True
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 print("Multitraining Done")
 multi.forward()

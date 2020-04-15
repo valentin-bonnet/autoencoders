@@ -215,11 +215,20 @@ class Training():
                 if self.is_seq:
                     #image_saver.compare_images_seq(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
                     image_saver.generate_and_save_images_compare_seq(self.model, val_x,
-                                                                     self.name + '_epoch_{:03d}_test'.format(epoch),
+                                                                     self.name + '_epoch_{:03d}_test'.format(
+                                                                         epoch),
                                                                      self.img_path)
                 else:
                     image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
-
+            for train_x in self.train_ds.take(1):
+                if self.is_seq:
+                    #image_saver.compare_images_seq(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
+                    image_saver.generate_and_save_images_compare_seq(self.model, train_x,
+                                                                     self.name + '_epoch_{:03d}_test'.format(
+                                                                         epoch),
+                                                                     self.img_path)
+                else:
+                    image_saver.compare_images(train_x, self.model.reconstruct(train_x), img_name, self.img_path)
 
             t_loss_mean.reset_states()
             t_acc_mean.reset_states()
