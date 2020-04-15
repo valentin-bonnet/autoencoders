@@ -224,7 +224,7 @@ class Training():
                 if self.is_seq:
                     #image_saver.compare_images_seq(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
                     image_saver.generate_and_save_images_compare_seq(self.model, train_x,
-                                                                     self.name + '_epoch_{:03d}_test'.format(
+                                                                     self.name + '_epoch_{:03d}_train'.format(
                                                                          epoch),
                                                                      self.img_path)
                 else:
