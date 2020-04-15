@@ -47,7 +47,7 @@ class RKN(tf.keras.Model):
 
         self.lgssm_parameters_inference = tf.keras.Sequential()
         self.lgssm_parameters_inference.add(tf.keras.layers.Input(shape=(None, self.N), batch_size=self.batch_size))
-        self.lgssm_parameters_inference.add(tf.keras.layers.LSTM(30, stateful=True))
+        self.lgssm_parameters_inference.add(tf.keras.layers.LSTM(32, stateful=True))
         self.lgssm_parameters_inference.add(tf.keras.layers.Flatten())
         self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.K, activation=tf.nn.softmax))
 
@@ -55,7 +55,7 @@ class RKN(tf.keras.Model):
         self.inference_net = tf.keras.Sequential()
         self.inference_net.add(tf.keras.layers.Input(shape=(input_shape, input_shape, 1)))
         for l in layers:
-            self.inference_net.add(tf.keras.layers.Conv2D(filters=l, kernel_size=5, strides=1, padding='same'))
+            self.inference_net.add(tf.keras.layers.Conv2D(filters=l, kernel_size=4, strides=2, padding='same'))
             if use_bn:
                 self.inference_net.add(tf.keras.layers.BatchNormalization())
             self.inference_net.add(tf.keras.layers.ReLU())
@@ -78,7 +78,7 @@ class RKN(tf.keras.Model):
 
         for l in layers:
             self.generative_net.add(
-                tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=5, strides=1, padding='same'))
+                tf.keras.layers.Conv2DTranspose(filters=l, kernel_size=4, strides=2, padding='same'))
             if use_bn:
                 self.generative_net.add(tf.keras.layers.BatchNormalization())
             self.generative_net.add(tf.keras.layers.ReLU())
