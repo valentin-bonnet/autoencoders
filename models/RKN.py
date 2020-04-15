@@ -3,10 +3,10 @@ import tensorflow_probability as tfp
 import numpy as np
 
 class RKN(tf.keras.Model):
-    def __init__(self, layers=[32, 32, 32], latent_dim=256, input_shape=64, sequence_length=20, M=512, use_bn=False):
+    def __init__(self, layers=[32, 32, 32], latent_dim=256, input_shape=64, sequence_length=20, M=216, use_bn=False):
         super(RKN, self).__init__()
         self.model_type = 'RKN'
-        self.batch_size = 4
+        self.batch_size = 8
         self.architecture = layers.copy()
         self.latent_dim = latent_dim
         self.use_bn = use_bn
