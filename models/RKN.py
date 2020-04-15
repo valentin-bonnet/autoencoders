@@ -3,10 +3,10 @@ import tensorflow_probability as tfp
 import numpy as np
 
 class RKN(tf.keras.Model):
-    def __init__(self, layers=[32, 32, 32], latent_dim=256, input_shape=64, sequence_length=20, M=256, use_bn=False):
+    def __init__(self, layers=[32, 32, 32], latent_dim=256, input_shape=64, sequence_length=20, M=32, use_bn=False):
         super(RKN, self).__init__()
         self.model_type = 'RKN'
-        self.batch_size = 4
+        self.batch_size = 32
         self.architecture = layers.copy()
         self.latent_dim = latent_dim
         self.use_bn = use_bn
@@ -47,7 +47,7 @@ class RKN(tf.keras.Model):
 
         self.lgssm_parameters_inference = tf.keras.Sequential()
         self.lgssm_parameters_inference.add(tf.keras.layers.Input(shape=(None, self.N), batch_size=self.batch_size))
-        self.lgssm_parameters_inference.add(tf.keras.layers.LSTM(100, stateful=True))
+        self.lgssm_parameters_inference.add(tf.keras.layers.LSTM(30, stateful=True))
         self.lgssm_parameters_inference.add(tf.keras.layers.Flatten())
         self.lgssm_parameters_inference.add(tf.keras.layers.Dense(self.K, activation=tf.nn.softmax))
 
