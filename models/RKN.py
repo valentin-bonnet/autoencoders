@@ -12,8 +12,8 @@ class RKN(tf.keras.Model):
         self.use_bn = use_bn
         self.seq_size = sequence_length
         self.im_shape = input_shape
-        self.B = 1
-        self.K = 15
+        self.B = 2
+        self.K = 4
         self.M = M # Observation space (Latent space)
         self.N = 2*M # Z space
 

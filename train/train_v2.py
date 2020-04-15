@@ -294,7 +294,7 @@ epochs_max = [200]
 saves_epochs = [10]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'RKN_Small'
+path_to_directory = directory_path+'RKN_Small2'
 step_is_epoch = True
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 print("Multitraining Done")
