@@ -277,7 +277,7 @@ filename = 'batch_normalization'
 
 datasets = Dataset.Dataset('moving_mnist')
 
-model1 = construct_model.get_model('RKN', [32, 48, 64], 2048, 64)
+model1 = construct_model.get_model('RKN', [32, 96, 128], 2048, 64)
 
 
 models = [model1]
@@ -289,12 +289,12 @@ def lr_fn(lr, step):
     else:
         return lr
 lrs_fn = [lr_fn]
-batch_size = 256
+batch_size = 8
 epochs_max = [200]
 saves_epochs = [10]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'RKN_Small2'
+path_to_directory = directory_path+'RKN_Big'
 step_is_epoch = True
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 print("Multitraining Done")
