@@ -218,6 +218,9 @@ class Training():
                                                                      self.name + '_epoch_{:03d}_test'.format(
                                                                          epoch),
                                                                      self.img_path)
+                    image_saver.generate_gif_concat(self.model, val_x,
+                                                    self.name + '_epoch_{:03d}_test_gif'.format(epoch),
+                                                    self.img_path)
                 else:
                     image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
             for train_x in self.train_ds.take(1):
