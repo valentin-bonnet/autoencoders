@@ -6,6 +6,7 @@ class RKNLayer(tf.keras.layers.Layer):
         self.B = b
         self.alpha_unit = alpha_unit
         self.M = m
+        self.N = self.m*2
         self.state_size = m*4
         self.output_size = m
         super(RKNLayer, self).__init__(**kwargs)
@@ -13,9 +14,6 @@ class RKNLayer(tf.keras.layers.Layer):
     def build(self, input_shape):
         # [(bs, T, m)]
         self.batch_size = input_shape[0]
-        self.M = input_shape[2]
-        self.N = self.M*2
-        self.state_size = self.M*4
         init_std_trans_u = tf.ones((self.batch_size, self.M)) * 1.1
         init_std_trans_l = tf.ones((self.batch_size, self.M)) * 1.1
 
