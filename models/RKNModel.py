@@ -22,7 +22,7 @@ class RKNModel(tf.keras.Model):
 
         ## RKN
 
-        cell = RKNLayer(k, b, alpha_unit)
+        cell = RKNLayer(n//2, k, b, alpha_unit)
         self.rkn = tf.keras.layers.RNN(cell)
 
         ## DECODER
