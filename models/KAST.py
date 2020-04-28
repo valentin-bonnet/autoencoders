@@ -71,7 +71,10 @@ class KAST(tf.keras.Model):
         return loss
 
     def compute_accuracy(self, inputs):
-        output_v, v_j = self.call(inputs)
+        h = inputs.shape[2]
+        w = inputs.shape[3]
+        v = tf.image.resize(inputs, [h // 4, w // 4])
+        output_v, v_j = self.call((inputs, v))
         return tf.reduce_mean(tf.square(output_v - v_j))
 
     def compute_apply_gradients(self, x, optimizer):
