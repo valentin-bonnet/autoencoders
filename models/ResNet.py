@@ -7,7 +7,7 @@ class ResNet(tf.keras.Model):
         super(ResNet, self).__init__()
         self.model = tf.keras.models.Sequential()
         with tf.name_scope('stage0'):
-            self.model.add(tf.keras.layers.Conv2D(64, 7, strides=2, padding="same", use_biais=False))
+            self.model.add(tf.keras.layers.Conv2D(64, 7, strides=2, padding="same", use_bias=False))
             self.model.add(tf.keras.layers.BatchNormalization())
             self.model.add(tf.keras.layers.Activation('relu'))
         with tf.name_scope('stage1'):
