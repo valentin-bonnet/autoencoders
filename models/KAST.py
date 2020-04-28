@@ -62,7 +62,10 @@ class KAST(tf.keras.Model):
         return coef_memory
 
     def compute_loss(self, inputs):
-        output_v, v_j = self.call(inputs)
+        h = inputs.shape[2]
+        w = inputs.shape[3]
+        v = tf.image.resize(inputs, [h//4, w//4])
+        output_v, v_j = self.call((inputs, v))
         abs = tf.math.abs(output_v - v_j)
         loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
         return loss
