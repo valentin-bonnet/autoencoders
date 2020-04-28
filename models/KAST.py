@@ -10,6 +10,7 @@ class KAST(tf.keras.Model):
         self.rkn = RKNModel()
         self.memory = Memory()
         self.coef_memory = coef_memory
+        self.description = 'KAST'
 
     def call(self, inputs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
