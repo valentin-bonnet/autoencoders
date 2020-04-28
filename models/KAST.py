@@ -14,7 +14,11 @@ class KAST(tf.keras.Model):
 
     def call(self, inputs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
-        seq_size = inputs[0].shape[1]
+        bs = inputs[1].shape[0]
+        seq_size = inputs[1].shape[1]
+        h = inputs[1].shape[2]
+        w = inputs[1].shape[3]
+        c = inputs[1].shape[4]
         output_v = [seq_size-1]
         ground_truth = [seq_size-1]
         i, v = tf.nest.flatten(inputs)
@@ -31,7 +35,7 @@ class KAST(tf.keras.Model):
             v_i = v[:, i] # (bs, h, w, v)
             v_j = v[:, i+1]
             with tf.name_scope('Rkn'):
-                attention = self.rkn(k_i)
+                attention = tf.reshape(self.rkn(tf.reshape(k_i, [-1, h, w, c])), [bs, seq_size, h, w, -1])
             with tf.name_scope('Memory'):
                 m_kv = self.memory([attention, k_i, v_i])
                 m_k, m_v = tf.nest.flatten(m_kv)
