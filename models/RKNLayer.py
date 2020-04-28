@@ -1,10 +1,13 @@
 import tensorflow as tf
 
 class RKNLayer(tf.keras.layers.Layer):
-    def __init__(self, k, b, alpha_unit, **kwargs):
+    def __init__(self, m, k, b, alpha_unit, **kwargs):
         self.K = k
         self.B = b
         self.alpha_unit = alpha_unit
+        self.M = m
+        self.state_size = m*4
+        self.output_size = m
         super(RKNLayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -69,7 +72,7 @@ class RKNLayer(tf.keras.layers.Layer):
         z, std_u, std_l, std_s = tf.nest.flatten(states)
         z_prior, std_u_prior, std_l_prior, std_s_prior = self._pred(z, std_u, std_l, std_s)
         z_post, std_u_post, std_l_post, std_s_post = self._update(z_prior, std_u_prior, std_l_prior, std_s_prior, a_mean, a_std)
-        return z_post, [z_post, std_u_post, std_l_post, std_s_post]
+        return (z_post, [z_post, std_u_post, std_l_post, std_s_post])
 
     def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
         init_z0 = tf.zeros((batch_size, self.N))
