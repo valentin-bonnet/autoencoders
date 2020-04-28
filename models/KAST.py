@@ -71,3 +71,13 @@ class KAST(tf.keras.Model):
         output_v, v_j = self.call(inputs)
         return tf.reduce_mean(tf.square(output_v - v_j))
 
+    def compute_apply_gradients(self, x, optimizer):
+        with tf.GradientTape() as tape:
+            loss = self.compute_loss(x)
+        gradients = tape.gradient(loss, self.trainable_variables)
+        optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+        return loss
+
+    def reconstruct(self, inputs):
+        output_v, _ = self.call(inputs)
+        return output_v
