@@ -2,9 +2,8 @@ import tensorflow as tf
 from RKNLayer import RKNLayer
 
 class RKNModel(tf.keras.Model):
-    def __init__(self, attention_output=3, layer_channel_1=64, layer_channel_2=128, input_shape=64, k=15, b=15, alpha_unit=64):
+    def __init__(self, attention_output=3, layer_channel_1=64, layer_channel_2=128, input_shape=64, k=15, b=15, n=128, alpha_unit=64):
         super(RKNModel, self).__init__()
-
         ## ENCODER
 
         self.inference_net = tf.keras.Sequential()
@@ -19,7 +18,7 @@ class RKNModel(tf.keras.Model):
         self.inference_net.add(tf.keras.layers.ReLU())
 
         self.inference_net.add(tf.keras.layers.Flatten())
-        self.inference_net.add(tf.keras.layers.Dense(2 * self.M))
+        self.inference_net.add(tf.keras.layers.Dense(n))
 
         ## RKN
 
@@ -33,7 +32,7 @@ class RKNModel(tf.keras.Model):
         dense_output = size_decoded_frame**2 * size_decoded_layers
 
         self.generative_net = tf.keras.Sequential()
-        self.generative_net.add(tf.keras.layers.InputLayer(input_shape=(self.N,)))
+        self.generative_net.add(tf.keras.layers.InputLayer(input_shape=(n)))
         self.generative_net.add(tf.keras.layers.Dense(dense_output))
         self.generative_net.add(tf.keras.layers.Reshape(target_shape=(size_decoded_frame, size_decoded_frame, size_decoded_layers)))
         self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=layer_channel_2, kernel_size=3, strides=1, padding='same'))
