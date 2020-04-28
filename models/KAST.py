@@ -75,7 +75,7 @@ class KAST(tf.keras.Model):
         w = inputs.shape[3]
         c = inputs.shape[4]
 
-        v = tf.reshape(tf.image.resize(tf.reshape(inputs, [-1, h, w, c]), [h//4, w//4]), [-1, seq_size, h, w, c])
+        v = tf.reshape(tf.image.resize(tf.reshape(inputs, [-1, h, w, c]), [h//4, w//4]), [-1, seq_size, h//4, w//4, c])
         output_v, v_j = self.call((inputs, v))
         abs = tf.math.abs(output_v - v_j)
         loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
