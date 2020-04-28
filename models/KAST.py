@@ -62,6 +62,7 @@ class KAST(tf.keras.Model):
         return coef_memory
 
     def compute_loss(self, inputs):
+        print("inputs shape", inputs.shape)
         h = inputs.shape[2]
         w = inputs.shape[3]
         v = tf.image.resize(inputs, [h//4, w//4])
