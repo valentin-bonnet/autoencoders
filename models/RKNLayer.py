@@ -6,7 +6,7 @@ class RKNLayer(tf.keras.layers.Layer):
         self.B = b
         self.alpha_unit = alpha_unit
         self.M = m
-        self.N = self.m*2
+        self.N = m*2
         self.state_size = m*4
         self.output_size = m
         super(RKNLayer, self).__init__(**kwargs)
