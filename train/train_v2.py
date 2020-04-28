@@ -277,25 +277,25 @@ filename = 'batch_normalization'
 
 datasets = Dataset.Dataset('moving_mnist')
 
-model1 = construct_model.get_model('RKN', [32, 96, 128], 2048, 64)
+model1 = construct_model.get_model('KAST')
 
 
 models = [model1]
 lrs = [3e-4]
 optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
 def lr_fn(lr, step):
-    if step == 40 or step == 60:
-        return lr*0.1
+    if step == 4 or step == 6:
+        return lr*0.5
     else:
         return lr
 lrs_fn = [lr_fn]
 batch_size = 128
-epochs_max = [200]
-saves_epochs = [10]
+epochs_max = [10]
+saves_epochs = [50]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
 path_to_directory = directory_path+'RKN_Big'
-step_is_epoch = True
+step_is_epoch = False
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 print("Multitraining Done")
 multi.forward()

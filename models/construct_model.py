@@ -10,9 +10,10 @@ import sbvae
 import sbae
 import KVAE
 import RKN
+from KAST import KAST
 
 
-def get_model(model_type, layers, latent_dim, input_shape, use_bn=False, std=0.05):
+def get_model(model_type, layers=[32, 64], latent_dim=256, input_shape=64, use_bn=False, std=0.05):
 
     if model_type == 'AE':
         model = ae.AE(layers, latent_dim, input_shape, use_bn)
@@ -37,6 +38,9 @@ def get_model(model_type, layers, latent_dim, input_shape, use_bn=False, std=0.0
 
     elif model_type == 'RKN':
         model = RKN.RKN(layers, latent_dim, input_shape)
+
+    elif model_type == 'KAST':
+        model = KAST()
 
     else:
         print("Model type is not good")
