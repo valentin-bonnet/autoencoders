@@ -75,9 +75,12 @@ class KAST(tf.keras.Model):
         return loss
 
     def compute_accuracy(self, inputs):
+        seq_size = inputs.shape[1]
         h = inputs.shape[2]
         w = inputs.shape[3]
-        v = tf.image.resize(inputs, [h // 4, w // 4])
+        c = inputs.shape[4]
+
+        v = tf.reshape(tf.image.resize(tf.reshape(inputs, [-1, h, w, c]), [h // 4, w // 4]), [-1, seq_size, h, w, c])
         output_v, v_j = self.call((inputs, v))
         return tf.reduce_mean(tf.square(output_v - v_j))
 
