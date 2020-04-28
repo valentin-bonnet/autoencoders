@@ -17,7 +17,7 @@ class ResNet(tf.keras.Model):
             self.model.add(ResidualUnit(128, 2))
             self.model.add(ResidualUnit(128, 1))
         with tf.name_scope('stage3'):
-            self.model.add(ResidualUnit(256, 1))
+            self.model.add(ResidualUnit(256, 1, skip_use=True))
             self.model.add(ResidualUnit(256, 1))
         with tf.name_scope('stage4'):
             self.model.add(ResidualUnit(256, 1))
@@ -29,7 +29,7 @@ class ResNet(tf.keras.Model):
 
 
 class ResidualUnit(tf.keras.layers.Layer):
-    def __init__(self, filters, strides=1, activation="relu", **kwargs):
+    def __init__(self, filters, strides=1, activation="relu", skip_use=False, **kwargs):
         super().__init__(**kwargs)
         self.activation = tf.keras.activations.get(activation)
         self.main_layers = [
@@ -44,6 +44,11 @@ class ResidualUnit(tf.keras.layers.Layer):
         if strides > 1:
             self.skip_layers = [
                 tf.keras.layers.Conv2D(filters, 1, strides=strides, padding='same', use_bias=False),
+                tf.keras.layers.BatchNormalization()
+            ]
+        elif skip_use:
+            self.skip_layers = [
+                tf.keras.layers.Conv2D(filters, 1, strides=1, padding='same', use_bias=False),
                 tf.keras.layers.BatchNormalization()
             ]
 
