@@ -49,7 +49,9 @@ class RKNModel(tf.keras.Model):
 
     def call(self, inputs):
         # inputs : (bs, T, H, W, K)
+        print("RKNModel input shape: ", inputs.shape)
         encoded = self.inference_net(inputs)
+        print("RKNModel encoded shape: ", encoded.shape)
         state = self.rkn(encoded)
         output = self.generative_net(state)
         return output
