@@ -37,7 +37,7 @@ class KAST(tf.keras.Model):
         with tf.name_scope('Rkn'):
             attention = self.rkn(k)
         with tf.name_scope('Memory'):
-            m_kv = self.memory((attention, k, k))
+            m_kv = self.memory((attention, k, v))
             m_k, m_v = tf.nest.flatten(m_kv)
 
         for i in range(seq_size-1):
