@@ -45,13 +45,13 @@ class KAST(tf.keras.Model):
                 similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck])) # (bs, h*w, h*w)
             print("similarity_k shape: ", similarity_k.shape)
             with tf.name_scope('Similarity_M'):
-                similarity_m = self._get_affinity_matrix(m_k[:, i], tf.reshape(k[:, i+1], [-1, h * w, cv]))  # (bs, h*w, m)
+                similarity_m = self._get_affinity_matrix(m_k[:, i], tf.reshape(k[:, i+1], [-1, h * w, ck]))  # (bs, h*w, m)
 
 
             print("similarity_m shape: ", similarity_m.shape)
             print("v.shape: ", v.shape)
             print("v[:, i].shape: ", v[:, i].shape)
-            reconstruction_k = similarity_k @ tf.reshape(v[:, i], [-1, h * w, c])  # (bs, h*w, v)
+            reconstruction_k = similarity_k @ tf.reshape(v[:, i], [-1, h * w, cv])  # (bs, h*w, v)
             reconstruction_m = similarity_m @ m_v[:, i]
             output_v[i] = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
             ground_truth[i] = v[:, i+1]
