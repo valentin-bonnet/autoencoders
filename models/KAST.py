@@ -9,7 +9,7 @@ class KAST(tf.keras.Model):
         self.resnet = ResNet()
         self.rkn = RKNModel()
         cell_memory = Memory()
-        self.memory = tf.keras.layers.RNN(cell_memory)
+        self.memory = tf.keras.layers.RNN(cell_memory, return_sequences=True)
         self.coef_memory = coef_memory
         self.description = 'KAST'
 
