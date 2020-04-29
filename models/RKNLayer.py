@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 class RKNLayer(tf.keras.layers.Layer):
-    def __init__(self, m, k, b, alpha_unit, h, w, c, **kwargs):
+    def __init__(self, m, k, b, alpha_unit, **kwargs):
         self.K = k
         self.B = b
         self.alpha_unit = alpha_unit
