@@ -2,9 +2,12 @@ import tensorflow as tf
 from RKNLayer import RKNLayer
 
 class RKNModel(tf.keras.Model):
-    def __init__(self, attention_output=3, layer_channel_1=64, layer_channel_2=128, input_shape=16, k=15, b=15, n=128, alpha_unit=64, c=256):
+    def __init__(self, attention_output=3, layer_channel_1=64, layer_channel_2=128, input_shape=16, k=15, b=15, n=128, alpha_unit=64):
         super(RKNModel, self).__init__()
         ## ENCODER
+
+        self.N = n
+        self.attention = attention_output
 
         self.inference_net = tf.keras.Sequential()
         self.inference_net.add(tf.keras.layers.Conv2D(filters=layer_channel_1, kernel_size=3, strides=2, padding='same'))
@@ -46,10 +49,15 @@ class RKNModel(tf.keras.Model):
 
 
     def call(self, inputs):
-        # inputs : (bs, H, W, K)
+        # inputs : (bs, T, H, W, K)
+        bs = inputs.shape[0]
+        seq_size = inputs.shape[1]
+        H = inputs.shape[2]
+        W = inputs.shape[3]
+        K = inputs.shape[4]
         print("RKNModel input shape: ", inputs.shape)
-        encoded = self.inference_net(inputs)
+        encoded = tf.reshape(self.inference_net(tf.reshape(inputs, [-1, H, W, K])), [bs, seq_size, self.N])
         print("RKNModel encoded shape: ", encoded.shape)
         state = self.rkn(encoded)
-        output = self.generative_net(state)
+        output = tf.reshape(self.generative_net(tf.reshape(state, [-1, self.N])), [bs, seq_size, self.attention])
         return output
