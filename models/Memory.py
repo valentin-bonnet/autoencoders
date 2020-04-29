@@ -32,7 +32,7 @@ class Memory(tf.keras.layers.Layer):
         attention_k = attention @ k # (bs, A, K)
         forget_input = tf.transpose(tf.concat([m_k, attention_k], -2), [0, 2, 1]) # (bs, K, M+A)
         forget_gate = self.wf @ tf.expand_dims(forget_input, -1) # (bs, K, M, 1)
-        forget_gate = self.reshape(forget_gate, [-1, self.k_shape, self.m]) + self.bf # (bs, K, M)
+        forget_gate = tf.reshape(forget_gate, [-1, self.k_shape, self.m]) + self.bf # (bs, K, M)
         forget_gate = tf.transpose(forget_gate, [0, 2, 1]) # (bs, M, K)
         forget_gate = tf.reduce_sum(forget_gate, -1)  # (bs, M)
         forget_gate = tf.sigmoid(forget_gate)
