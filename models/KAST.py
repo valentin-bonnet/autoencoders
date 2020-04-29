@@ -43,14 +43,10 @@ class KAST(tf.keras.Model):
         for i in range(seq_size-1):
             with tf.name_scope('Similarity_K'):
                 similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck])) # (bs, h*w, h*w)
-            print("similarity_k shape: ", similarity_k.shape)
             with tf.name_scope('Similarity_M'):
                 similarity_m = self._get_affinity_matrix(m_k[:, i], tf.reshape(k[:, i+1], [-1, h * w, ck]))  # (bs, h*w, m)
 
 
-            print("similarity_m shape: ", similarity_m.shape)
-            print("v.shape: ", v.shape)
-            print("v[:, i].shape: ", v[:, i].shape)
             reconstruction_k = similarity_k @ tf.reshape(v[:, i], [-1, h * w, cv])  # (bs, h*w, v)
             reconstruction_m = similarity_m @ m_v[:, i]
             output_v_i = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
@@ -59,36 +55,13 @@ class KAST(tf.keras.Model):
             ground_truth_i = v[:, i+1]
             ground_truth.append(ground_truth_i)
 
-        """for i in range(seq_size-1):
-            k_i = k[:, i]
-            k_j = k[:, i+1]
-            v_i = v[:, i] # (bs, h, w, v)
-            v_j = v[:, i+1]
-            with tf.name_scope('Rkn'):
-                attention = self.rkn(k_i)
-            with tf.name_scope('Memory'):
-                m_kv = self.memory([attention, k_i, v_i])
-                m_k, m_v = tf.nest.flatten(m_kv)
-
-            with tf.name_scope('Similarity_K'):
-                similarity_k = self._get_affinity_matrix(tf.reshape(k_i, [-1, h*w, c]), tf.reshape(k_j, [-1, h*w, c])) # (bs, h*w, h*w)
-            with tf.name_scope('Similarity_M'):
-                similarity_m = self._get_affinity_matrix(m_k, tf.reshape(k_j, [-1, h*w, c])) # (bs, h*w, m)
-
-            reconstruction_k = similarity_k @ tf.reshape(v_i, [-1, h*w, v]) # (bs, h*w, v)
-            reconstruction_m = similarity_m @ m_v
-            output_v[i] = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
-            ground_truth[i] = v_j"""
 
         return tf.concat(output_v, 1), tf.concat(ground_truth, 1)
 
     def _get_affinity_matrix(self, ref, tar):
         # (bs, h*w or m, k), (bs, h*w, k)
         ref_transpose = tf.transpose(ref, [0, 2, 1])
-        print("ref_transpose shape: ", ref_transpose.shape)
-        print("tar shape: ", tar.shape)
         inner_product = tar @ ref_transpose
-        print("inner product shape: ", inner_product.shape)
         similarity = tf.nn.softmax(inner_product, -1)
         return similarity
 
@@ -100,7 +73,6 @@ class KAST(tf.keras.Model):
         return coef_memory
 
     def compute_loss(self, inputs):
-        print("inputs shape", inputs.shape)
         seq_size = inputs.shape[1]
         H = inputs.shape[2]
         W = inputs.shape[3]
@@ -108,9 +80,7 @@ class KAST(tf.keras.Model):
         h = H//4
         w = W//4
         v = tf.reshape(inputs, [-1, H, W, cv])
-        print("v shape", v.shape)
         v = tf.image.resize(v, [h, w])
-        print("v resized shape", v.shape)
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         output_v, v_j = self.call((inputs, v))
         abs = tf.math.abs(output_v - v_j)
@@ -118,7 +88,6 @@ class KAST(tf.keras.Model):
         return loss
 
     def compute_accuracy(self, inputs):
-        print("inputs shape", inputs.shape)
         seq_size = inputs.shape[1]
         H = inputs.shape[2]
         W = inputs.shape[3]
@@ -126,9 +95,7 @@ class KAST(tf.keras.Model):
         h = H // 4
         w = W // 4
         v = tf.reshape(inputs, [-1, H, W, cv])
-        print("v shape", v.shape)
         v = tf.image.resize(v, [h, w])
-        print("v resized shape", v.shape)
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         output_v, v_j = self.call((inputs, v))
         return tf.reduce_mean(tf.square(output_v - v_j))

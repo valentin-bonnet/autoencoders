@@ -13,7 +13,6 @@ class RKNLayer(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         # [(bs, m)]
-        print("RKNLayer inputs shape: ", input_shape)
         self.batch_size = input_shape[0]
         init_std_trans_u = tf.ones((self.batch_size, self.M)) * 1.1
         init_std_trans_l = tf.ones((self.batch_size, self.M)) * 1.1

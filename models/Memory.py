@@ -11,7 +11,6 @@ class Memory(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         # input : [(batch size, H, W, A), (batch size, H, W, K), (batch size, H, W, V)]
-        print("Memory input shape: ", input_shape)
         self.batch_shape = input_shape[0][0]
         self.hw_shape = input_shape[0][1] * input_shape[0][2]
         self.a_shape = input_shape[0][3]
