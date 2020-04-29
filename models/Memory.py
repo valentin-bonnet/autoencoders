@@ -1,8 +1,12 @@
 import tensorflow as tf
 
 class Memory(tf.keras.layers.Layer):
-    def __init__(self, unit=100, **kwargs):
+    def __init__(self, unit=100, k=256, c=3, **kwargs):
         self.m = unit
+        self.k_shape = k
+        self.v_shape = c
+        self.state_size = [[self.m, self.k_shape], [self.m, self.v_shape]]
+        self.output_size = [[self.m, self.k_shape], [self.m, self.v_shape]]
         super(Memory, self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -10,11 +14,8 @@ class Memory(tf.keras.layers.Layer):
         self.batch_shape = input_shape[0][0]
         self.hw_shape = input_shape[0][1] * input_shape[0][2]
         self.a_shape = input_shape[0][3]
-        self.k_shape = input_shape[1][3]
-        self.v_shape = input_shape[2][3]
 
-        self.state_size = [(self.m,self.k_shape), (self.m, self.v_shape)]
-        self.output_size = [(self.m,self.k_shape), (self.m, self.v_shape)]
+
 
         self.wf = self.add_weight(shape=(self.m, self.m+self.a_shape), initializer='random_normal', trainable=True)
         self.bf = self.add_weight(shape=(self.m, ), initializer='zeros', trainable=True)
