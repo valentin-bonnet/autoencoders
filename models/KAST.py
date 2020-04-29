@@ -8,7 +8,8 @@ class KAST(tf.keras.Model):
         super(KAST, self).__init__()
         self.resnet = ResNet()
         self.rkn = RKNModel()
-        self.memory = Memory()
+        cell_memory = Memory()
+        self.memory = tf.keras.layers.RNN(cell_memory)
         self.coef_memory = coef_memory
         self.description = 'KAST'
 
@@ -32,7 +33,15 @@ class KAST(tf.keras.Model):
         h = k.shape[2]
         w = k.shape[3]
         c = k.shape[4]
-        for i in range(seq_size-1):
+
+        with tf.name_scope('Rkn'):
+            attention = self.rkn(k)
+        with tf.name_scope('Memory'):
+            m_kv = self.memory([attention, k, k])
+            m_k, m_v = tf.nest.flatten(m_kv)
+
+
+        """for i in range(seq_size-1):
             k_i = k[:, i]
             k_j = k[:, i+1]
             v_i = v[:, i] # (bs, h, w, v)
@@ -51,7 +60,8 @@ class KAST(tf.keras.Model):
             reconstruction_k = similarity_k @ tf.reshape(v_i, [-1, h*w, v]) # (bs, h*w, v)
             reconstruction_m = similarity_m @ m_v
             output_v[i] = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
-            ground_truth[i] = v_j
+            ground_truth[i] = v_j"""
+
         return output_v
 
     def _get_affinity_matrix(self, ref, tar):

@@ -2,12 +2,12 @@ import tensorflow as tf
 from RKNLayer import RKNLayer
 
 class RKNModel(tf.keras.Model):
-    def __init__(self, attention_output=3, layer_channel_1=64, layer_channel_2=128, input_shape=16, k=15, b=15, n=128, alpha_unit=64):
+    def __init__(self, attention_output=3, layer_channel_1=64, layer_channel_2=128, input_shape=16, k=15, b=15, n=128, alpha_unit=64, c=256):
         super(RKNModel, self).__init__()
         ## ENCODER
 
         self.inference_net = tf.keras.Sequential()
-        self.inference_net.add(tf.keras.layers.Input(shape=(input_shape, input_shape, 256)))
+        self.inference_net.add(tf.keras.layers.Input(shape=(input_shape, input_shape, c)))
         self.inference_net.add(tf.keras.layers.Conv2D(filters=layer_channel_1, kernel_size=3, strides=2, padding='same'))
         self.inference_net.add(tf.keras.layers.ReLU())
         self.inference_net.add(tf.keras.layers.Conv2D(filters=layer_channel_1, kernel_size=3, strides=1, padding='same'))
@@ -22,7 +22,7 @@ class RKNModel(tf.keras.Model):
 
         ## RKN
 
-        cell = RKNLayer(n//2, k, b, alpha_unit)
+        cell = RKNLayer(n//2, k, b,alpha_unit)
         self.rkn = tf.keras.layers.RNN(cell)
 
         ## DECODER
@@ -48,7 +48,7 @@ class RKNModel(tf.keras.Model):
 
 
     def call(self, inputs):
-        # inputs : (bs, T, H, W, K)
+        # inputs : (bs, H, W, K)
         print("RKNModel input shape: ", inputs.shape)
         encoded = self.inference_net(inputs)
         print("RKNModel encoded shape: ", encoded.shape)

@@ -1,18 +1,18 @@
 import tensorflow as tf
 
 class RKNLayer(tf.keras.layers.Layer):
-    def __init__(self, m, k, b, alpha_unit, **kwargs):
+    def __init__(self, m, k, b, alpha_unit, h, w, c, **kwargs):
         self.K = k
         self.B = b
         self.alpha_unit = alpha_unit
         self.M = m
         self.N = m*2
-        self.state_size = [m, m,m , m]
+        self.state_size = [m, m, m, m]
         self.output_size = m
         super(RKNLayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        # [(bs, T, m)]
+        # [(bs, m)]
         print("RKNLayer inputs shape: ", input_shape)
         self.batch_size = input_shape[0]
         init_std_trans_u = tf.ones((self.batch_size, self.M)) * 1.1
