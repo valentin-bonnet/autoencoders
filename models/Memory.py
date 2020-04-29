@@ -41,7 +41,7 @@ class Memory(tf.keras.layers.Layer):
         m_v = forget_gate * m_v + (1 - forget_gate) * (self.wi @ v) # (bs, M, V)
 
         m_k = tf.reshape(m_k, [-1, self.m, self.k_shape])
-        m_v = tf.reshape(m_k, [-1, self.m, self.v_shape])
+        m_v = tf.reshape(m_v, [-1, self.m, self.v_shape])
 
         return [m_k, m_v], [m_k, m_v] #inputs, states
 
