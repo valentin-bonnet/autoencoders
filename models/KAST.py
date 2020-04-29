@@ -79,7 +79,7 @@ class KAST(tf.keras.Model):
             output_v[i] = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
             ground_truth[i] = v_j"""
 
-        return output_v, ground_truth
+        return tf.concat(output_v, 1), tf.concat(ground_truth, 1)
 
     def _get_affinity_matrix(self, ref, tar):
         # (bs, h*w or m, k), (bs, h*w, k)
