@@ -36,9 +36,12 @@ class Memory(tf.keras.layers.Layer):
         forget_gate = tf.transpose(forget_gate, [0, 2, 1]) # (bs, M, K)
         forget_gate = tf.reduce_sum(forget_gate, -1)  # (bs, M)
         forget_gate = tf.sigmoid(forget_gate)
-
+        forget_gate = tf.expand_dims(forget_gate, -1)
         m_k = forget_gate * m_k + (1 - forget_gate) * (self.wi @ k) # (bs, M, K)
         m_v = forget_gate * m_v + (1 - forget_gate) * (self.wi @ v) # (bs, M, V)
+
+        m_k = tf.reshape(m_k, [-1, self.m, self.k_shape])
+        m_v = tf.reshape(m_k, [-1, self.m, self.v_shape])
 
         return [m_k, m_v], [m_k, m_v] #inputs, states
 
