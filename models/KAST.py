@@ -22,7 +22,7 @@ class KAST(tf.keras.Model):
         C = inputs[0].shape[4]
         h = inputs[1].shape[2]
         w = inputs[1].shape[3]
-        c = inputs[1].shape[4]
+        cv = inputs[1].shape[4]
         output_v = [seq_size-1]
         ground_truth = [seq_size-1]
         i, v = tf.nest.flatten(inputs)
@@ -32,7 +32,7 @@ class KAST(tf.keras.Model):
 
         h = k.shape[2]
         w = k.shape[3]
-        c = k.shape[4]
+        ck = k.shape[4]
 
         with tf.name_scope('Rkn'):
             attention = self.rkn(k)
@@ -42,10 +42,10 @@ class KAST(tf.keras.Model):
 
         for i in range(seq_size-1):
             with tf.name_scope('Similarity_K'):
-                similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, c]), tf.reshape(k[:, i+1], [-1, h*w, c])) # (bs, h*w, h*w)
+                similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck])) # (bs, h*w, h*w)
             print("similarity_k shape: ", similarity_k.shape)
             with tf.name_scope('Similarity_M'):
-                similarity_m = self._get_affinity_matrix(m_k[:, i], tf.reshape(k[:, i+1], [-1, h * w, c]))  # (bs, h*w, m)
+                similarity_m = self._get_affinity_matrix(m_k[:, i], tf.reshape(k[:, i+1], [-1, h * w, cv]))  # (bs, h*w, m)
 
 
             print("similarity_m shape: ", similarity_m.shape)
