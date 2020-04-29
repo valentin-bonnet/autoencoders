@@ -68,7 +68,7 @@ class RKNLayer(tf.keras.layers.Layer):
     def call(self, inputs, states):
         # (bs, M)
         print("RKNLayer inputs shape: ", inputs.shape)
-        a_mean, a_std = tf.nest.flatten(inputs)
+        a_mean, a_std = tf.split(inputs, num_or_size_splits=[self.M, self.M], axis=-1)
         z, std_u, std_l, std_s = tf.nest.flatten(states)
         z_prior, std_u_prior, std_l_prior, std_s_prior = self._pred(z, std_u, std_l, std_s)
         z_post, std_u_post, std_l_post, std_s_post = self._update(z_prior, std_u_prior, std_l_prior, std_s_prior, a_mean, a_std)
