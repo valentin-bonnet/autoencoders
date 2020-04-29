@@ -40,6 +40,16 @@ class KAST(tf.keras.Model):
             m_kv = self.memory([attention, k, k])
             m_k, m_v = tf.nest.flatten(m_kv)
 
+        for i in range(seq_size-1):
+            with tf.name_scope('Similarity_K'):
+                similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, c]), tf.reshape(k[:, i+1], [-1, h*w, c])) # (bs, h*w, h*w)
+            with tf.name_scope('Similarity_M'):
+                similarity_m = self._get_affinity_matrix(m_k, tf.reshape(k[:, i+1], [-1, h * w, c]))  # (bs, h*w, m)
+
+            reconstruction_k = similarity_k @ tf.reshape(v[:, i], [-1, h * w, v])  # (bs, h*w, v)
+            reconstruction_m = similarity_m @ m_v
+            output_v[i] = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
+            ground_truth[i] = v[:, i+1]
 
         """for i in range(seq_size-1):
             k_i = k[:, i]
@@ -62,7 +72,7 @@ class KAST(tf.keras.Model):
             output_v[i] = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
             ground_truth[i] = v_j"""
 
-        return output_v
+        return output_v, ground_truth
 
     def _get_affinity_matrix(self, ref, tar):
         # (bs, h*w or m, k), (bs, h*w, k)
