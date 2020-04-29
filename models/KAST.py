@@ -23,8 +23,8 @@ class KAST(tf.keras.Model):
         h = inputs[1].shape[2]
         w = inputs[1].shape[3]
         cv = inputs[1].shape[4]
-        output_v = [seq_size-1]
-        ground_truth = [seq_size-1]
+        output_v = []
+        ground_truth = []
         i, v = tf.nest.flatten(inputs)
 
         with tf.name_scope('ResNet'):
@@ -53,8 +53,10 @@ class KAST(tf.keras.Model):
             print("v[:, i].shape: ", v[:, i].shape)
             reconstruction_k = similarity_k @ tf.reshape(v[:, i], [-1, h * w, cv])  # (bs, h*w, v)
             reconstruction_m = similarity_m @ m_v[:, i]
-            output_v[i] = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
-            ground_truth[i] = v[:, i+1]
+            output_v_i = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
+            output_v.append(output_v_i)
+            ground_truth_i = v[:, i+1]
+            ground_truth.append(ground_truth_i)
 
         """for i in range(seq_size-1):
             k_i = k[:, i]
