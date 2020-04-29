@@ -43,9 +43,12 @@ class KAST(tf.keras.Model):
         for i in range(seq_size-1):
             with tf.name_scope('Similarity_K'):
                 similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, c]), tf.reshape(k[:, i+1], [-1, h*w, c])) # (bs, h*w, h*w)
+            print("similarity_k shape: ", similarity_k.shape)
             with tf.name_scope('Similarity_M'):
                 similarity_m = self._get_affinity_matrix(m_k[:, i], tf.reshape(k[:, i+1], [-1, h * w, c]))  # (bs, h*w, m)
 
+
+            print("similarity_m shape: ", similarity_m.shape)
             reconstruction_k = similarity_k @ tf.reshape(v[:, i], [-1, h * w, v])  # (bs, h*w, v)
             reconstruction_m = similarity_m @ m_v
             output_v[i] = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
@@ -77,7 +80,10 @@ class KAST(tf.keras.Model):
     def _get_affinity_matrix(self, ref, tar):
         # (bs, h*w or m, k), (bs, h*w, k)
         ref_transpose = tf.transpose(ref, [0, 2, 1])
+        print("ref_transpose shape: ", ref_transpose.shape)
+        print("tar shape: ", tar.shape)
         inner_product = tar @ ref_transpose
+        print("inner product shape: ", inner_product.shape)
         similarity = tf.nn.softmax(inner_product, -1)
         return similarity
 
