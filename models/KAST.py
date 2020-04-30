@@ -23,7 +23,8 @@ class KAST(tf.keras.Model):
         h = inputs[1].shape[2]
         w = inputs[1].shape[3]
         cv = inputs[1].shape[4]
-        print("inputs.shape: ", inputs.shape)
+        print("inputs[0].shape: ", inputs[0].shape)
+        print("inputs[1].shape: ", inputs[1].shape)
         print("seq_size: ", seq_size)
         print("H: ", H)
         print("W: ", W)
