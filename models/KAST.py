@@ -23,6 +23,14 @@ class KAST(tf.keras.Model):
         h = inputs[1].shape[2]
         w = inputs[1].shape[3]
         cv = inputs[1].shape[4]
+        print("inputs.shape: ", inputs.shape)
+        print("seq_size: ", seq_size)
+        print("H: ", H)
+        print("W: ", W)
+        print("C: ", C)
+        print("h: ", h)
+        print("w: ", w)
+        print("cv: ", cv)
         output_v = []
         ground_truth = []
         i, v = tf.nest.flatten(inputs)
@@ -117,5 +125,6 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
+        print("v.shape: ", v.shape)
         output_v, _ = self.call((inputs, v))
         return output_v
