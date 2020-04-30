@@ -45,8 +45,8 @@ class Memory(tf.keras.layers.Layer):
         return [m_k, m_v], [m_k, m_v] #inputs, states
 
     def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
-        m_k = self.add_weight(shape=(batch_size, self.m, self.k_shape), initializer='zeros', trainable=False)
-        m_v = self.add_weight(shape=(batch_size, self.m, self.v_shape), initializer='zeros', trainable=False)
+        m_k = self.add_weight(shape=(batch_size, self.m, self.k_shape), initializer='zeros', trainable=False, name='mk')
+        m_v = self.add_weight(shape=(batch_size, self.m, self.v_shape), initializer='zeros', trainable=False, name='mv')
         return [m_k, m_v]
 
     def get_config(self):
