@@ -78,14 +78,14 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
     z = cv2.cvtColor(np.float32(z), cv2.COLOR_Lab2RGB)
     return (z)
 
-def generate_and_save_images_compare_seq_lab(model, test_input, file_name_head='image', path='./', seq_size=8):
+def generate_and_save_images_compare_seq_lab(model, test_inputs, file_name_head='image', path='./', seq_size=8):
     seq_size=seq_size-1
-    x_logits, test_input = model.reconstruct(test_input)
+    x_logits, test_input = model.reconstruct(test_inputs)
     print("test_input: ", test_input.shape)
     print("x_logits: ", x_logits.shape)
     #x_logits_vae = model.reconstruct_vae(test_input)
-    test_input = np.squeeze(test_input)
-    x_logits = np.squeeze(x_logits)
+    #test_input = np.squeeze(test_input)
+    #x_logits = np.squeeze(x_logits)
     test_input = test_input + 1.0
     test_input = test_input * [50.0, 127.5, 127.5]
     test_input = test_input - [0, 128, 128]
@@ -101,18 +101,18 @@ def generate_and_save_images_compare_seq_lab(model, test_input, file_name_head='
     nb_imgs = 5
     fig = plt.figure(figsize=(nb_imgs, 4))
     for i in range(2):
-        test_input_0 = cv2.cvtColor(np.float32(test_input[i, 0, :, :, :]), cv2.COLOR_Lab2RGB)
-        test_input_5 = cv2.cvtColor(np.float32(test_input[i, seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-        test_input_10 = cv2.cvtColor(np.float32(test_input[i, 2*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-        test_input_15 = cv2.cvtColor(np.float32(test_input[i, 3*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-        test_input_19 = cv2.cvtColor(np.float32(test_input[i, seq_size-1, :, :, :]), cv2.COLOR_Lab2RGB)
-        test_inputs = [test_input_0, test_input_5, test_input_10, test_input_15, test_input_19]
-        x_logit_0 = cv2.cvtColor(np.float32(x_logits[i, 0, :, :, :]), cv2.COLOR_Lab2RGB)
-        x_logit_5 = cv2.cvtColor(np.float32(x_logits[i, seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-        x_logit_10 = cv2.cvtColor(np.float32(x_logits[i, 2*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-        x_logit_15 = cv2.cvtColor(np.float32(x_logits[i, 3*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-        x_logit_19 = cv2.cvtColor(np.float32(x_logits[i, seq_size-1, :, :, :]), cv2.COLOR_Lab2RGB)
-        x_logits = [x_logit_0, x_logit_5, x_logit_10, x_logit_15, x_logit_19]
+        test_input_0 = cv2.cvtColor(np.float32(test_input[i, 0]), cv2.COLOR_Lab2RGB)
+        test_input_5 = cv2.cvtColor(np.float32(test_input[i, seq_size//4]), cv2.COLOR_Lab2RGB)
+        test_input_10 = cv2.cvtColor(np.float32(test_input[i, 2*seq_size//4]), cv2.COLOR_Lab2RGB)
+        test_input_15 = cv2.cvtColor(np.float32(test_input[i, 3*seq_size//4]), cv2.COLOR_Lab2RGB)
+        test_input_19 = cv2.cvtColor(np.float32(test_input[i, seq_size-1]), cv2.COLOR_Lab2RGB)
+        test_inputs_seq = [test_input_0, test_input_5, test_input_10, test_input_15, test_input_19]
+        x_logit_0 = cv2.cvtColor(np.float32(x_logits[i, 0]), cv2.COLOR_Lab2RGB)
+        x_logit_5 = cv2.cvtColor(np.float32(x_logits[i, seq_size//4]), cv2.COLOR_Lab2RGB)
+        x_logit_10 = cv2.cvtColor(np.float32(x_logits[i, 2*seq_size//4]), cv2.COLOR_Lab2RGB)
+        x_logit_15 = cv2.cvtColor(np.float32(x_logits[i, 3*seq_size//4]), cv2.COLOR_Lab2RGB)
+        x_logit_19 = cv2.cvtColor(np.float32(x_logits[i, seq_size-1]), cv2.COLOR_Lab2RGB)
+        x_logits_seq = [x_logit_0, x_logit_5, x_logit_10, x_logit_15, x_logit_19]
 
 
         """
@@ -134,12 +134,12 @@ def generate_and_save_images_compare_seq_lab(model, test_input, file_name_head='
         for j in range(nb_imgs):
             #plt.subplot(6, nb_imgs, nb_imgs*3*i + j + 1)
             plt.subplot(4, nb_imgs, nb_imgs*2*i + j + 1)
-            plt.imshow(test_inputs[j])
+            plt.imshow(test_inputs_seq[j])
             plt.axis('off')
         for j in range(nb_imgs):
             #plt.subplot(6, nb_imgs, nb_imgs*(3*i+1) + j + 1)
             plt.subplot(4, nb_imgs, nb_imgs*(2*i+1) + j + 1)
-            plt.imshow(x_logits[j])
+            plt.imshow(x_logits_seq[j])
             plt.axis('off')
         """
         for j in range(nb_imgs):
