@@ -108,5 +108,14 @@ class KAST(tf.keras.Model):
         return loss
 
     def reconstruct(self, inputs):
-        output_v, _ = self.call(inputs)
+        seq_size = inputs.shape[1]
+        H = inputs.shape[2]
+        W = inputs.shape[3]
+        cv = inputs.shape[4]
+        h = H // 8
+        w = W // 8
+        v = tf.reshape(inputs, [-1, H, W, cv])
+        v = tf.image.resize(v, [h, w])
+        v = tf.reshape(v, [-1, seq_size, h, w, cv])
+        output_v, _ = self.call((inputs, v))
         return output_v
