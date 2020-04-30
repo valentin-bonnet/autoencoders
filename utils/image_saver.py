@@ -97,17 +97,17 @@ def generate_and_save_images_compare_seq_lab(model, test_input, file_name_head='
     #print("max: ", tf.reduce_max(x_logits[0, 5, :, :]))
 
 
-    test_input_0 = cv2.cvtColor(np.float32(test_input[:2, 2*seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
-    test_input_5 = cv2.cvtColor(np.float32(test_input[:2, seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
-    test_input_10 = cv2.cvtColor(np.float32(test_input[:2, 2*seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
-    test_input_15 = cv2.cvtColor(np.float32(test_input[:2, 3*seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
-    test_input_19 = cv2.cvtColor(np.float32(test_input[:2, seq_size-1, :, :]), cv2.COLOR_Lab2RGB)
+    test_input_0 = cv2.cvtColor(np.float32(test_input[:2, 0, :, :, :]), cv2.COLOR_Lab2RGB)
+    test_input_5 = cv2.cvtColor(np.float32(test_input[:2, seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+    test_input_10 = cv2.cvtColor(np.float32(test_input[:2, 2*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+    test_input_15 = cv2.cvtColor(np.float32(test_input[:2, 3*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+    test_input_19 = cv2.cvtColor(np.float32(test_input[:2, seq_size-1, :, :, :]), cv2.COLOR_Lab2RGB)
     test_inputs = [test_input_0, test_input_5, test_input_10, test_input_15, test_input_19]
-    x_logit_0 = cv2.cvtColor(np.float32(x_logits[:2, 0, :, :]), cv2.COLOR_Lab2RGB)
-    x_logit_5 = cv2.cvtColor(np.float32(x_logits[:2, seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
-    x_logit_10 = cv2.cvtColor(np.float32(x_logits[:2, 2*seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
-    x_logit_15 = cv2.cvtColor(np.float32(x_logits[:2, 3*seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
-    x_logit_19 = cv2.cvtColor(np.float32(x_logits[:2, seq_size-1, :, :]), cv2.COLOR_Lab2RGB)
+    x_logit_0 = cv2.cvtColor(np.float32(x_logits[:2, 0, :, :, :]), cv2.COLOR_Lab2RGB)
+    x_logit_5 = cv2.cvtColor(np.float32(x_logits[:2, seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+    x_logit_10 = cv2.cvtColor(np.float32(x_logits[:2, 2*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+    x_logit_15 = cv2.cvtColor(np.float32(x_logits[:2, 3*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+    x_logit_19 = cv2.cvtColor(np.float32(x_logits[:2, seq_size-1, :, :, :]), cv2.COLOR_Lab2RGB)
     x_logits = [x_logit_0, x_logit_5, x_logit_10, x_logit_15, x_logit_19]
 
 
@@ -162,7 +162,7 @@ def generate_and_save_images_compare_seq(model, test_input, file_name_head='imag
     #print("max: ", tf.reduce_max(x_logits[0, 5, :, :]))
 
 
-    test_input_0 = test_input[:2, 0, :, :]
+    test_input_0 = test_input[:2, 0, :, :, :]
     test_input_5 = test_input[:2, seq_size//4, :, :]
     test_input_10 = test_input[:2, 2*seq_size//4, :, :]
     test_input_15 = test_input[:2, 3*seq_size//4, :, :]
