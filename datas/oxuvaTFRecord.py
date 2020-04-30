@@ -60,7 +60,7 @@ def _parse_image_function(example_proto):
       'image_raw': tf.io.FixedLenFeature([], tf.string),
   }
   parsed_data = tf.io.parse_single_example(example_proto, image_feature_description)
-  img = tf.ensure_shape(tf.io.decode_jpeg(parsed_data['image_raw'], channels=3), [parsed_data['height'], parsed_data['widht'], parsed_data['depth']])
+  img = tf.ensure_shape(tf.io.decode_jpeg(parsed_data['image_raw'], channels=3), [parsed_data['height'], parsed_data['width'], parsed_data['depth']])
   print("img parsed :", img)
   return img
 
