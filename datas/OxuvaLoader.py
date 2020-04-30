@@ -10,8 +10,7 @@ def _preprocess_one_ds(parsed_data):
     img = parsed_data['image_raw']
     img = tf.image.decode_jpeg(img)
     img = tf.image.convert_image_dtype(img, tf.float32)
-    #img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
-    img_lab = _rgb2lab(img)
+    img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
     img_normalized = tf.cast(img_lab, tf.float32) + [0., 128.0, 128.0]
     img_normalized = (img_normalized / [50.0, 127.5, 127.5]) - 1.0
     return img_normalized
@@ -24,7 +23,7 @@ def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', 
         print(i)
         ds = data.map(_preprocess_one_ds)
         ds = ds.batch(seq_size, drop_remainder=True)
-        size = size + len(list(ds))
+        #size = size + len(list(ds))
         if i == 1:
             oxuva = ds
         else:
