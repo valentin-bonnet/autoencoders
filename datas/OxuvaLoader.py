@@ -1,10 +1,10 @@
 import tensorflow as tf
 import oxuvaTFRecord
-import cv2
+from skimage import io, color
 import numpy as np
 
 def _rgb2lab(image):
-    return cv2.cvtColor(image, cv2.COLOR_RGB2Lab)
+    return color.rgb2lab(image)
 
 def _preprocess_one_ds(parsed_data):
     img = parsed_data['image_raw']
