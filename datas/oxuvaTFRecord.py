@@ -59,7 +59,9 @@ def _parse_image_function(example_proto):
       'depth': tf.io.FixedLenFeature([], tf.int64),
       'image_raw': tf.io.FixedLenFeature([], tf.string),
   }
-  return tf.io.parse_single_example(example_proto, image_feature_description)
+  parsed_data = tf.io.parse_single_example(example_proto, image_feature_description)
+  img = tf.io.decode_jpeg(parsed_data['image_raw'])
+  return img
 
 
 
