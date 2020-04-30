@@ -12,14 +12,12 @@ def _rgb2lab(image):
 def _preprocess_one_ds(parsed_data):
     img = parsed_data['image_raw']
     img = tf.image.decode_jpeg(img)
-    img_lab = img
-    #img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
+    img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
 
     img_lab = tf.cast(img_lab, tf.float32)
-    #img_normalized = img_lab + [0., 128.0, 128.0]
-    #img_normalized = (img_normalized / [50.0, 127.5, 127.5]) - 1.0
+    #img_normalized = img_lab - [0., 128.0, 128.0]
+    #img_normalized = (img_lab / [50.0, 127.5, 127.5]) - 1.0
     #img_normalized = tf.reshape(img_normalized, [256, 256, 3])
-    #img_normalized = (img_lab * 2.0) - 1.0
     return img_lab
 
 def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', seq_size=8):
