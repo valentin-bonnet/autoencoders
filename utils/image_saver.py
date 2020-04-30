@@ -78,7 +78,7 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
     z = cv2.cvtColor(np.float32(z), cv2.COLOR_Lab2RGB)
     return (z)
 
-def generate_and_save_images_compare_seq(model, test_input, file_name_head='image', path='./'):
+def generate_and_save_images_compare_seq(model, test_input, file_name_head='image', path='./', seq_size=8):
     x_logits = model.reconstruct(test_input)
     #x_logits_vae = model.reconstruct_vae(test_input)
     test_input = np.squeeze(test_input)
@@ -90,17 +90,18 @@ def generate_and_save_images_compare_seq(model, test_input, file_name_head='imag
     #print("\n\n#######\n output:\n", x_logits[0, 5, :, :])
     #print("max: ", tf.reduce_max(x_logits[0, 5, :, :]))
 
+
     test_input_0 = test_input[:2, 0, :, :]
-    test_input_5 = test_input[:2, 5, :, :]
-    test_input_10 = test_input[:2, 10, :, :]
-    test_input_15 = test_input[:2, 15, :, :]
-    test_input_19 = test_input[:2, 19, :, :]
+    test_input_5 = test_input[:2, seq_size//4, :, :]
+    test_input_10 = test_input[:2, 2*seq_size//4, :, :]
+    test_input_15 = test_input[:2, 3*seq_size//4, :, :]
+    test_input_19 = test_input[:2, seq_size-1, :, :]
     test_inputs = [test_input_0, test_input_5, test_input_10, test_input_15, test_input_19]
     x_logit_0 = x_logits[:2, 0, :, :]
-    x_logit_5 = x_logits[:2, 5, :, :]
-    x_logit_10 = x_logits[:2, 10, :, :]
-    x_logit_15 = x_logits[:2, 15, :, :]
-    x_logit_19 = x_logits[:2, 19, :, :]
+    x_logit_5 = x_logits[:2, seq_size//4, :, :]
+    x_logit_10 = x_logits[:2, 2*seq_size//4, :, :]
+    x_logit_15 = x_logits[:2, 3*seq_size//4, :, :]
+    x_logit_19 = x_logits[:2, seq_size-1, :, :]
     x_logits = [x_logit_0, x_logit_5, x_logit_10, x_logit_15, x_logit_19]
     """
     x_logit_vae_0 = x_logits_vae[:2, 0, :, :]
