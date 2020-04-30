@@ -275,7 +275,7 @@ filename = 'batch_normalization'
 #filename = 'ae_sbae'
 
 
-datasets = Dataset.Dataset('moving_mnist')
+datasets = Dataset.Dataset('oxuva')
 
 model1 = construct_model.get_model('KAST')
 
@@ -289,7 +289,7 @@ def lr_fn(lr, step):
     else:
         return lr
 lrs_fn = [lr_fn]
-batch_size = 8
+batch_size = 4
 epochs_max = [10]
 saves_epochs = [50]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'

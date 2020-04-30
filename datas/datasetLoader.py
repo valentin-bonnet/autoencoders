@@ -7,6 +7,7 @@ sys.path.append(curr_dir)
 import cifarLoader
 import DAVISLoader
 import ImagenetResizedLoader
+import OxuvaLoader
 
 
 """
@@ -36,6 +37,10 @@ def get_dataset(dataset):
     elif dataset == 'imagenetresized64':
         train_ds, test_ds = ImagenetResizedLoader.imagenetresized64loaderLab()
         shape = 64
+
+    elif dataset == 'oxuva':
+        train_ds, test_ds = OxuvaLoader.oxuva_loader('/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', 8)
+        shape = 256
 
     else:
         print("No good dataset selected")
