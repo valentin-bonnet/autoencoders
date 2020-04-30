@@ -178,7 +178,7 @@ class Training():
 
             self.ckpt.epoch.assign_add(1)
         self.ckpt.step.assign(0)
-        #self.save()
+        self.save()
 
     def forward_epoch(self):
         print("forward epoch")
