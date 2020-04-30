@@ -83,6 +83,7 @@ class Training():
         epoch_percent_val = self.val_size // 100
         epoch_percent_val = 1 if epoch_percent_val == 0 else epoch_percent_val
 
+
         print("starting_step: ", starting_step)
         print("start progbar: ", starting_step // epoch_percent_train)
 
@@ -97,7 +98,9 @@ class Training():
             # One epoch on TRAIN dataset
             #train_enum = self.train_ds.enumerate()
             #for element in train_enum.as_numpy_iterator():
+            print("train_ds: ", self.train_ds)
             for i, train_x in enumerate(self.train_ds, starting_step):
+                print(i)
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
                 if i % epoch_percent_train == 0:
