@@ -90,6 +90,7 @@ class Training():
 
         print("train_size: ", self.train_size)
         print("val_size: ", self.val_size)
+        print("train dataset :", self.train_ds)
 
         for epoch in range(starting_epoch, self.epoch_max + 1):
             print("epoch : ", epoch)
