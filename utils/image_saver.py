@@ -80,6 +80,8 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
 
 def generate_and_save_images_compare_seq_lab(model, test_input, file_name_head='image', path='./', seq_size=8):
     x_logits = model.reconstruct(test_input)
+    print("test_input: ", test_input.shape)
+    print("x_logits: ", x_logits.shape)
     #x_logits_vae = model.reconstruct_vae(test_input)
     test_input = np.squeeze(test_input)
     x_logits = np.squeeze(x_logits)
