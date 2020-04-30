@@ -15,15 +15,20 @@ def _preprocess_one_ds(h, w, c, img):
 def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', seq_size=8):
     datasets = oxuvaTFRecord.tfrecord_to_dataset(path)
     i = 1
+    size = 0
     for ds in datasets:
         print(i)
         ds = ds.map(_preprocess_one_ds).batch(seq_size, drop_remainder=True)
+        size = size + len(list(ds))
         if i == 1:
             oxuva = ds
         else:
             oxuva.concatenate(ds)
         i = i +1
+    print("#### \n\nSIZE:", size, "####")
+
     oxuva = oxuva.shuffle(100000, seed=1)
     oxuva_test = oxuva.take(10000)
     oxuva_train = oxuva.skip(10000)
+
     return oxuva_train, oxuva_test
