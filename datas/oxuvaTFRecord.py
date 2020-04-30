@@ -61,6 +61,7 @@ def _parse_image_function(example_proto):
   }
   parsed_data = tf.io.parse_single_example(example_proto, image_feature_description)
   img = tf.io.decode_jpeg(parsed_data['image_raw'])
+  print("img parsed :", img)
   return img
 
 
