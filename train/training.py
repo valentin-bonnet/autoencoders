@@ -106,6 +106,7 @@ class Training():
             for i, train_x in enumerate(self.train_ds, starting_step):
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
+                self.save()
                 if i % epoch_percent_train == 0 and i != 0:
                     progbar.add(1)
 
@@ -243,7 +244,6 @@ class Training():
             t_acc_mean.reset_states()
             v_loss_mean.reset_states()
             v_acc_mean.reset_states()
-
             if epoch % self.save_steps == 0 or epoch == self.epoch_max:
                 self.save()
             self.ckpt.epoch.assign_add(1)
@@ -337,6 +337,10 @@ class Training():
         v_acc_path = os.path.join(self.val_path, 'accuracy.npy')
 
         #Save model with checkpoint
+        print("self.ckpt.step", self.ckpt.step)
+        print("self.ckpt.epoch", self.ckpt.epoch)
+        print("self.ckpt_path", self.ckpt_path)
+
         save_path = self.ckpt_manager.save()
         np.save(t_loss_path, np.asarray(self.t_loss))
         np.save(t_acc_path, np.asarray(self.t_acc))
