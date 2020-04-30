@@ -37,7 +37,6 @@ def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', 
 
     val_size = 10000
     train_size = all_size - val_size
-    oxuva = oxuva.shuffle(100000, seed=1)
     oxuva_test = oxuva.take(val_size)
     oxuva_train = oxuva.skip(val_size)
 
