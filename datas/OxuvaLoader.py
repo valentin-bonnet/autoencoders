@@ -15,7 +15,7 @@ def _preprocess_one_ds(parsed_data):
     img_lab = img
     #img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
 
-    img_lab = tf.image.convert_image_dtype(img_lab, tf.float32)
+    img_lab = tf.cast(img_lab, tf.float32)
     img_normalized = img_lab + [0., 128.0, 128.0]
     img_normalized = (img_normalized / [50.0, 127.5, 127.5]) - 1.0
     img_normalized = tf.reshape(img_normalized, [256, 256, 3])
