@@ -91,7 +91,7 @@ class Training():
         print("train_size: ", self.train_size)
         print("val_size: ", self.val_size)
 
-        for train in self.train_ds.take(3):
+        for train in self.train_ds.take(1):
             print(train)
 
         for epoch in range(starting_epoch, self.epoch_max + 1):
