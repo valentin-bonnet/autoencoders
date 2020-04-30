@@ -78,6 +78,77 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
     z = cv2.cvtColor(np.float32(z), cv2.COLOR_Lab2RGB)
     return (z)
 
+def generate_and_save_images_compare_seq_lab(model, test_input, file_name_head='image', path='./', seq_size=8):
+    x_logits = model.reconstruct(test_input)
+    #x_logits_vae = model.reconstruct_vae(test_input)
+    test_input = np.squeeze(test_input)
+    x_logits = np.squeeze(x_logits)
+    test_input = test_input + 1.0
+    test_input = test_input * [50.0, 127.5, 127.5]
+    test_input = test_input - [0, 128, 128]
+    x_logits = x_logits + 1.0
+    x_logits = x_logits * [50.0, 127.5, 127.5]
+    x_logits = x_logits - [0, 128, 128]
+    #x_logits_vae = np.squeeze(x_logits_vae)
+    #print(x_logits)
+    #print("\n\n#######\n input:\n", test_input[0, 5, :, :])
+    #print("max: ", tf.reduce_max(test_input[0, 5, :, :]))
+    #print("\n\n#######\n output:\n", x_logits[0, 5, :, :])
+    #print("max: ", tf.reduce_max(x_logits[0, 5, :, :]))
+
+
+    test_input_0 = cv2.cvtColor(np.float32(test_input[:2, 2*seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
+    test_input_5 = cv2.cvtColor(np.float32(test_input[:2, seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
+    test_input_10 = cv2.cvtColor(np.float32(test_input[:2, 2*seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
+    test_input_15 = cv2.cvtColor(np.float32(test_input[:2, 3*seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
+    test_input_19 = cv2.cvtColor(np.float32(test_input[:2, seq_size-1, :, :]), cv2.COLOR_Lab2RGB)
+    test_inputs = [test_input_0, test_input_5, test_input_10, test_input_15, test_input_19]
+    x_logit_0 = cv2.cvtColor(np.float32(x_logits[:2, 0, :, :]), cv2.COLOR_Lab2RGB)
+    x_logit_5 = cv2.cvtColor(np.float32(x_logits[:2, seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
+    x_logit_10 = cv2.cvtColor(np.float32(x_logits[:2, 2*seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
+    x_logit_15 = cv2.cvtColor(np.float32(x_logits[:2, 3*seq_size//4, :, :]), cv2.COLOR_Lab2RGB)
+    x_logit_19 = cv2.cvtColor(np.float32(x_logits[:2, seq_size-1, :, :]), cv2.COLOR_Lab2RGB)
+    x_logits = [x_logit_0, x_logit_5, x_logit_10, x_logit_15, x_logit_19]
+
+
+    """
+    x_logit_vae_0 = x_logits_vae[:2, 0, :, :]
+    x_logit_vae_5 = x_logits_vae[:2, 5, :, :]
+    x_logit_vae_10 = x_logits_vae[:2, 10, :, :]
+    x_logit_vae_15 = x_logits_vae[:2, 15, :, :]
+    x_logit_vae_19 = x_logits_vae[:2, 19, :, :]
+    x_logits_vae = [x_logit_vae_0, x_logit_vae_5, x_logit_vae_10, x_logit_vae_15, x_logit_vae_19]
+    """
+    # predictions = model.sample(test_input)
+    nb_imgs = len(test_inputs)
+    #fig = plt.figure(figsize=(nb_imgs, 6))
+    fig = plt.figure(figsize=(nb_imgs, 4))
+
+
+
+    for i in range(2):
+        for j in range(nb_imgs):
+            #plt.subplot(6, nb_imgs, nb_imgs*3*i + j + 1)
+            plt.subplot(4, nb_imgs, nb_imgs*2*i + j + 1)
+            plt.imshow(test_inputs[j][i])
+            plt.axis('off')
+        for j in range(nb_imgs):
+            #plt.subplot(6, nb_imgs, nb_imgs*(3*i+1) + j + 1)
+            plt.subplot(4, nb_imgs, nb_imgs*(2*i+1) + j + 1)
+            plt.imshow(x_logits[j][i])
+            plt.axis('off')
+        """
+        for j in range(nb_imgs):
+            plt.subplot(6, nb_imgs, nb_imgs*(3*i+2) + j + 1)
+            plt.imshow(x_logits_vae[j][i])
+            plt.axis('off')"""
+
+    # tight_layout minimizes the overlap between 2 sub-plots
+    if not os.path.isdir(path):
+        os.makedirs(path)
+    file_path = os.path.join(path, file_name_head)
+    plt.savefig(file_path + '.png')
+
 def generate_and_save_images_compare_seq(model, test_input, file_name_head='image', path='./', seq_size=8):
     x_logits = model.reconstruct(test_input)
     #x_logits_vae = model.reconstruct_vae(test_input)

@@ -43,8 +43,8 @@ class Training():
         self.v_loss = None
         self.v_acc = None
 
-        if not self.step_is_epoch and self.save_steps > 100:
-            self.save_steps = self.save_steps % 100
+        if not self.step_is_epoch and self.save_steps > 1000:
+            self.save_steps = self.save_steps % 1000
 
         if not os.path.isdir(self.ckpt_path):
             os.makedirs(self.ckpt_path)
@@ -78,9 +78,9 @@ class Training():
 
 
 
-        epoch_percent_train = self.train_size // 100
+        epoch_percent_train = self.train_size // 1000
         epoch_percent_train = 1 if epoch_percent_train == 0 else epoch_percent_train
-        epoch_percent_val = self.val_size // 100
+        epoch_percent_val = self.val_size // 1000
         epoch_percent_val = 1 if epoch_percent_val == 0 else epoch_percent_val
 
 
@@ -93,7 +93,7 @@ class Training():
 
         for epoch in range(starting_epoch, self.epoch_max + 1):
             print("epoch : ", epoch)
-            progbar = tf.keras.utils.Progbar(100)
+            progbar = tf.keras.utils.Progbar(1000)
             progbar.update(starting_step//epoch_percent_train)
 
             self.lr = self.lr_fn(self.lr, epoch)
@@ -106,7 +106,6 @@ class Training():
             for i, train_x in enumerate(self.train_ds, starting_step):
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
-                self.save()
                 if i % epoch_percent_train == 0 and i != 0:
                     progbar.add(1)
 
@@ -150,7 +149,7 @@ class Training():
                     print('i :', i)
                     print('epoch percent train: ', epoch_percent_train)
                     print('save step: ', self.save_steps)
-                    x_axis = np.linspace(0, len(self.t_loss) / 100, len(self.t_loss))
+                    x_axis = np.linspace(0, len(self.t_loss) / 1000, len(self.t_loss))
                     image_saver.curves([self.t_loss, self.v_loss], ['Training', 'Validation'],
                                        'training_validation_loss', self.img_path, 'Steps', 'Loss', x_axis)
                     image_saver.curves([self.t_acc, self.v_acc], ['Training', 'Validation'],
