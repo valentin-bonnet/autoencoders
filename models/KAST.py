@@ -77,8 +77,8 @@ class KAST(tf.keras.Model):
         H = inputs.shape[2]
         W = inputs.shape[3]
         cv = inputs.shape[4]
-        h = H//4
-        w = W//4
+        h = H//8
+        w = W//8
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])

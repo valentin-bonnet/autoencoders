@@ -17,7 +17,7 @@ class ResNet(tf.keras.Model):
             self.model.add(ResidualUnit(128, 2))
             self.model.add(ResidualUnit(128, 1))
         with tf.name_scope('stage3'):
-            self.model.add(ResidualUnit(256, 1, skip_use=True))
+            self.model.add(ResidualUnit(256, 2, skip_use=False))
             self.model.add(ResidualUnit(256, 1))
         with tf.name_scope('stage4'):
             self.model.add(ResidualUnit(256, 1))
