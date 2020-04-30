@@ -2,7 +2,7 @@ import tensorflow as tf
 from RKNLayer import RKNLayer
 
 class RKNModel(tf.keras.Model):
-    def __init__(self, attention_output=3, layer_channel_1=64, layer_channel_2=128, input_shape=16, k=15, b=15, n=128, alpha_unit=64):
+    def __init__(self, attention_output=3, layer_channel_1=64, layer_channel_2=128, input_shape=64, k=15, b=15, n=128, alpha_unit=64):
         super(RKNModel, self).__init__()
         ## ENCODER
 
