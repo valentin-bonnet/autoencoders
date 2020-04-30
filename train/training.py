@@ -106,7 +106,7 @@ class Training():
             for i, train_x in enumerate(self.train_ds, starting_step):
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
-                if i % epoch_percent_train == 0:
+                if i % epoch_percent_train == 0 and i != 0:
                     progbar.add(1)
 
                     for val_x in self.val_ds.take(epoch_percent_val):
