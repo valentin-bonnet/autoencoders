@@ -84,8 +84,12 @@ class Training():
         epoch_percent_val = 1 if epoch_percent_val == 0 else epoch_percent_val
 
 
+
         print("starting_step: ", starting_step)
         print("start progbar: ", starting_step // epoch_percent_train)
+
+        print("train_size: ", self.train_size)
+        print("val_size: ", self.val_size)
 
         for train in self.train_ds.take(3):
             print(train)
@@ -174,7 +178,7 @@ class Training():
 
             self.ckpt.epoch.assign_add(1)
         self.ckpt.step.assign(0)
-        self.save()
+        #self.save()
 
     def forward_epoch(self):
         print("forward epoch")
