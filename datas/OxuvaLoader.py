@@ -28,12 +28,10 @@ def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', 
     for data in datasets:
         ds = data.map(_preprocess_one_ds)
         ds = ds.batch(seq_size, drop_remainder=True)
-        for data in ds.take(1):
-            print(data.shape)
         if i == 1:
             oxuva = ds
         else:
-            oxuva.concatenate(ds)
+            oxuva = oxuva.concatenate(ds)
         i = i +1
 
 
