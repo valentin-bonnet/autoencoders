@@ -102,6 +102,7 @@ class Training():
             # One epoch on TRAIN dataset
             #train_enum = self.train_ds.enumerate()
             #for element in train_enum.as_numpy_iterator():
+            print("train_ds: ", self.train_ds)
             for i, train_x in enumerate(self.train_ds, starting_step):
                 print(i)
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
