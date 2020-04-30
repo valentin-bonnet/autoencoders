@@ -22,12 +22,12 @@ class RKNLayer(tf.keras.layers.Layer):
         B21_init = tf.eye(self.M, batch_shape=[self.K]) * -0.2
         B22_init = tf.eye(self.M, batch_shape=[self.K])
 
-        self.std_trans_u = tf.exp(tf.Variable(initial_value=init_std_trans_u, trainable=True))
-        self.std_trans_l = tf.exp(tf.Variable(initial_value=init_std_trans_l, trainable=True))
-        self.B11 = tf.linalg.band_part(tf.Variable(initial_value=B11_init, trainable=True), self.B, self.B)
-        self.B12 = tf.linalg.band_part(tf.Variable(initial_value=B12_init, trainable=True), self.B, self.B)
-        self.B21 = tf.linalg.band_part(tf.Variable(initial_value=B21_init, trainable=True), self.B, self.B)
-        self.B22 = tf.linalg.band_part(tf.Variable(initial_value=B22_init, trainable=True), self.B, self.B)
+        self.std_trans_u = tf.exp(tf.Variable(initial_value=init_std_trans_u, trainable=True, name='std_trans_u'))
+        self.std_trans_l = tf.exp(tf.Variable(initial_value=init_std_trans_l, trainable=True, name='std_trans_l'))
+        self.B11 = tf.linalg.band_part(tf.Variable(initial_value=B11_init, trainable=True, name='B11'), self.B, self.B)
+        self.B12 = tf.linalg.band_part(tf.Variable(initial_value=B12_init, trainable=True, name='B12'), self.B, self.B)
+        self.B21 = tf.linalg.band_part(tf.Variable(initial_value=B21_init, trainable=True, name='B21'), self.B, self.B)
+        self.B22 = tf.linalg.band_part(tf.Variable(initial_value=B22_init, trainable=True, name='B22'), self.B, self.B)
 
         self._lgssm_parameters_inference = tf.keras.Sequential()
         self._lgssm_parameters_inference.add(tf.keras.layers.Input(shape=(None, self.N), batch_size=self.batch_size))

@@ -17,10 +17,10 @@ class Memory(tf.keras.layers.Layer):
 
 
 
-        self.wf = self.add_weight(shape=(self.m, self.m+self.a_shape), initializer='random_normal', trainable=True)
-        self.bf = self.add_weight(shape=(self.m, ), initializer='zeros', trainable=True)
+        self.wf = self.add_weight(shape=(self.m, self.m+self.a_shape), initializer='random_normal', trainable=True, name='wf')
+        self.bf = self.add_weight(shape=(self.m, ), initializer='zeros', trainable=True, name='bf')
 
-        self.wi = self.add_weight(shape=(self.m, self.hw_shape), initializer='random_normal', trainable=True)
+        self.wi = self.add_weight(shape=(self.m, self.hw_shape), initializer='random_normal', trainable=True, name='wi')
 
     def call(self, inputs, states):
         m_k, m_v = tf.nest.flatten(states)
