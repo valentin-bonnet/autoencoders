@@ -124,6 +124,5 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        print("v.shape: ", v.shape)
-        output_v, ground_truth = self.call((inputs, v))
-        return output_v, ground_truth
+        output_v, v_j = self.call((inputs, v))
+        return output_v, v_j
