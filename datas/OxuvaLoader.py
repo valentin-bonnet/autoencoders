@@ -22,28 +22,47 @@ def _preprocess_one_ds(parsed_data):
 
 def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', seq_size=8):
     datasets = oxuvaTFRecord.tfrecord_to_dataset(path)
-    i = 1
+    i = 0
+
+    np.random.seed(1)
+    random_i = np.random.choice(len(_imgs_per_folder), len(_imgs_per_folder)//10, replace=False)
     np_size = np.array(_imgs_per_folder)
     nb_batch = np_size // seq_size
     all_size = np.sum(nb_batch)
+    val_size = np.sum(nb_batch[random_i])
+
+    oxuva_train = None
+    oxuva_val = None
 
     for data in datasets:
         ds = data.map(_preprocess_one_ds)
         ds = ds.batch(seq_size, drop_remainder=True)
-        if i == 1:
-            oxuva = ds
+        if i == 0:
+            if i in random_i:
+                oxuva_val = ds
+            else:
+                oxuva_train = ds
         else:
-            oxuva = oxuva.concatenate(ds)
+            if i in random_i:
+                if oxuva_val is None:
+                    oxuva_val = ds
+                else:
+                    oxuva_val.concatenate(ds)
+            else:
+                if oxuva_train is None:
+                    oxuva_train = ds
+                else:
+                    oxuva_train.concatenate(ds)
         i = i +1
 
 
-    val_size = 10000
+    #val_size = 10000
     train_size = all_size - val_size
     #for train in oxuva.take(1):
     #    print("OXUVA !")
     #    print(train.shape)
-    oxuva_test = oxuva.take(val_size)
-    oxuva_train = oxuva.skip(val_size)
+    #oxuva_test = oxuva.take(val_size)
+    #oxuva_train = oxuva.skip(val_size)
 
     #for train in oxuva_test.take(1):
     #    print("OXUVA 2 !")
@@ -54,4 +73,4 @@ def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', 
     #    print(train.shape)
 
 
-    return oxuva_train, oxuva_test, train_size, val_size
+    return oxuva_train, oxuva_val, train_size, val_size
