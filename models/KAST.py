@@ -26,8 +26,8 @@ class KAST(tf.keras.Model):
         output_v = []
         ground_truth = []
         i, v = tf.nest.flatten(inputs)
-        print("i.shape: ", i.shape)
-        print("v.shape: ", v.shape)
+        #print("i.shape: ", i.shape)
+        #print("v.shape: ", v.shape)
 
         with tf.name_scope('ResNet'):
             k = tf.reshape(self.resnet(tf.reshape(i, [-1, H, W, C])), [bs, seq_size, h, w, 256]) # (bs, T, h, w, 256)
