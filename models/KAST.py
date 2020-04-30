@@ -79,6 +79,7 @@ class KAST(tf.keras.Model):
         return coef_memory
 
     def compute_loss(self, inputs):
+        print(inputs[0, 0])
         seq_size = inputs.shape[1]
         H = inputs.shape[2]
         W = inputs.shape[3]
