@@ -40,26 +40,20 @@ def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', 
         ds = ds.batch(seq_size, drop_remainder=True)
         if i == 0:
             if i in random_i:
-                print(i, " val")
                 oxuva_val = ds
             else:
-                print(i, " train")
                 oxuva_train = ds
         else:
             if i in random_i:
                 if oxuva_val is None:
-                    print(i, " val")
                     oxuva_val = ds
                 else:
-                    print(i, " val")
-                    oxuva_val.concatenate(ds)
+                    oxuva_val = oxuva_val.concatenate(ds)
             else:
                 if oxuva_train is None:
-                    print(i, " train")
                     oxuva_train = ds
                 else:
-                    print(i, " train")
-                    oxuva_train.concatenate(ds)
+                    oxuva_train = oxuva_train.concatenate(ds)
         i = i +1
 
 
