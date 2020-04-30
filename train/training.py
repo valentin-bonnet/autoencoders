@@ -104,9 +104,8 @@ class Training():
             #train_enum = self.train_ds.enumerate()
             #for element in train_enum.as_numpy_iterator():
             #print("train_ds: ", self.train_ds)
-            i = 0
-            for train_x in self.train_ds:
-
+            for i, train_x in enumerate(self.train_ds, starting_step):
+                print(i)
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
                 if i % epoch_percent_train == 0:
@@ -164,7 +163,6 @@ class Training():
                     t_acc_mean.reset_states()
                     v_loss_mean.reset_states()
                     v_acc_mean.reset_states()
-                i = i+1
 
             starting_step = 0
 
