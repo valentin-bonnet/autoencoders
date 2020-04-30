@@ -60,7 +60,6 @@ def _parse_image_function(example_proto):
       'image_raw': tf.io.FixedLenFeature([], tf.string),
   }
   parsed_data = tf.io.parse_single_example(example_proto, image_feature_description)
-  print(parsed_data)
   img = tf.io.decode_jpeg(parsed_data['image_raw'])
   return img
 
