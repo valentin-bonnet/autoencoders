@@ -23,7 +23,7 @@ def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', 
         print(i)
         ds = data.map(_preprocess_one_ds)
         ds = ds.batch(seq_size, drop_remainder=True)
-        #size = size + len(list(ds))
+        size = size + len(list(ds))
         if i == 1:
             oxuva = ds
         else:
