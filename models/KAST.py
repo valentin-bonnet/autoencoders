@@ -56,7 +56,10 @@ class KAST(tf.keras.Model):
             output_v.append(output_v_i)
             ground_truth_i = v[:, i+1]
             ground_truth.append(ground_truth_i)
-        #print("output_v len: ", len(output_v))
+        print("output_v len: ", len(output_v))
+        print("output_v[0].shape: ", output_v[0].shape)
+        print("ground_truth len: ", len(ground_truth))
+        print("ground_truth[0].shape: ", ground_truth[0].shape)
 
 
         return tf.concat(output_v, 1), tf.concat(ground_truth, 1)
