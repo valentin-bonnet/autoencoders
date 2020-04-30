@@ -7,7 +7,9 @@ _imgs_per_folder = [4172, 2552, 1442, 10862, 3182, 1442, 2342, 4142, 3632, 1352,
 
 
 def _rgb2lab(image):
-    return color.rgb2lab(image)
+    lab = color.rgb2lab(image)
+    print(lab)
+    return lab
 
 def _preprocess_one_ds(parsed_data):
     img = parsed_data['image_raw']
