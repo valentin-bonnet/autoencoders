@@ -97,38 +97,39 @@ def generate_and_save_images_compare_seq_lab(model, test_input, file_name_head='
     #print("max: ", tf.reduce_max(test_input[0, 5, :, :]))
     #print("\n\n#######\n output:\n", x_logits[0, 5, :, :])
     #print("max: ", tf.reduce_max(x_logits[0, 5, :, :]))
-
-
-    test_input_0 = cv2.cvtColor(np.float32(test_input[:2, 0, :, :, :]), cv2.COLOR_Lab2RGB)
-    test_input_5 = cv2.cvtColor(np.float32(test_input[:2, seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-    test_input_10 = cv2.cvtColor(np.float32(test_input[:2, 2*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-    test_input_15 = cv2.cvtColor(np.float32(test_input[:2, 3*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-    test_input_19 = cv2.cvtColor(np.float32(test_input[:2, seq_size-1, :, :, :]), cv2.COLOR_Lab2RGB)
-    test_inputs = [test_input_0, test_input_5, test_input_10, test_input_15, test_input_19]
-    x_logit_0 = cv2.cvtColor(np.float32(x_logits[:2, 0, :, :, :]), cv2.COLOR_Lab2RGB)
-    x_logit_5 = cv2.cvtColor(np.float32(x_logits[:2, seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-    x_logit_10 = cv2.cvtColor(np.float32(x_logits[:2, 2*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-    x_logit_15 = cv2.cvtColor(np.float32(x_logits[:2, 3*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
-    x_logit_19 = cv2.cvtColor(np.float32(x_logits[:2, seq_size-1, :, :, :]), cv2.COLOR_Lab2RGB)
-    x_logits = [x_logit_0, x_logit_5, x_logit_10, x_logit_15, x_logit_19]
-
-
-    """
-    x_logit_vae_0 = x_logits_vae[:2, 0, :, :]
-    x_logit_vae_5 = x_logits_vae[:2, 5, :, :]
-    x_logit_vae_10 = x_logits_vae[:2, 10, :, :]
-    x_logit_vae_15 = x_logits_vae[:2, 15, :, :]
-    x_logit_vae_19 = x_logits_vae[:2, 19, :, :]
-    x_logits_vae = [x_logit_vae_0, x_logit_vae_5, x_logit_vae_10, x_logit_vae_15, x_logit_vae_19]
-    """
-    # predictions = model.sample(test_input)
-    nb_imgs = len(test_inputs)
-    #fig = plt.figure(figsize=(nb_imgs, 6))
+    nb_imgs = 5
     fig = plt.figure(figsize=(nb_imgs, 4))
-
-
-
     for i in range(2):
+        test_input_0 = cv2.cvtColor(np.float32(test_input[i, 0, :, :, :]), cv2.COLOR_Lab2RGB)
+        test_input_5 = cv2.cvtColor(np.float32(test_input[i, seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+        test_input_10 = cv2.cvtColor(np.float32(test_input[i, 2*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+        test_input_15 = cv2.cvtColor(np.float32(test_input[i, 3*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+        test_input_19 = cv2.cvtColor(np.float32(test_input[i, seq_size-1, :, :, :]), cv2.COLOR_Lab2RGB)
+        test_inputs = [test_input_0, test_input_5, test_input_10, test_input_15, test_input_19]
+        x_logit_0 = cv2.cvtColor(np.float32(x_logits[i, 0, :, :, :]), cv2.COLOR_Lab2RGB)
+        x_logit_5 = cv2.cvtColor(np.float32(x_logits[i, seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+        x_logit_10 = cv2.cvtColor(np.float32(x_logits[i, 2*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+        x_logit_15 = cv2.cvtColor(np.float32(x_logits[i, 3*seq_size//4, :, :, :]), cv2.COLOR_Lab2RGB)
+        x_logit_19 = cv2.cvtColor(np.float32(x_logits[i, seq_size-1, :, :, :]), cv2.COLOR_Lab2RGB)
+        x_logits = [x_logit_0, x_logit_5, x_logit_10, x_logit_15, x_logit_19]
+
+
+        """
+        x_logit_vae_0 = x_logits_vae[:2, 0, :, :]
+        x_logit_vae_5 = x_logits_vae[:2, 5, :, :]
+        x_logit_vae_10 = x_logits_vae[:2, 10, :, :]
+        x_logit_vae_15 = x_logits_vae[:2, 15, :, :]
+        x_logit_vae_19 = x_logits_vae[:2, 19, :, :]
+        x_logits_vae = [x_logit_vae_0, x_logit_vae_5, x_logit_vae_10, x_logit_vae_15, x_logit_vae_19]
+        """
+        # predictions = model.sample(test_input)
+
+        #fig = plt.figure(figsize=(nb_imgs, 6))
+
+
+
+
+
         for j in range(nb_imgs):
             #plt.subplot(6, nb_imgs, nb_imgs*3*i + j + 1)
             plt.subplot(4, nb_imgs, nb_imgs*2*i + j + 1)
