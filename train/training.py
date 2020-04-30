@@ -87,6 +87,9 @@ class Training():
         print("starting_step: ", starting_step)
         print("start progbar: ", starting_step // epoch_percent_train)
 
+        for train in self.train_ds.take(3):
+            print(train)
+
         for epoch in range(starting_epoch, self.epoch_max + 1):
             print("epoch : ", epoch)
             progbar = tf.keras.utils.Progbar(100)
