@@ -6,7 +6,10 @@ import numpy as np
 def _rgb2lab(image):
     return cv2.cvtColor(image, cv2.COLOR_RGB2Lab)
 
-def _preprocess_one_ds(img):
+def _preprocess_one_ds(parsed_data):
+    img = parsed_data['image_raw']
+    img = tf.image.decode_jpeg(img)
+    img = tf.image.convert_image_dtype(img, tf.float32)
     img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
     img_normalized = tf.cast(img_lab, tf.float32) + [0., 128.0, 128.0]
     img_normalized = (img_normalized / [50.0, 127.5, 127.5]) - 1.0
