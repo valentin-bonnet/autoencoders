@@ -81,7 +81,7 @@ def _preprocess_sequence_ds(parsed_batch):
 
 def _preprocess_once(parsed_data):
     parsed_batch = parsed_data[::frames_delta]
-    img = parsed_data[:]['image_raw']
+    img = parsed_batch[:]['image_raw']
     img = tf.map_fn(tf.image.decode_jpeg, img, dtype=tf.uint8)
     img = tf.cast(img, tf.float32) / 255.0
     # img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
