@@ -2,10 +2,12 @@ import tensorflow as tf
 from ResNet import ResNet
 from RKNModel import RKNModel
 from Memory import Memory
+from Transformation import Transformation
 
 class KAST(tf.keras.Model):
     def __init__(self, coef_memory=0.2):
         super(KAST, self).__init__()
+        self.transformation = Transformation(trainable=False)
         self.resnet = ResNet()
         self.rkn = RKNModel()
         cell_memory = Memory()
@@ -13,7 +15,8 @@ class KAST(tf.keras.Model):
         self.coef_memory = coef_memory
         self.description = 'KAST'
 
-    def call(self, inputs):
+    def call(self, inputs, **kwargs):
+        trainable = kwargs['trainable']
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
         bs = inputs[1].shape[0]
         seq_size = inputs[1].shape[1]
@@ -28,6 +31,9 @@ class KAST(tf.keras.Model):
         i, v = tf.nest.flatten(inputs)
         #print("i.shape: ", i.shape)
         #print("v.shape: ", v.shape)
+
+        with tf.name_scope('Transformation'):
+            i = self.transformation(i, trainable=trainable)
 
         with tf.name_scope('ResNet'):
             k = tf.reshape(self.resnet(tf.reshape(i, [-1, H, W, C])), [bs, seq_size, h, w, 256]) # (bs, T, h, w, 256)
@@ -88,7 +94,7 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j = self.call((inputs, v))
+        output_v, v_j = self.call((inputs, v), trainable=True)
         abs = tf.math.abs(output_v - v_j)
         loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
         return loss
@@ -103,7 +109,7 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j = self.call((inputs, v))
+        output_v, v_j = self.call((inputs, v), trainable=False)
         return tf.reduce_mean(tf.square(output_v - v_j))
 
     def compute_apply_gradients(self, x, optimizer):
@@ -123,5 +129,5 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j = self.call((inputs, v))
+        output_v, v_j = self.call((inputs, v), trainable=False)
         return output_v, v_j
