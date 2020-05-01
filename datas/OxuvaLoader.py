@@ -94,9 +94,9 @@ def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', 
     oxuva_val = None
 
     for data in datasets:
-        ds = data.map(_preprocess_one_ds)
         ds = ds.batch(true_seq_size, drop_remainder=True)
         ds = ds.map(_preprocess_sequence_ds)
+        ds = data.map(_preprocess_one_ds)
         if i == 0:
             if i in random_i:
                 oxuva_val = ds
