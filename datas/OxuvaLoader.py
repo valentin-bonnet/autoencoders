@@ -86,7 +86,7 @@ def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', 
     np.random.seed(1)
     random_i = np.random.choice(len(_imgs_per_folder), len(_imgs_per_folder)//10, replace=False)
     np_size = np.array(_imgs_per_folder)
-    nb_batch = np_size // seq_size
+    nb_batch = np_size // true_seq_size
     all_size = np.sum(nb_batch)
     val_size = np.sum(nb_batch[random_i])
 
