@@ -82,7 +82,7 @@ def _preprocess_sequence_ds(parsed_batch):
 def _preprocess_once(parsed_data):
     parsed_batch = parsed_data[::frames_delta]
     img = parsed_data[:]['image_raw']
-    img = tf.image.decode_jpeg(img)
+    img = tf.map_fn(tf.image.decode_jpeg, img, dtype=tf.uint8)
     img = tf.cast(img, tf.float32) / 255.0
     # img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
     img_lab = tf_rgb2lab(img)
@@ -107,9 +107,10 @@ def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', 
     oxuva_val = None
 
     for data in datasets:
-        ds = ds.batch(true_seq_size, drop_remainder=True)
-        ds = ds.map(_preprocess_sequence_ds)
-        ds = data.map(_preprocess_one_ds)
+        ds = data.batch(true_seq_size, drop_remainder=True)
+        ds = ds.map(_preprocess_once)
+        #ds = ds.map(_preprocess_sequence_ds)
+        #ds = ds.map(_preprocess_one_ds)
         if i == 0:
             if i in random_i:
                 oxuva_val = ds

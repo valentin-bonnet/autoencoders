@@ -16,7 +16,7 @@ class KAST(tf.keras.Model):
         self.description = 'KAST'
 
     def call(self, inputs, **kwargs):
-        trainable = kwargs['trainable']
+        training = kwargs['training']
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
         bs = inputs[1].shape[0]
         seq_size = inputs[1].shape[1]
@@ -33,7 +33,7 @@ class KAST(tf.keras.Model):
         #print("v.shape: ", v.shape)
 
         with tf.name_scope('Transformation'):
-            i = self.transformation(i, trainable=trainable)
+            i = self.transformation(i, training=training)
 
         with tf.name_scope('ResNet'):
             k = tf.reshape(self.resnet(tf.reshape(i, [-1, H, W, C])), [bs, seq_size, h, w, 256]) # (bs, T, h, w, 256)
@@ -94,7 +94,7 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j = self.call((inputs, v), trainable=True)
+        output_v, v_j = self.call((inputs, v), training=True)
         abs = tf.math.abs(output_v - v_j)
         loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
         return loss
@@ -109,7 +109,7 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j = self.call((inputs, v), trainable=False)
+        output_v, v_j = self.call((inputs, v), training=False)
         return tf.reduce_mean(tf.square(output_v - v_j))
 
     def compute_apply_gradients(self, x, optimizer):
@@ -129,5 +129,5 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j = self.call((inputs, v), trainable=False)
+        output_v, v_j = self.call((inputs, v), training=False)
         return output_v, v_j
