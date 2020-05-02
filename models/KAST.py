@@ -32,9 +32,9 @@ class KAST(tf.keras.Model):
         #print("v.shape: ", v.shape)
 
         with tf.name_scope('Transformation'):
-            i = self.transformation(i_raw, **kwargs)
+            i_drop = self.transformation(i_raw, **kwargs)
         with tf.name_scope('ResNet'):
-            k = tf.reshape(self.resnet(tf.reshape(i, [-1, H, W, C])), [bs, seq_size, h, w, 256]) # (bs, T, h, w, 256)
+            k = tf.reshape(self.resnet(tf.reshape(i_drop, [-1, H, W, C])), [bs, seq_size, h, w, 256]) # (bs, T, h, w, 256)
 
         h = k.shape[2]
         w = k.shape[3]
@@ -66,7 +66,7 @@ class KAST(tf.keras.Model):
         #print("ground_truth[0].shape: ", ground_truth[0].shape)
 
         dict_view = {
-            'input_dropout': i,
+            'input_dropout': i_drop,
             'attention': attention,
         }
 
