@@ -78,6 +78,80 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
     z = cv2.cvtColor(np.float32(z), cv2.COLOR_Lab2RGB)
     return (z)
 
+
+def KAST_View(kast, input_data, file_name_head='image', path='./'):
+    output, ground_truth, dict_view = kast.reconstruct(input_data)
+    image_drop_out = dict_view['input_dropout']
+    attention = dict_view['attention']
+    seq_size = ground_truth.shape[1]
+    ground_truth = ground_truth[0]
+    output = output[0]
+    image_drop_out = image_drop_out[0]
+    attention = attention[0]
+
+
+    # Input / output / drop_out to LAB
+
+    for i in range(seq_size):
+        ground_truth[i] = cv2.cvtColor((ground_truth[i].numpy() + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.], cv2.COLOR_Lab2RGB)
+        output[i] = cv2.cvtColor((output[i].numpy() + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.], cv2.COLOR_Lab2RGB)
+        image_drop_out[i] = cv2.cvtColor((image_drop_out[i].numpy() + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.], cv2.COLOR_Lab2RGB)
+        attention[i] = cv2.cvtColor((attention[i].numpy() + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.], cv2.COLOR_Lab2RGB)
+
+    # Input with input / drop_out / output
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
+    fig = plt.figure(figsize=(seq_size, 3))
+
+    for i in range(seq_size):
+        plt.subplot(3, seq_size, seq_size * 3 + i + 1)
+        plt.imshow(ground_truth[i])
+        plt.axis('off')
+        plt.subplot(3, seq_size, seq_size * 3 * 2 + i + 1)
+        plt.imshow(image_drop_out[i])
+        plt.axis('off')
+        plt.subplot(3, seq_size, seq_size * 3 * 3 + i + 1)
+        plt.imshow(output[i])
+        plt.axis('off')
+
+    file_path = os.path.join(path, file_name_head)
+    plt.savefig(file_path + '.png')
+
+    # Gif with input / drop_out / output
+    images = tf.concat([ground_truth, image_drop_out, output], axis=2)
+    im = []
+    for image in images:
+        im.append(Image.fromarray(image.numpy()))
+
+    file_path = os.path.join(path, file_name_head)
+    im[0].save(file_path + '.gif', save_all=True, append_images=im[1:], duration=150)
+
+    # Input with input / attention
+
+    fig = plt.figure(figsize=(seq_size, ))
+    for i in range(seq_size):
+        plt.subplot(2, seq_size, seq_size * 2 + i + 1)
+        plt.imshow(ground_truth[i])
+        plt.axis('off')
+        plt.subplot(2, seq_size, seq_size * 2 * 2 + i + 1)
+        plt.imshow(attention[i])
+        plt.axis('off')
+
+    file_path = os.path.join(path, file_name_head)
+    plt.savefig(file_path + '_attention.png')
+
+    # Gif with input / attention
+
+    images = tf.concat([ground_truth, attention], axis=2)
+    im = []
+    for image in images:
+        im.append(Image.fromarray(image.numpy()))
+
+    file_path = os.path.join(path, file_name_head)
+    im[0].save(file_path + '_attention.gif', save_all=True, append_images=im[1:], duration=150)
+
+
 def generate_and_save_images_compare_seq_lab(model, test_inputs, file_name_head='image', path='./', seq_size=8):
     seq_size=seq_size-1
     x_logits, test_input = model.reconstruct(test_inputs)

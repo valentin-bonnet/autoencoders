@@ -127,7 +127,7 @@ class Training():
                 if i != 0 and i % (epoch_percent_train*self.save_steps) == 0:
                     for val_x in self.val_ds.take(1):
                         if self.is_seq:
-                            image_saver.generate_and_save_images_compare_seq_lab(self.model, val_x,
+                            image_saver.KAST_View(self.model, val_x,
                                                                              self.name + '_epoch_{:03d}_step_{:03d}_test'.format(
                                                                                  epoch, i // epoch_percent_train),
                                                                              self.img_path)
@@ -139,7 +139,7 @@ class Training():
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_test'.format(epoch, i//epoch_percent_train), self.img_path)
                     for train_x in self.train_ds.take(1):
                         if self.is_seq:
-                            image_saver.generate_and_save_images_compare_seq_lab(self.model, train_x,
+                            image_saver.KAST_View(self.model, train_x,
                                                                              self.name + '_epoch_{:03d}_step_{:03d}_train'.format(
                                                                                  epoch, i // epoch_percent_train),
                                                                              self.img_path)

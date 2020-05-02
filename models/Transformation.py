@@ -15,7 +15,7 @@ class Transformation(tf.keras.layers.Layer):
         self.ck_shape = input_shape[4]
 
     def call(self, inputs, **kwargs):
-        training = kwargs['training']
+        training = kwargs['training'] if 'training' in kwargs else True
         if training:
             if np.random.random() < self.p:
                 return inputs
