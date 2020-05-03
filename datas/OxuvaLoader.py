@@ -113,8 +113,8 @@ def _files_to_ds(f):
     ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     return ds
 
-def _get_size(size, f):
-    files_number = int(f[-14:-10])
+def _get_size(f, size):
+    files_number = int(f.numpy()[-14:-10])
     files_size = _imgs_per_folder[files_number]
     true_size = files_size // (frames_delta*sequence_size)
     return true_size + size
@@ -122,7 +122,6 @@ def _get_size(size, f):
 def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/'):
     files = glob.glob(path+'*.tfrecords')
     ds_files = tf.data.Dataset.from_tensor_slices(files).shuffle(337, seed=1)
-    i = 0
     true_seq_size = sequence_size*frames_delta
     np_size = np.array(_imgs_per_folder)
     nb_batch = np_size // true_seq_size
@@ -131,7 +130,10 @@ def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/
     oxuva_val = ds_files.take(34)
     oxuva_train = ds_files.skip(34)
 
-    val_size = oxuva_val.reduce(0, _get_size).numpy()
+    val_size = 0
+    for val in oxuva_val:
+        val_size = _get_size(val, val_size)
+
 
     oxuva_train = oxuva_train.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     oxuva_val = oxuva_val.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
