@@ -150,6 +150,7 @@ def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/
         i = i +1
 
     oxuva_train = oxuva_train.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    oxuva_val = oxuva_val.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     train_size = all_size - val_size
 
