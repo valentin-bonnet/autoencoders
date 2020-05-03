@@ -134,6 +134,7 @@ def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/
     for v in oxuva_val.take(1):
         print("######")
         print(v)
+        print(v+1)
 
     val_size = oxuva_val.reduce(0, _get_size).numpy()
 
