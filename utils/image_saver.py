@@ -160,7 +160,11 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     plt.close(fig)
 
     # Gif with input / drop_out / output
+    print("ground_truth.shape: ", ground_truth.shape)
+    print("image_drop_out.shape: ", image_drop_out.shape)
+    print("output.shape: ", output.shape)
     images = tf.concat([ground_truth, image_drop_out, output], axis=2)
+    print("images.shape: ", images.shape)
     im = []
     for image in images:
         im.append(Image.fromarray(image.numpy()))
