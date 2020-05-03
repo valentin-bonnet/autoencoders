@@ -170,7 +170,7 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
 
     # Input with input / attention
 
-    attention_size = attention.shape[0]
+    attention_size = attention.shape[3]
 
     fig = plt.figure(figsize=(seq_size, attention_size+1))
     for i in range(seq_size):
