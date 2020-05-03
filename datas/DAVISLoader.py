@@ -1,14 +1,9 @@
 import tensorflow as tf
-import oxuvaTFRecord
-from skimage import color
-import numpy as np
 import glob
 
 frames_delta = 4
 sequence_size = 8
 
-def _rgb2lab(image):
-    return color.rgb2lab(image)
 
 def check_image(image):
     assertion = tf.assert_equal(tf.shape(image)[-1], 3, message='image must have 3 color channels')
@@ -64,48 +59,35 @@ def tf_rgb2lab(image):
 
         return tf.reshape(lab_pixels, tf.shape(srgb))
 
-def _preprocess_one_ds(parsed_data):
-    img = parsed_data['image_raw']
-    img = tf.image.decode_jpeg(img)
-    img = tf.cast(img, tf.float32) / 255.0
-    #img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
-    img_lab = tf_rgb2lab(img)
-    img_lab = tf.cast(img_lab, tf.float32)
-    img_normalized = img_lab + [0., 128.0, 128.0]
-    img_normalized = (img_normalized / [50.0, 127.5, 127.5]) - 1.0
-    img_normalized = tf.reshape(img_normalized, [256, 256, 3])
-    return img_normalized
-
-def _preprocess_sequence_ds(parsed_batch):
-    return parsed_batch[::frames_delta]
 
 def _preprocess_once(parsed_data):
-    img = parsed_data['image_raw'][::frames_delta]
-    img = tf.map_fn(tf.image.decode_jpeg, img, dtype=tf.uint8)
-    img = tf.image.random_brightness(img, 0.1)
-    img = tf.image.random_contrast(img, 0.9, 1.1)
-    img = tf.image.random_saturation(img, 0.9, 1.1)
-    img = tf.cast(img, tf.float32) / 255.0
+    jpeg= parsed_data['image_jpeg'][::frames_delta]
+    anno= parsed_data['annotation'][::frames_delta]
+    jpeg = tf.map_fn(tf.image.decode_jpeg, jpeg, dtype=tf.uint8)
+    anno = tf.map_fn(tf.image.decode_png, anno, dtype=tf.uint8)
+    jpeg = tf.cast(jpeg, tf.float32) / 255.0
+    anno = tf.cast(anno, tf.float32) / 255.0
     # img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
-    img_lab = tf_rgb2lab(img)
-    img_lab = tf.cast(img_lab, tf.float32)
-    img_normalized = img_lab + [0., 128.0, 128.0]
-    img_normalized = (img_normalized / [50.0, 127.5, 127.5]) - 1.0
-    img_normalized = tf.reshape(img_normalized, [8, 256, 256, 3])
-    return img_normalized
+    jpeg_lab = tf_rgb2lab(jpeg)
+    anno_lab = tf_rgb2lab(anno)
+    jpeg_lab = tf.cast(jpeg_lab, tf.float32)
+    anno_lab = tf.cast(anno_lab, tf.float32)
+    jpeg_lab = jpeg_lab + [0., 128.0, 128.0]
+    jpeg_lab = (jpeg_lab / [50.0, 127.5, 127.5]) - 1.0
+    jpeg_lab = tf.reshape(jpeg_lab, [8, 256, 256, 3])
+    anno_lab = anno_lab + [0., 128.0, 128.0]
+    anno_lab = (anno_lab / [50.0, 127.5, 127.5]) - 1.0
+    anno_lab = tf.reshape(anno_lab, [8, 64, 64, 3])
+    return jpeg_lab, anno_lab
 
 
 def _parse_image_function(example_proto):
   # Parse the input tf.Example proto using the dictionary above.
   image_feature_description = {
-      'height': tf.io.FixedLenFeature([], tf.int64),
-      'width': tf.io.FixedLenFeature([], tf.int64),
-      'depth': tf.io.FixedLenFeature([], tf.int64),
-      'image_raw': tf.io.FixedLenFeature([], tf.string),
+      'image_jpeg': tf.io.FixedLenFeature([], tf.string),
+      'annotation': tf.io.FixedLenFeature([], tf.string)
   }
   parsed_data = tf.io.parse_single_example(example_proto, image_feature_description)
-  #print(parsed_data)
-  #img = parsed_data['image_raw'].bytes_list.value[0]
   return parsed_data
 
 def _files_to_ds(f):
@@ -114,57 +96,9 @@ def _files_to_ds(f):
     ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     return ds
 
-def _get_size(f, size):
-    files_number = int(f.numpy()[-14:-10])
-    files_size = _imgs_per_folder[files_number]
-    true_size = files_size // (frames_delta*sequence_size)
-    return true_size + size
-
 def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS/'):
     files = glob.glob(path+'*.tfrecords')
     ds_files = tf.data.Dataset.from_tensor_slices(files).shuffle(337, seed=1)
-    true_seq_size = sequence_size*frames_delta
+    davis_ds = ds_files.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-
-    oxuva_train = ds_files.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    oxuva_val = oxuva_val.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-
-
-    train_size = all_size - val_size
-
-    return oxuva_train, oxuva_val, train_size, val_size
-
-def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS/', seq_size=8):
-    datasets = oxuvaTFRecord.tfrecord_to_dataset(path)
-    i = 0
-    true_seq_size = seq_size*frames_delta
-    np.random.seed(1)
-    davis_ds =
-
-    for data in datasets:
-        ds = data.batch(true_seq_size, drop_remainder=True)
-        ds = ds.map(_preprocess_once)
-        #ds = ds.map(_preprocess_sequence_ds)
-        #ds = ds.map(_preprocess_one_ds)
-        if i == 0:
-            if i in random_i:
-                oxuva_val = ds
-            else:
-                oxuva_train = ds
-        else:
-            if i in random_i:
-                if oxuva_val is None:
-                    oxuva_val = ds
-                else:
-                    oxuva_val = oxuva_val.concatenate(ds)
-            else:
-                if oxuva_train is None:
-                    oxuva_train = ds
-                else:
-                    oxuva_train = oxuva_train.concatenate(ds)
-        i = i +1
-
-
-    train_size = all_size - val_size
-
-    return oxuva_train, oxuva_val, train_size, val_size
+    return davis_ds
