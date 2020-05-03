@@ -125,7 +125,7 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     ground_truth = ground_truth[0].numpy()
     ground_truth_attention = ground_truth[:-1]
     ground_truth = ground_truth[1:]
-    seq_size = ground_truth.shape[1]
+    seq_size = ground_truth.shape[0]
     output = output[0].numpy()
     image_drop_out = image_drop_out[0].numpy()
     attention = attention[0].numpy()
