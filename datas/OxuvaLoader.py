@@ -85,8 +85,8 @@ def _preprocess_once(parsed_data):
     img = parsed_data['image_raw'][::frames_delta]
     img = tf.map_fn(tf.image.decode_jpeg, img, dtype=tf.uint8)
     img = tf.image.random_brightness(img, 0.1)
-    img = tf.image.random_contrast(img, -0.1, 0.1)
-    img = tf.image.random_saturation(img, -0.1, 0.1)
+    img = tf.image.random_contrast(img, 0.1, 0.1)
+    img = tf.image.random_saturation(img, 0.1, 0.1)
     img = tf.cast(img, tf.float32) / 255.0
     # img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
     img_lab = tf_rgb2lab(img)
