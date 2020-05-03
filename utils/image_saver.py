@@ -109,10 +109,10 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     plt.close(fig)
 
     # GIF
-    images = tf.concat([output_v, v_j], axis=2)
+    images = tf.concat([output_v, v_j], axis=2).numpy()
     im = []
     for image in images:
-        im.append(Image.fromarray(image.numpy()))
+        im.append(Image.fromarray(np.uint8(image*[255.0, 255.0, 255.0])))
 
     file_path = os.path.join(path, file_name_head)
     im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=150)
@@ -163,13 +163,13 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     print("ground_truth.shape: ", ground_truth.shape)
     print("image_drop_out.shape: ", image_drop_out.shape)
     print("output.shape: ", output.shape)
-    images = tf.concat([ground_truth, image_drop_out, output], axis=2)
+    images = tf.concat([ground_truth, image_drop_out, output], axis=2).numpy()
     print("images.shape: ", images.shape)
     print("images.dtype: ", images.dtype)
     print("images[0, 32, 32]: ", images[0, 32, 32])
     im = []
     for image in images:
-        im.append(Image.fromarray(image.numpy()))
+        im.append(Image.fromarray(np.uint8(image*[255.0, 255.0, 255.0])))
 
     file_path = os.path.join(path, file_name_head)
     im[0].save(file_path + '.gif', save_all=True, append_images=im[1:], duration=150)
@@ -195,10 +195,10 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     # Gif with input / attention
     attention_unstack = tf.unstack(attention, axis=-1)
     attention_concat = tf.concat(attention_unstack, axis=2)
-    images_attention = tf.concat([ground_truth_attention, attention_concat], axis=2)
+    images_attention = tf.concat([ground_truth_attention, attention_concat], axis=2).numpy()
     im = []
     for image_attention in images_attention:
-        im.append(Image.fromarray(image_attention.numpy()))
+        im.append(Image.fromarray(np.uint8(image_attention * [255.0, 255.0, 255.0])))
 
     file_path = os.path.join(path, file_name_head)
     im[0].save(file_path + '_attention.gif', save_all=True, append_images=im[1:], duration=150)
