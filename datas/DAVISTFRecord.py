@@ -13,8 +13,8 @@ def DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre):
     for sub in subfolders:
         sub_anno = sub[0]
         sub_jpeg = sub[1]
-        images_jpeg = glob.glob(sub_jpeg+"/*.jpeg")
-        images_anno = glob.glob(sub_anno+"/*.jpeg")
+        images_jpeg = glob.glob(sub_jpeg+"/*.jpg")
+        images_anno = glob.glob(sub_anno+"/*.png")
         tfre_options = tf.io.TFRecordOptions(compression_type="GZIP")
         folder_name = os.path.basename(os.path.normpath(sub_anno+'/'))
         record_file = path_tfre+folder_name+'.tfrecords'
@@ -22,17 +22,18 @@ def DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre):
         i= 1
         j = 10
         k = size//10
+        print(folder_name)
         with tf.io.TFRecordWriter(record_file, options=tfre_options) as writer:
             for idx, _ in enumerate(images_anno):
                 if i == k:
                     print("\t", j, "%")
                     j = j+10
                     k = k + size//10
-                anno_string = open(images_anno[i], 'rb').read()
-                anno_tf = tf.io.decode_jpeg(anno_string)
+                anno_string = open(images_anno[idx], 'rb').read()
+                anno_tf = tf.io.decode_png(anno_string)
                 resized_anno_tf = tf.cast(tf.image.resize(anno_tf, (64, 64)), tf.uint8)  # RESIZE
-                anno_resized_byte = tf.io.encode_png(resized_anno_tf)
-                jpeg_string = open(images_jpeg[i], 'rb').read()
+                anno_resized_byte = tf.image.encode_png(resized_anno_tf)
+                jpeg_string = open(images_jpeg[idx], 'rb').read()
                 jpeg_tf = tf.io.decode_jpeg(jpeg_string)
                 resized_jpeg_tf = tf.cast(tf.image.resize(jpeg_tf, (256, 256)), tf.uint8)  # RESIZE
                 jpeg_resized_byte = tf.io.encode_jpeg(resized_jpeg_tf)

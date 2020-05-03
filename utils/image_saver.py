@@ -107,15 +107,16 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
         plt.subplot(3, seq_size, seq_size * 3 + i + 1)
         plt.imshow(ground_truth[i])
         plt.axis('off')
-        plt.subplot(3, seq_size, seq_size * 3 * 2 + i + 1)
+        plt.subplot(3, seq_size, seq_size + i + 1)
         plt.imshow(image_drop_out[i])
         plt.axis('off')
-        plt.subplot(3, seq_size, seq_size * 3 * 3 + i + 1)
+        plt.subplot(3, seq_size, seq_size * 2 + i + 1)
         plt.imshow(output[i])
         plt.axis('off')
 
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '.png')
+    plt.close(fig)
 
     # Gif with input / drop_out / output
     images = tf.concat([ground_truth, image_drop_out, output], axis=2)
@@ -132,16 +133,17 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
 
     fig = plt.figure(figsize=(seq_size, attention_size+1))
     for i in range(seq_size):
-        plt.subplot(attention_size + 1, seq_size, seq_size * (attention_size) + i + 1)
+        plt.subplot(attention_size + 1, seq_size, i + 1)
         plt.imshow(ground_truth[i])
         plt.axis('off')
         for j in range(attention_size):
-            plt.subplot(attention_size + 1, seq_size, seq_size * (attention_size) * j + i + 1)
+            plt.subplot(attention_size + 1, seq_size, (seq_size) * (j+1) + i + 1)
             plt.imshow(attention[i][j])
             plt.axis('off')
 
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '_attention.png')
+    plt.close(fig)
 
     # Gif with input / attention
     attention_unstack = tf.unstack(attention, axis=-1)
