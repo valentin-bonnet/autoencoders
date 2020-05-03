@@ -78,15 +78,20 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
     z = cv2.cvtColor(np.float32(z), cv2.COLOR_Lab2RGB)
     return (z)
 
+def KAST_test(kast, davis, file_name_head='image', path='./'):
+    output_v, v_j, _ = kast.call(davis, training=False)
+    output_v = output_v[0]
+    v_j = v_j[0]
+
 
 def KAST_View(kast, input_data, file_name_head='image', path='./'):
     output, ground_truth, dict_view = kast.reconstruct(input_data)
     image_drop_out = dict_view['input_dropout']
     attention = dict_view['attention']
-    seq_size = ground_truth.shape[1]
     ground_truth = ground_truth[0].numpy()
     ground_truth_attention = ground_truth[:-1]
-    ground_truth = ground_truth[1:]
+    ground_truth = ground_truth[0:]
+    seq_size = ground_truth.shape[1]
     output = output[0].numpy()
     image_drop_out = image_drop_out[0].numpy()
     attention = attention[0].numpy()
