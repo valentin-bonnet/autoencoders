@@ -113,41 +113,30 @@ def _files_to_ds(f):
     ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     return ds
 
+def _get_size(f, size):
+    files_number = int(f[-14:-10])
+    files_size = _imgs_per_folder[files_number]
+    true_size = files_size // (frames_delta*sequence_size)
+    return true_size + size
+
 def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/'):
     files = glob.glob(path+'*.tfrecords')
-    ds_files = tf.data.Dataset.from_tensor_slices(files).shuffle(100)
+    ds_files = tf.data.Dataset.from_tensor_slices(files).shuffle(337, seed=1)
     i = 0
     true_seq_size = sequence_size*frames_delta
-    np.random.seed(1)
-    random_i = np.random.choice(len(_imgs_per_folder), len(_imgs_per_folder)//10, replace=False)
     np_size = np.array(_imgs_per_folder)
     nb_batch = np_size // true_seq_size
     all_size = np.sum(nb_batch)
-    val_size = np.sum(nb_batch[random_i])
 
-    print(ds_files)
+    oxuva_val = ds_files.take(34)
+    oxuva_train = ds_files.skip(34)
 
-    oxuva_train = None
-    oxuva_val = None
 
-    for data in ds_files:
-        #ds = ds.map(_preprocess_sequence_ds)
-        #ds = ds.map(_preprocess_one_ds)
-        if i in random_i:
-            if oxuva_val is None:
-                oxuva_val = data
-            else:
-                oxuva_val = oxuva_val.concatenate(data)
-        else:
-            if oxuva_train is None:
-                oxuva_train = data
-            else:
-                oxuva_train = oxuva_train.concatenate(data)
-        i = i +1
 
     oxuva_train = oxuva_train.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     oxuva_val = oxuva_val.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
+    val_size = oxuva_val(0, _get_size).numpy()
     train_size = all_size - val_size
 
     return oxuva_train, oxuva_val, train_size, val_size
