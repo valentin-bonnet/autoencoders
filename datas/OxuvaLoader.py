@@ -125,6 +125,8 @@ def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/
     all_size = np.sum(nb_batch)
     val_size = np.sum(nb_batch[random_i])
 
+    print(ds_files)
+
     oxuva_train = None
     oxuva_val = None
 
