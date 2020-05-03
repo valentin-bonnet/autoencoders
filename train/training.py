@@ -147,8 +147,8 @@ class Training():
                         else:
                             image_saver.generate_and_save_images_compare_lab(self.model, train_x,
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
-                    #for test in self.test_ds.take(1):
-                    #    image_saver.KAST_test(self.model, test, self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
+                    for test in self.test_ds.take(1):
+                        image_saver.KAST_test(self.model, test, self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
                     print('i :', i)
                     print('epoch percent train: ', epoch_percent_train)
                     print('save step: ', self.save_steps)
