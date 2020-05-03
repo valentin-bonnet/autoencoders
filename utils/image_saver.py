@@ -104,7 +104,7 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     fig = plt.figure(figsize=(seq_size, 3))
 
     for i in range(seq_size):
-        plt.subplot(3, seq_size, seq_size * 3 + i + 1)
+        plt.subplot(3, seq_size, i + 1)
         plt.imshow(ground_truth[i])
         plt.axis('off')
         plt.subplot(3, seq_size, seq_size + i + 1)
