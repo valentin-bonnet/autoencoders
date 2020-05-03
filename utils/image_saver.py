@@ -84,7 +84,7 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
 
-    seq_size = output_v.shape[1]
+    seq_size = output_v.shape[0]
 
     #LAB to RGB
     for i in range(seq_size):
