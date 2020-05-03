@@ -133,22 +133,16 @@ def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/
     for data in ds_files:
         #ds = ds.map(_preprocess_sequence_ds)
         #ds = ds.map(_preprocess_one_ds)
-        if i == 0:
-            if i in random_i:
+        if i in random_i:
+            if oxuva_val is None:
                 oxuva_val = data
             else:
-                oxuva_train = data
+                oxuva_val = oxuva_val.concatenate(data)
         else:
-            if i in random_i:
-                if oxuva_val is None:
-                    oxuva_val = data
-                else:
-                    oxuva_val = oxuva_val.concatenate(data)
+            if oxuva_train is None:
+                oxuva_train = data
             else:
-                if oxuva_train is None:
-                    oxuva_train = data
-                else:
-                    oxuva_train = oxuva_train.concatenate(data)
+                oxuva_train = oxuva_train.concatenate(data)
         i = i +1
 
     oxuva_train = oxuva_train.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
