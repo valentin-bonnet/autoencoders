@@ -13,37 +13,37 @@ def DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre):
     for sub in subfolders:
         sub_anno = sub[0]
         sub_jpeg = sub[1]
-        print(sub[-7:])
         images_jpeg = glob.glob(sub_jpeg+"/*.jpeg")
         images_anno = glob.glob(sub_anno+"/*.jpeg")
         tfre_options = tf.io.TFRecordOptions(compression_type="GZIP")
-        record_file = path_tfre+sub[-4:]+'.tfrecords'
+        record_file = path_tfre+sub_anno[-5:]+'.tfrecords'
         size = len(images_jpeg)
         i= 1
         j = 10
         k = size//10
         with tf.io.TFRecordWriter(record_file, options=tfre_options) as writer:
-            for filename in images:
+            for idx, _ in enumerate(images_anno):
                 if i == k:
                     print("\t", j, "%")
                     j = j+10
                     k = k + size//10
-                image_string = open(filename, 'rb').read()
-                image_tf = tf.io.decode_jpeg(image_string)
-                resized_image_tf = tf.cast(tf.image.resize(image_tf, (256, 256)), tf.uint8)  # RESIZE
-                image_resized_byte = tf.io.encode_jpeg(resized_image_tf)
-                tf_example = image_example(image_resized_byte)
+                anno_string = open(images_anno[i], 'rb').read()
+                anno_tf = tf.io.decode_jpeg(anno_string)
+                resized_anno_tf = tf.cast(tf.image.resize(anno_tf, (64, 64)), tf.uint8)  # RESIZE
+                anno_resized_byte = tf.io.encode_jpeg(resized_anno_tf)
+                jpeg_string = open(images_jpeg[i], 'rb').read()
+                jpeg_tf = tf.io.decode_jpeg(jpeg_string)
+                resized_jpeg_tf = tf.cast(tf.image.resize(jpeg_tf, (256, 256)), tf.uint8)  # RESIZE
+                jpeg_resized_byte = tf.io.encode_jpeg(resized_jpeg_tf)
+                tf_example = image_example(anno_resized_byte, jpeg_resized_byte)
                 writer.write(tf_example.SerializeToString())
                 i = i + 1
 
-def image_example(image_string):
-    image_shape = tf.image.decode_jpeg(image_string).shape
+def image_example(anno_string, jpeg_string):
 
     feature = {
-      'height': _int64_feature(image_shape[0]),
-      'width': _int64_feature(image_shape[1]),
-      'depth': _int64_feature(image_shape[2]),
-      'image_raw': _bytes_feature(image_string),
+        'image_jpeg': _bytes_feature(jpeg_string),
+        'annotation': _bytes_feature(anno_string)
     }
     return tf.train.Example(features=tf.train.Features(feature=feature))
 
@@ -65,6 +65,7 @@ def _int64_feature(value):
 
 path_davis_jpeg = '/media/valentin/DATA1/Programmation/Datasets/DAVIS-2017-trainval-480p/DAVIS/Annotations/480p/'
 path_davis_anno = '/media/valentin/DATA1/Programmation/Datasets/DAVIS-2017-trainval-480p/DAVIS/JPEGImages/480p/'
+path_tfre = '/media/valentin/DATA1/Programmation/Datasets/DAVIS-2017-trainval-480p/DAVIS/JPEGImages/480p/'
 
 print("#####")
 subfolders_jpeg = [f.path for f in os.scandir(path_davis_jpeg) if f.is_dir()]

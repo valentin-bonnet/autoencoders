@@ -93,10 +93,9 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     # Input / output / drop_out to LAB
 
     for i in range(seq_size):
-        print(((ground_truth[i].numpy() + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]).shape)
-        ground_truth[i] = cv2.cvtColor(np.float32((ground_truth[i].numpy() + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
-        output[i] = cv2.cvtColor(np.float32((output[i].numpy() + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
-        image_drop_out[i] = cv2.cvtColor(np.float32((image_drop_out[i].numpy() + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+        ground_truth[i] = cv2.cvtColor(np.float32((ground_truth[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+        output[i] = cv2.cvtColor(np.float32((output[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+        image_drop_out[i] = cv2.cvtColor(np.float32((image_drop_out[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
 
     # Input with input / drop_out / output
     if not os.path.isdir(path):
