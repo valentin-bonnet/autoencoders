@@ -16,7 +16,8 @@ def DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre):
         images_jpeg = glob.glob(sub_jpeg+"/*.jpeg")
         images_anno = glob.glob(sub_anno+"/*.jpeg")
         tfre_options = tf.io.TFRecordOptions(compression_type="GZIP")
-        record_file = path_tfre+sub_anno[-5:]+'.tfrecords'
+        folder_name = os.path.basename(os.path.normpath(sub_anno+'/'))
+        record_file = path_tfre+folder_name+'.tfrecords'
         size = len(images_jpeg)
         i= 1
         j = 10
@@ -30,7 +31,7 @@ def DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre):
                 anno_string = open(images_anno[i], 'rb').read()
                 anno_tf = tf.io.decode_jpeg(anno_string)
                 resized_anno_tf = tf.cast(tf.image.resize(anno_tf, (64, 64)), tf.uint8)  # RESIZE
-                anno_resized_byte = tf.io.encode_jpeg(resized_anno_tf)
+                anno_resized_byte = tf.io.encode_png(resized_anno_tf)
                 jpeg_string = open(images_jpeg[i], 'rb').read()
                 jpeg_tf = tf.io.decode_jpeg(jpeg_string)
                 resized_jpeg_tf = tf.cast(tf.image.resize(jpeg_tf, (256, 256)), tf.uint8)  # RESIZE
@@ -65,12 +66,6 @@ def _int64_feature(value):
 
 path_davis_jpeg = '/media/valentin/DATA1/Programmation/Datasets/DAVIS-2017-trainval-480p/DAVIS/Annotations/480p/'
 path_davis_anno = '/media/valentin/DATA1/Programmation/Datasets/DAVIS-2017-trainval-480p/DAVIS/JPEGImages/480p/'
-path_tfre = '/media/valentin/DATA1/Programmation/Datasets/DAVIS-2017-trainval-480p/DAVIS/JPEGImages/480p/'
+path_tfre = '/media/valentin/DATA1/Programmation/Datasets/DAVIS_TFRecords/'
 
-print("#####")
-subfolders_jpeg = [f.path for f in os.scandir(path_davis_jpeg) if f.is_dir()]
-subfolders_anno = [f.path for f in os.scandir(path_davis_anno) if f.is_dir()]
-subfolders = set(zip(subfolders_jpeg, subfolders_anno))
-for sub in subfolders:
-    print(sub[1])
-
+DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre)

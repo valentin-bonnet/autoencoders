@@ -130,13 +130,13 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
 
     attention_size = attention.shape[1]
 
-    fig = plt.figure(figsize=(seq_size, ))
+    fig = plt.figure(figsize=(seq_size, attention_size+1))
     for i in range(seq_size):
-        plt.subplot(attention_size + 1, seq_size, seq_size * (attention_size+1) + i + 1)
+        plt.subplot(attention_size + 1, seq_size, seq_size * (attention_size) + i + 1)
         plt.imshow(ground_truth[i])
         plt.axis('off')
         for j in range(attention_size):
-            plt.subplot(attention_size + 1, seq_size, seq_size * (attention_size+1) * j + i + 1)
+            plt.subplot(attention_size + 1, seq_size, seq_size * (attention_size) * j + i + 1)
             plt.imshow(attention[i][j])
             plt.axis('off')
 
