@@ -114,6 +114,7 @@ def _files_to_ds(f):
     return ds
 
 def _get_size(f, size):
+    print(f)
     files_number = int(f[-14:-10])
     files_size = _imgs_per_folder[files_number]
     true_size = files_size // (frames_delta*sequence_size)
