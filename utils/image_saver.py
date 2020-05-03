@@ -165,6 +165,8 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     print("output.shape: ", output.shape)
     images = tf.concat([ground_truth, image_drop_out, output], axis=2)
     print("images.shape: ", images.shape)
+    print("images.dtype: ", images.dtype)
+    print("images[0, 32, 32]: ", images[0, 32, 32])
     im = []
     for image in images:
         im.append(Image.fromarray(image.numpy()))
