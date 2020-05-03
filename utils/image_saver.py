@@ -188,7 +188,7 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
 
     # Gif with input / attention
     attention_unstack = tf.unstack(attention, axis=-1)
-    attention_concat = tf.expand_dims(tf.concat(attention_unstack, axis=2), -1)
+    attention_concat = tf.tile(tf.expand_dims(tf.concat(attention_unstack, axis=2), -1), [1, 1, 1, 3])
     images_attention = tf.concat([ground_truth_attention, attention_concat], axis=2).numpy()
     im = []
     for image_attention in images_attention:
