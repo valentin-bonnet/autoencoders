@@ -22,6 +22,7 @@ class Training():
         self.train_size = dataset.train_size//batch_size
         self.val_ds = dataset.val_ds.shuffle(buffer_size=100).batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
         self.val_size = dataset.val_size//batch_size
+        #self.test_ds = dataset.test_ds.shuffle(buffer_size=100).batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
         self.model = model
         #self.model_view = model_view
         self.optimizer = optimizer

@@ -85,6 +85,8 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     attention = dict_view['attention']
     seq_size = ground_truth.shape[1]
     ground_truth = ground_truth[0].numpy()
+    ground_truth_attention = ground_truth[:-1]
+    ground_truth = ground_truth[1:]
     output = output[0].numpy()
     image_drop_out = image_drop_out[0].numpy()
     attention = attention[0].numpy()
@@ -148,7 +150,7 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     # Gif with input / attention
     attention_unstack = tf.unstack(attention, axis=-1)
     attention_concat = tf.concat(attention_unstack, axis=2)
-    images_attention = tf.concat([ground_truth, attention_concat], axis=2)
+    images_attention = tf.concat([ground_truth_attention, attention_concat], axis=2)
     im = []
     for image_attention in images_attention:
         im.append(Image.fromarray(image_attention.numpy()))

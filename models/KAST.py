@@ -132,4 +132,4 @@ class KAST(tf.keras.Model):
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         output_v, v_j, dict_view = self.call((inputs, v), training=True)
-        return output_v, v_j, dict_view
+        return output_v, v, dict_view
