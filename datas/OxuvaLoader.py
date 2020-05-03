@@ -158,8 +158,6 @@ def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/
 
 def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', seq_size=8):
     datasets = oxuvaTFRecord.tfrecord_to_dataset(path)
-    files = glob.glob(path+'*.tfrecords')
-    ds_files = tf.data.Dataset.from_tensors_slices(files)
     i = 0
     true_seq_size = seq_size*frames_delta
     np.random.seed(1)
