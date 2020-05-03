@@ -113,7 +113,7 @@ def _files_to_ds(f):
     ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     return ds
 
-def _get_size(f, size):
+def _get_size(size, f):
     print(f)
     files_number = int(f[-14:-10])
     files_size = _imgs_per_folder[files_number]
