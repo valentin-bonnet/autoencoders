@@ -129,24 +129,28 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
 
     # Input with input / attention
 
+    attention_size = attention.shape[1]
+
     fig = plt.figure(figsize=(seq_size, ))
     for i in range(seq_size):
-        plt.subplot(2, seq_size, seq_size * 2 + i + 1)
+        plt.subplot(attention_size + 1, seq_size, seq_size * (attention_size+1) + i + 1)
         plt.imshow(ground_truth[i])
         plt.axis('off')
-        plt.subplot(2, seq_size, seq_size * 2 * 2 + i + 1)
-        plt.imshow(attention[i])
-        plt.axis('off')
+        for j in range(attention_size):
+            plt.subplot(attention_size + 1, seq_size, seq_size * (attention_size+1) * j + i + 1)
+            plt.imshow(attention[i][j])
+            plt.axis('off')
 
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '_attention.png')
 
     # Gif with input / attention
-
-    images = tf.concat([ground_truth, attention], axis=2)
+    attention_unstack = tf.unstack(attention, axis=-1)
+    attention_concat = tf.concat(attention_unstack, axis=2)
+    images_attention = tf.concat([ground_truth, attention_concat], axis=2)
     im = []
-    for image in images:
-        im.append(Image.fromarray(image.numpy()))
+    for image_attention in images_attention:
+        im.append(Image.fromarray(image_attention.numpy()))
 
     file_path = os.path.join(path, file_name_head)
     im[0].save(file_path + '_attention.gif', save_all=True, append_images=im[1:], duration=150)
