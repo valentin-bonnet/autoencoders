@@ -114,7 +114,7 @@ def _files_to_ds(f):
     return ds
 
 def _get_size(size, f):
-    print(f.numpy())
+    print(f)
     files_number = int(f[-14:-10])
     files_size = _imgs_per_folder[files_number]
     true_size = files_size // (frames_delta*sequence_size)
@@ -132,6 +132,8 @@ def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/
     oxuva_val = ds_files.take(34)
     oxuva_train = ds_files.skip(34)
 
+    for v in oxuva_val.take(1):
+        print(v)
     val_size = oxuva_val.reduce(0, _get_size).numpy()
 
     oxuva_train = oxuva_train.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
