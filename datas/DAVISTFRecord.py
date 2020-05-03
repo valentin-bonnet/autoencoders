@@ -14,10 +14,11 @@ def DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre):
         sub_anno = sub[0]
         sub_jpeg = sub[1]
         print(sub[-7:])
-        images_jpeg = glob.glob(sub+"/*.jpeg")
+        images_jpeg = glob.glob(sub_jpeg+"/*.jpeg")
+        images_anno = glob.glob(sub_anno+"/*.jpeg")
         tfre_options = tf.io.TFRecordOptions(compression_type="GZIP")
         record_file = path_tfre+sub[-4:]+'.tfrecords'
-        size = len(images)
+        size = len(images_jpeg)
         i= 1
         j = 10
         k = size//10
