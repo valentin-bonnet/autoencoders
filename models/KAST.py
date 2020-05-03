@@ -132,4 +132,9 @@ class KAST(tf.keras.Model):
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         output_v, v_j, dict_view = self.call((inputs, v), training=True)
+        drop_out = dict_view['input_dropout']
+        drop_out = tf.reshape(drop_out, [-1, H, W, cv])
+        drop_out = tf.image.resize(drop_out, [h, w])
+        drop_out = tf.reshape(drop_out, [-1, seq_size, h, w, cv])
+        dict_view['input_dropout'] = drop_out
         return output_v, v, dict_view
