@@ -128,7 +128,7 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     seq_size = ground_truth.shape[0]
     output = output[0].numpy()
     image_drop_out = image_drop_out[0].numpy()[1:]
-    attention = attention[0].numpy()
+    attention = attention[0].numpy()[:-1]
 
 
     # Input / output / drop_out to LAB
@@ -160,13 +160,7 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     plt.close(fig)
 
     # Gif with input / drop_out / output
-    print("ground_truth.shape: ", ground_truth.shape)
-    print("image_drop_out.shape: ", image_drop_out.shape)
-    print("output.shape: ", output.shape)
     images = tf.concat([ground_truth, image_drop_out, output], axis=2).numpy()
-    print("images.shape: ", images.shape)
-    print("images.dtype: ", images.dtype)
-    print("images[0, 32, 32]: ", images[0, 32, 32])
     im = []
     for image in images:
         im.append(Image.fromarray(np.uint8(image*[255.0, 255.0, 255.0])))
