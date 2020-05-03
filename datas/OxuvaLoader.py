@@ -112,7 +112,7 @@ def _parse_image_function(example_proto):
 
 def _files_to_ds(f):
     ds = tf.data.TFRecordDataset(f, compression_type="GZIP")
-    ds = ds.map(_parse_image_function, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(sequence_size*frames_delta)
+    ds = ds.map(_parse_image_function, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(sequence_size*frames_delta, drop_remainder=True)
     ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     return ds
 
