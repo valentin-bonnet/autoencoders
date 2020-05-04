@@ -1,14 +1,14 @@
 import tensorflow as tf
 
 class Memory(tf.keras.layers.Layer):
-    def __init__(self, unit=100, k=256, c=3, top_a=200, lstm_units=512, **kwargs):
+    def __init__(self, unit=100, k=256, c=3, top_a=200, **kwargs):
         self.m = unit
         self.top_a = top_a
         self.k_shape = k
         self.v_shape = c
         self.lstm = tf.keras.Sequential()
         self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
-        self.lstm.add(tf.keras.layers.LSTM(lstm_units, stateful=True))
+        self.lstm.add(tf.keras.layers.LSTM(self.m + self.top_a, stateful=True))
         self.state_size = [[self.m, self.k_shape], [self.m, self.v_shape]]
         self.output_size = [[self.m, self.k_shape], [self.m, self.v_shape]]
         super(Memory, self).__init__(**kwargs)
