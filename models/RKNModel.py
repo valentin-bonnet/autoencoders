@@ -55,7 +55,7 @@ class RKNModel(tf.keras.Model):
         h = inputs.shape[2]
         w = inputs.shape[3]
         k = inputs.shape[4]
-        #inputs = tf.reshape(inputs, [-1, h, w, k])
+        inputs = tf.reshape(inputs, [-1, h, w, k])
         encoded = self.inference_net(inputs)
         encoded = tf.reshape(encoded, [bs, seq_size, self.N])
         state = self.rkn(encoded)
