@@ -48,9 +48,7 @@ class Memory(tf.keras.layers.Layer):
         v_mv = tf.concat([attention_v, m_v], 1)
         score = self.lstm(k_mk)
         _, top_idx_m = tf.math.top_k(score, k=self.m, sorted=False)
-        print("top_idx_m.shape: ", top_idx_m.shape)
         m_k = tf.gather(k_mk, top_idx_m, axis=1, batch_dims=1)
-        print("m_k.shape: ", m_k.shape)
         m_v = tf.gather(v_mv, top_idx_m, axis=1, batch_dims=1)
 
         return [m_k, m_v], [m_k, m_v]  # inputs, states
