@@ -36,9 +36,9 @@ class Memory(tf.keras.layers.Layer):
         attention = tf.reshape(attention, [self.batch_shape, self.a_shape, self.hw_shape])  # (bs, A, HW)
         attention = tf.reduce_sum(tf.nn.softmax(attention, -1), -2) # (bs, HW)
         _, top_indx = tf.math.top_k(attention, k=self.top_a, sorted=False)
-        print("top_indx.shape: ", top_indx.shape)
+
         attention_k = tf.gather(tf.reshape(k, [self.batch_shape, self.hw_shape, self.k_shape]), top_indx, axis=1, batch_dims=1)  # (bs, top_a, k)
-        print("attention_k.shape: ", attention_k.shape)
+
         attention_k = tf.reshape(attention_k, [self.batch_shape, self.top_a, self.k_shape])
 
         attention_v = tf.gather(tf.reshape(v, [self.batch_shape, self.hw_shape, self.v_shape]), top_indx, axis=1, batch_dims=1)  # (bs, top_a, v)
@@ -48,9 +48,10 @@ class Memory(tf.keras.layers.Layer):
         v_mv = tf.concat([attention_v, m_v], 1)
         score = self.lstm(k_mk)
         _, top_idx_m = tf.math.top_k(score, k=self.m, sorted=False)
-
-        m_k = tf.gather(k_mk, top_idx_m, axis=1)
-        m_v = tf.gather(v_mv, top_idx_m, axis=1)
+        print("top_idx_m.shape: ", top_idx_m.shape)
+        m_k = tf.gather(k_mk, top_idx_m, axis=1, batch_dims=1)
+        print("m_k.shape: ", m_k.shape)
+        m_v = tf.gather(v_mv, top_idx_m, axis=1, batch_dims=1)
 
         return [m_k, m_v], [m_k, m_v]  # inputs, states
 
