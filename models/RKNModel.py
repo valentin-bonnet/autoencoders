@@ -2,7 +2,7 @@ import tensorflow as tf
 from RKNLayer import RKNLayer
 
 class RKNModel(tf.keras.Model):
-    def __init__(self, attention_output=3, layer_channel_1=64, layer_channel_2=128, input_shape=64, k=15, b=15, n=128, alpha_unit=64):
+    def __init__(self, attention_output=3, layer_channel_1=64, layer_channel_2=128, input_shape=64, k=15, b=7, n=128, alpha_unit=64):
         super(RKNModel, self).__init__()
         ## ENCODER
 
@@ -44,7 +44,7 @@ class RKNModel(tf.keras.Model):
         self.generative_net.add(tf.keras.layers.ReLU())
         self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=layer_channel_1, kernel_size=3, strides=2, padding='same'))
         self.generative_net.add(tf.keras.layers.ReLU())
-        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=attention_output, kernel_size=3, strides=1, activation='sigmoid', padding='same'))
+        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=attention_output, kernel_size=3, strides=1, padding='same'))
 
 
 

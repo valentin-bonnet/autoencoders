@@ -41,7 +41,7 @@ class KAST(tf.keras.Model):
         ck = k.shape[4]
 
         with tf.name_scope('Rkn'):
-            attention = self.rkn(k)
+            attention = self.rkn(i_drop)
         with tf.name_scope('Memory'):
             m_kv = self.memory((attention, k, v))
             m_k, m_v = tf.nest.flatten(m_kv)
