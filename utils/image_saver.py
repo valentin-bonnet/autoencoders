@@ -171,7 +171,7 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
     # Input with input / attention
 
     attention_size = attention.shape[3]
-
+    attention_unstack = tf.unstack(attention, axis=-1)
     fig = plt.figure(figsize=(seq_size, attention_size+1))
     for i in range(seq_size):
         plt.subplot(attention_size + 1, seq_size, i + 1)
@@ -179,7 +179,7 @@ def KAST_View(kast, input_data, file_name_head='image', path='./'):
         plt.axis('off')
         for j in range(attention_size):
             plt.subplot(attention_size + 1, seq_size, (seq_size) * (j+1) + i + 1)
-            plt.imshow(attention[i, :, :, j])
+            plt.imshow(attention_unstack[j][i])
             plt.axis('off')
 
     file_path = os.path.join(path, file_name_head)
