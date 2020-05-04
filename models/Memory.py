@@ -41,7 +41,7 @@ class Memory(tf.keras.layers.Layer):
         print("attention_k.shape: ", attention_k.shape)
         attention_k = tf.reshape(attention_k, [self.batch_shape, self.top_a, self.k_shape])
 
-        attention_v = tf.gather_nd(tf.reshape(v, [self.batch_shape*self.hw_shape, self.v_shape]), top_indx, axis=0)  # (bs, top_a, v)
+        attention_v = tf.gather(tf.reshape(v, [self.batch_shape*self.hw_shape, self.v_shape]), top_indx, axis=0)  # (bs, top_a, v)
         attention_v = tf.reshape(attention_v, [self.batch_shape, self.top_a, self.v_shape])
 
         k_mk = tf.concat([attention_k, m_k], 1)
