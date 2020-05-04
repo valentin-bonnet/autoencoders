@@ -6,9 +6,9 @@ class Memory(tf.keras.layers.Layer):
         self.top_a = top_a
         self.k_shape = k
         self.v_shape = c
-        self.lstm = tf.keras.Sequential()
-        self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
-        self.lstm.add(tf.keras.layers.LSTM(self.m+self.top_a, stateful=True))
+        #self.lstm = tf.keras.Sequential()
+        #self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
+        #self.lstm.add(tf.keras.layers.LSTM(self.m+self.top_a, stateful=True))
         self.state_size = [[self.m, self.k_shape], [self.m, self.v_shape]]
         self.output_size = [[self.m, self.k_shape], [self.m, self.v_shape]]
         super(Memory, self).__init__(**kwargs)
@@ -26,11 +26,8 @@ class Memory(tf.keras.layers.Layer):
 
         self.wi = self.add_weight(shape=(self.m, self.hw_shape), initializer='random_normal', trainable=True, name='wi')
 
-
-    def call(self, inputs, states):
-        """
-        top k version
-        """
+    """
+    def call(self, inputs, states):        
         m_k, m_v = tf.nest.flatten(states)
         attention, k, v = tf.nest.flatten(inputs)  # [(bs, H, W, A), (bs, H, W, K), (bs, H, W, V)]
         attention = tf.reshape(attention, [self.batch_shape, self.a_shape, self.hw_shape])  # (bs, A, HW)
@@ -51,9 +48,9 @@ class Memory(tf.keras.layers.Layer):
         m_k = tf.gather(k_mk, top_idx_m, axis=1, batch_dims=1)
         m_v = tf.gather(v_mv, top_idx_m, axis=1, batch_dims=1)
 
-        return [m_k, m_v], [m_k, m_v]  # inputs, states
+        return [m_k, m_v], [m_k, m_v]  # inputs, states"""
 
-    """def call(self, inputs, states):
+    def call(self, inputs, states):
         m_k, m_v = tf.nest.flatten(states)
         attention, k, v = tf.nest.flatten(inputs) # [(bs, H, W, A), (bs, H, W, K), (bs, H, W, V)]
         attention = tf.reshape(attention, [self.batch_shape, self.a_shape, self.hw_shape]) # (bs, A, HW)
@@ -73,7 +70,7 @@ class Memory(tf.keras.layers.Layer):
         m_k = tf.reshape(m_k, [-1, self.m, self.k_shape])
         m_v = tf.reshape(m_v, [-1, self.m, self.v_shape])
 
-        return [m_k, m_v], [m_k, m_v] #inputs, states"""
+        return [m_k, m_v], [m_k, m_v] #inputs, states
 
     def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
         self.lstm.reset_states()
