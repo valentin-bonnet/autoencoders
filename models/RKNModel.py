@@ -38,11 +38,11 @@ class RKNModel(tf.keras.Model):
         self.generative_net.add(tf.keras.layers.Reshape(target_shape=(size_decoded_frame, size_decoded_frame, size_decoded_layers)))
         self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=layer_channel_2, kernel_size=3, strides=1, padding='same'))
         self.generative_net.add(tf.keras.layers.ReLU())
-        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=layer_channel_2, kernel_size=3, strides=2, padding='same'))
+        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=layer_channel_2, kernel_size=3, strides=1, padding='same'))
         self.generative_net.add(tf.keras.layers.ReLU())
         self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=layer_channel_1, kernel_size=3, strides=1, padding='same'))
         self.generative_net.add(tf.keras.layers.ReLU())
-        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=layer_channel_1, kernel_size=3, strides=2, padding='same'))
+        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=layer_channel_1, kernel_size=3, strides=1, padding='same'))
         self.generative_net.add(tf.keras.layers.ReLU())
         self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=attention_output, kernel_size=3, strides=1, padding='same'))
 
