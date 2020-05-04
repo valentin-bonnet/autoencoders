@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 class Memory(tf.keras.layers.Layer):
-    def __init__(self, unit=100, k=256, c=3, top_a=200, lstm_units=64, **kwargs):
+    def __init__(self, unit=100, k=256, c=3, top_a=200, lstm_units=512, **kwargs):
         self.m = unit
         self.top_a = top_a
         self.k_shape = k
@@ -36,9 +36,7 @@ class Memory(tf.keras.layers.Layer):
         attention = tf.reshape(attention, [self.batch_shape, self.a_shape, self.hw_shape])  # (bs, A, HW)
         attention = tf.reduce_sum(tf.nn.softmax(attention, -1), -2) # (bs, HW)
         _, top_indx = tf.math.top_k(attention, k=self.top_a, sorted=False)
-        print("top_indx.shape: ", top_indx.shape)
         attention_k = tf.gather(tf.reshape(k, [self.batch_shape, self.hw_shape, self.k_shape]), top_indx, axis=1, batch_dims=1)  # (bs, top_a, k)
-        print("attention_k.shape: ", attention_k.shape)
         attention_k = tf.reshape(attention_k, [self.batch_shape, self.top_a, self.k_shape])
 
         attention_v = tf.gather(tf.reshape(v, [self.batch_shape, self.hw_shape, self.v_shape]), top_indx, axis=1, batch_dims=1)  # (bs, top_a, v)
