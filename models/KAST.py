@@ -5,13 +5,14 @@ from Memory import Memory
 from Transformation import Transformation
 
 class KAST(tf.keras.Model):
-    def __init__(self, coef_memory=0.2):
+    def __init__(self, coef_memory=0.01, dropout_seq=0.8):
         super(KAST, self).__init__()
+        self.dropout_seq = dropout_seq
         self.transformation = Transformation(trainable=False)
         self.resnet = ResNet()
         self.rkn = RKNModel()
         cell_memory = Memory()
-        self.memory = tf.keras.layers.RNN(cell_memory, return_sequences=True)
+        self.memory = tf.keras.layers.RNN(cell_memory)
         self.coef_memory = coef_memory
         self.description = 'KAST'
 
@@ -32,7 +33,7 @@ class KAST(tf.keras.Model):
         #print("v.shape: ", v.shape)
 
         with tf.name_scope('Transformation'):
-            i_drop = self.transformation(i_raw, **kwargs)
+            i_drop, seq_mask = self.transformation(i_raw, **kwargs)
         with tf.name_scope('ResNet'):
             k = tf.reshape(self.resnet(tf.reshape(i_drop, [-1, H, W, C])), [bs, seq_size, h, w, 256]) # (bs, T, h, w, 256)
 
@@ -42,24 +43,27 @@ class KAST(tf.keras.Model):
 
         with tf.name_scope('Rkn'):
             attention = self.rkn(i_drop)
-        with tf.name_scope('Memory'):
-            m_kv = self.memory((attention, k, v))
-            m_k, m_v = tf.nest.flatten(m_kv)
 
+        previous_v = v[:, 0]
         for i in range(seq_size-1):
+            with tf.name_scope('Memory'):
+                m_kv = self.memory((attention[:, i], k[:, i], previous_v))
+                m_k, m_v = tf.nest.flatten(m_kv)
             with tf.name_scope('Similarity_K'):
                 similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck])) # (bs, h*w, h*w)
             with tf.name_scope('Similarity_M'):
                 similarity_m = self._get_affinity_matrix(m_k[:, i], tf.reshape(k[:, i+1], [-1, h * w, ck]))  # (bs, h*w, m)
 
 
-            reconstruction_k = similarity_k @ tf.reshape(v[:, i], [-1, h * w, cv])  # (bs, h*w, v)
+            reconstruction_k = similarity_k @ tf.reshape(previous_v, [-1, h * w, cv])  # (bs, h*w, v)
             reconstruction_m = similarity_m @ m_v[:, i]
             output_v_i = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
             output_v_i = tf.reshape(output_v_i, [-1, 1, h, w, cv])
             output_v.append(output_v_i)
             ground_truth_i = tf.reshape(v[:, i+1], [-1, 1, h, w, cv])
             ground_truth.append(ground_truth_i)
+            previous_v = tf.where(seq_mask[:, i], v[:, i], output_v_i)
+
         #print("output_v len: ", len(output_v))
         #print("output_v[0].shape: ", output_v[0].shape)
         #print("ground_truth len: ", len(ground_truth))
@@ -81,10 +85,16 @@ class KAST(tf.keras.Model):
 
     def set_coef_memory(self, coef_memory):
         if coef_memory < 0:
-            coef_memory = 0
+            self.coef_memory = 0
         elif coef_memory > 1:
-            coef_memory = 1
-        return coef_memory
+            self.coef_memory = 1
+
+    def set_dropout_seq(self, dropout_seq):
+        if dropout_seq < 0:
+            self.dropout_seq = 0
+        elif dropout_seq > 1:
+            self.dropout_seq = 1
+        return dropout_seq
 
     def compute_loss(self, inputs):
         seq_size = inputs.shape[1]
