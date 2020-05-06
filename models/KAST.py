@@ -11,8 +11,7 @@ class KAST(tf.keras.Model):
         self.transformation = Transformation(trainable=False)
         self.resnet = ResNet()
         self.rkn = RKNModel()
-        cell_memory = Memory()
-        self.memory = tf.keras.layers.RNN(cell_memory)
+        self.memory = Memory()
         self.coef_memory = coef_memory
         self.description = 'KAST'
 
@@ -45,6 +44,7 @@ class KAST(tf.keras.Model):
             attention = self.rkn(i_drop)
 
         previous_v = v[:, 0]
+        self.memory.get_initial_state()
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
                 m_kv = self.memory((attention[:, i], k[:, i], previous_v))
