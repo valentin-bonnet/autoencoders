@@ -58,7 +58,7 @@ class KAST(tf.keras.Model):
             reconstruction_k = similarity_k @ tf.reshape(previous_v, [-1, h * w, cv])  # (bs, h*w, v)
             reconstruction_m = similarity_m @ m_v
             output_v_i = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
-            previous_v = tf.where(seq_mask[:, i], v[:, i], tf.reshape(output_v_i, [-1, h, w, cv]))
+            previous_v = tf.where(tf.reshape(seq_mask[:, i], [bs, 1, 1, 1]), v[:, i], tf.reshape(output_v_i, [-1, h, w, cv]))
             output_v_i = tf.reshape(output_v_i, [-1, 1, h, w, cv])
             output_v.append(output_v_i)
             ground_truth_i = tf.reshape(v[:, i+1], [-1, 1, h, w, cv])
