@@ -49,15 +49,14 @@ class KAST(tf.keras.Model):
             with tf.name_scope('Memory'):
                 m_kv = self.memory((attention[:, i], k[:, i], previous_v))
                 m_k, m_v = tf.nest.flatten(m_kv)
-                print("mk :", m_k.shape)
             with tf.name_scope('Similarity_K'):
                 similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck])) # (bs, h*w, h*w)
             with tf.name_scope('Similarity_M'):
-                similarity_m = self._get_affinity_matrix(m_k[:, i], tf.reshape(k[:, i+1], [-1, h * w, ck]))  # (bs, h*w, m)
+                similarity_m = self._get_affinity_matrix(m_k, tf.reshape(k[:, i+1], [-1, h * w, ck]))  # (bs, h*w, m)
 
 
             reconstruction_k = similarity_k @ tf.reshape(previous_v, [-1, h * w, cv])  # (bs, h*w, v)
-            reconstruction_m = similarity_m @ m_v[:, i]
+            reconstruction_m = similarity_m @ m_v
             output_v_i = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
             output_v_i = tf.reshape(output_v_i, [-1, 1, h, w, cv])
             output_v.append(output_v_i)

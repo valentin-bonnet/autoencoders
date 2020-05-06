@@ -54,9 +54,6 @@ class Memory(tf.keras.layers.Layer):
 
     def call(self, inputs):
         attention, k, v = tf.nest.flatten(inputs) # [(bs, H, W, A), (bs, H, W, K), (bs, H, W, V)]
-        print(attention.shape)
-        print(k.shape)
-        print(v.shape)
         attention = tf.reshape(attention, [self.batch_shape, self.a_shape, self.hw_shape]) # (bs, A, HW)
         k = tf.reshape(k, [self.batch_shape, self.hw_shape, self.k_shape]) # (bs, HW, K)
         v = tf.reshape(v, [self.batch_shape, self.hw_shape, self.v_shape]) # (bs, HW, V)
@@ -73,7 +70,6 @@ class Memory(tf.keras.layers.Layer):
 
         self.m_k = tf.reshape(self.m_k, [-1, self.m, self.k_shape])
         self.m_v = tf.reshape(self.m_v, [-1, self.m, self.v_shape])
-        print(self.m_k.shape)
 
         return [self.m_k, self.m_v], #inputs, states
 
