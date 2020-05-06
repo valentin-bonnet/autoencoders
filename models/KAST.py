@@ -49,6 +49,7 @@ class KAST(tf.keras.Model):
             with tf.name_scope('Memory'):
                 m_kv = self.memory((attention[:, i], k[:, i], previous_v))
                 m_k, m_v = tf.nest.flatten(m_kv)
+                print("mk :", m_k.shape)
             with tf.name_scope('Similarity_K'):
                 similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck])) # (bs, h*w, h*w)
             with tf.name_scope('Similarity_M'):
@@ -80,7 +81,6 @@ class KAST(tf.keras.Model):
 
     def _get_affinity_matrix(self, ref, tar):
         # (bs, h*w or m, k), (bs, h*w, k)
-        print(ref.shape)
         ref_transpose = tf.transpose(ref, [0, 2, 1])
         inner_product = tar @ ref_transpose
         similarity = tf.nn.softmax(inner_product, -1)
