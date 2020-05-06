@@ -44,7 +44,6 @@ class KAST(tf.keras.Model):
             attention = self.rkn(i_drop)
 
         previous_v = v[:, 0]
-        print(previous_v.shape)
 
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
@@ -59,11 +58,12 @@ class KAST(tf.keras.Model):
             reconstruction_k = similarity_k @ tf.reshape(previous_v, [-1, h * w, cv])  # (bs, h*w, v)
             reconstruction_m = similarity_m @ m_v
             output_v_i = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
+            previous_v = tf.where(seq_mask[:, i], v[:, i], output_v_i)
             output_v_i = tf.reshape(output_v_i, [-1, 1, h, w, cv])
             output_v.append(output_v_i)
             ground_truth_i = tf.reshape(v[:, i+1], [-1, 1, h, w, cv])
             ground_truth.append(ground_truth_i)
-            previous_v = tf.where(seq_mask[:, i], v[:, i], output_v_i)
+
 
         #print("output_v len: ", len(output_v))
         #print("output_v[0].shape: ", output_v[0].shape)
