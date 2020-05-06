@@ -44,6 +44,7 @@ class KAST(tf.keras.Model):
             attention = self.rkn(i_drop)
 
         previous_v = v[:, 0]
+        print(previous_v.shape)
 
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
