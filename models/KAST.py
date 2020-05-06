@@ -80,6 +80,7 @@ class KAST(tf.keras.Model):
 
     def _get_affinity_matrix(self, ref, tar):
         # (bs, h*w or m, k), (bs, h*w, k)
+        print(ref.shape)
         ref_transpose = tf.transpose(ref, [0, 2, 1])
         inner_product = tar @ ref_transpose
         similarity = tf.nn.softmax(inner_product, -1)
