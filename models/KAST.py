@@ -44,7 +44,7 @@ class KAST(tf.keras.Model):
             attention = self.rkn(i_drop)
 
         previous_v = v[:, 0]
-        self.memory.get_initial_state()
+
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
                 m_kv = self.memory((attention[:, i], k[:, i], previous_v))
@@ -73,6 +73,8 @@ class KAST(tf.keras.Model):
             'input_dropout': i_drop,
             'attention': attention,
         }
+
+        self.memory.get_initial_state()
 
         return tf.concat(output_v, 1), tf.concat(ground_truth, 1), dict_view
 
