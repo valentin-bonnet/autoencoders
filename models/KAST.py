@@ -134,7 +134,7 @@ class KAST(tf.keras.Model):
         optimizer.apply_gradients(zip(gradients, self.trainable_variables))
         return loss
 
-    def reconstruct(self, inputs):
+    def reconstruct(self, inputs, training=True):
         seq_size = inputs.shape[1]
         H = inputs.shape[2]
         W = inputs.shape[3]
@@ -144,7 +144,7 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j, dict_view = self.call((inputs, v), training=True)
+        output_v, v_j, dict_view = self.call((inputs, v), training=training)
         drop_out = dict_view['input_dropout']
         drop_out = tf.reshape(drop_out, [-1, H, W, cv])
         drop_out = tf.image.resize(drop_out, [h, w])

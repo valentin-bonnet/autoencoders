@@ -118,8 +118,8 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=150)
 
 
-def KAST_View(kast, input_data, file_name_head='image', path='./'):
-    output, ground_truth, dict_view = kast.reconstruct(input_data)
+def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'):
+    output, ground_truth, dict_view = kast.reconstruct(input_data, training)
     image_drop_out = dict_view['input_dropout']
     attention = dict_view['attention']
     ground_truth = ground_truth[0].numpy()
