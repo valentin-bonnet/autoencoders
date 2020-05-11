@@ -81,7 +81,7 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
 
 def KAST_test(kast, davis, file_name_head='image', path='./'):
     #output_v, v_j, _ = kast.call(davis, training=False)
-    output_v, v_j, _ = kast.call_ResNet(davis, training=False)
+    output_v, v_j= kast.call_ResNet(davis, training=False)
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
 
@@ -135,12 +135,12 @@ def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', pa
         os.makedirs(path)
 
     # IMAGES
-    fig = plt.figure(figsize=(1, 2))
-    plt.subplot(2, 1, 1)
-    plt.imshow(output_v)
-    plt.axis('off')
-    plt.subplot(2, 1, 2)
+    fig = plt.figure(figsize=(2, 1))
+    plt.subplot(1, 2, 1)
     plt.imshow(v_j)
+    plt.axis('off')
+    plt.subplot(1, 2, 2)
+    plt.imshow(output_v)
     plt.axis('off')
 
     file_path = os.path.join(path, file_name_head)
