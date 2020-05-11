@@ -94,7 +94,7 @@ class KAST(tf.keras.Model):
         # print("v.shape: ", v.shape)
 
         with tf.name_scope('Transformation'):
-            i_drop, seq_mask = self.transformation(i_raw, **kwargs)
+            i_drop = self.transformation(i_raw, **kwargs)
         with tf.name_scope('ResNet'):
             k = tf.reshape(self.resnet(tf.reshape(i_drop, [-1, H, W, C])),
                            [bs, seq_size, h, w, 256])  # (bs, T, h, w, 256)

@@ -44,9 +44,7 @@ class Transformation(tf.keras.layers.Layer):
             drop_out = 1 - tf.reduce_sum(tf.one_hot(drop_ch_ind, 3), -2)
             return inputs * drop_out
         else:
-            mask = tf.zeros([self.batch_shape, self.seq_size-1], dtype=tf.int32)
-            mask = tf.cast(mask, tf.bool)
-            return inputs, mask
+            return inputs
 
     def get_config(self):
         return {'p': self.p, 'p_seq':self.p_seq}
