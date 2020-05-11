@@ -74,7 +74,7 @@ def _preprocess_once(parsed_data):
     anno_lab = tf.cast(anno_lab, tf.float32)
     jpeg_lab = jpeg_lab + [0., 128.0, 128.0]
     jpeg_lab = (jpeg_lab / [50.0, 127.5, 127.5]) - 1.0
-    jpeg_lab = tf.reshape(jpeg_lab, [8, 256, 256, 3])
+    jpeg_lab = tf.reshape(jpeg_lab, [sequence_size, 256, 256, 3])
     anno_lab = anno_lab + [0., 128.0, 128.0]
     anno_lab = (anno_lab / [50.0, 127.5, 127.5]) - 1.0
     anno_lab = tf.reshape(anno_lab, [sequence_size, 64, 64, 3])
