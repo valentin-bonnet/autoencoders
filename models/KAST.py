@@ -105,7 +105,7 @@ class KAST(tf.keras.Model):
             similarity_k = self._get_affinity_matrix(tf.reshape(k[:, 0], [-1, h * w, ck]),
                                                      tf.reshape(k[:, 1], [-1, h * w, ck]))  # (bs, h*w, h*w)
 
-        reconstruction_k = similarity_k @ tf.reshape(v[:, 0], [-1, h * w, cv])  # (bs, h*w, v)
+        reconstruction_k = tf.reshape(similarity_k @ tf.reshape(v[:, 0], [-1, h * w, cv]), [-1, h, w, cv]) # (bs, h*w, v)
         ground_truth = v[:, 1]
         return reconstruction_k, ground_truth
 
