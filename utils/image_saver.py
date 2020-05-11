@@ -80,7 +80,8 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
 
 
 def KAST_test(kast, davis, file_name_head='image', path='./'):
-    output_v, v_j, _ = kast.call(davis, training=False)
+    #output_v, v_j, _ = kast.call(davis, training=False)
+    output_v, v_j, _ = kast.call_ResNet(davis, training=False)
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
 
@@ -109,14 +110,43 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     plt.close(fig)
 
     # GIF
-    images = tf.concat([output_v, v_j], axis=2).numpy()
-    im = []
-    for image in images:
-        im.append(Image.fromarray(np.uint8(image*[255.0, 255.0, 255.0])))
+    #images = tf.concat([output_v, v_j], axis=2).numpy()
+    #im = []
+    #for image in images:
+    #    im.append(Image.fromarray(np.uint8(image*[255.0, 255.0, 255.0])))
+
+    #file_path = os.path.join(path, file_name_head)
+    #im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=150)
+
+def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', path='./'):
+    output_v, v_j= kast.call_ResNet(input_data, training=training)
+    output_v = output_v[0].numpy()
+    v_j = v_j[0].numpy()
+
+    seq_size = output_v.shape[0]
+
+    # LAB to RGB
+    for i in range(seq_size):
+        output_v[i] = cv2.cvtColor(np.float32((output_v[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]),
+                                   cv2.COLOR_Lab2RGB)
+        v_j[i] = cv2.cvtColor(np.float32((v_j[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
+    # IMAGES
+    fig = plt.figure(figsize=(seq_size, 2))
+    for i in range(seq_size):
+        plt.subplot(2, seq_size, i + 1)
+        plt.imshow(output_v[i])
+        plt.axis('off')
+        plt.subplot(2, seq_size, seq_size + i + 1)
+        plt.imshow(v_j[i])
+        plt.axis('off')
 
     file_path = os.path.join(path, file_name_head)
-    im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=150)
-
+    plt.savefig(file_path + '_Resnet.png')
+    plt.close(fig)
 
 def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'):
     output, ground_truth, dict_view = kast.reconstruct(input_data, training)
