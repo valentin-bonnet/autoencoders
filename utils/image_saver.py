@@ -119,7 +119,6 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     #im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=150)
 
 def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', path='./'):
-    print(input_data.shape)
     output_v, v_j = kast.reconstruct_ResNet(input_data, training=training)
 
     output_v = output_v[0].numpy()
@@ -127,6 +126,8 @@ def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', pa
 
     seq_size = output_v.shape[0]
 
+    print(seq_size)
+    print(output_v.shape)
     # LAB to RGB
     for i in range(seq_size):
         output_v[i] = cv2.cvtColor(np.float32((output_v[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]),
