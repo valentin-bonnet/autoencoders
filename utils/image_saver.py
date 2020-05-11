@@ -124,28 +124,24 @@ def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', pa
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
 
-    seq_size = output_v.shape[0]
 
-    print(seq_size)
-    print(output_v.shape)
+
     # LAB to RGB
-    for i in range(seq_size):
-        output_v[i] = cv2.cvtColor(np.float32((output_v[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]),
-                                   cv2.COLOR_Lab2RGB)
-        v_j[i] = cv2.cvtColor(np.float32((v_j[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+    output_v = cv2.cvtColor(np.float32((output_v + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]),
+                               cv2.COLOR_Lab2RGB)
+    v_j = cv2.cvtColor(np.float32((v_j + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
 
     if not os.path.isdir(path):
         os.makedirs(path)
 
     # IMAGES
-    fig = plt.figure(figsize=(seq_size, 2))
-    for i in range(seq_size):
-        plt.subplot(2, seq_size, i + 1)
-        plt.imshow(output_v[i])
-        plt.axis('off')
-        plt.subplot(2, seq_size, seq_size + i + 1)
-        plt.imshow(v_j[i])
-        plt.axis('off')
+    fig = plt.figure(figsize=(1, 2))
+    plt.subplot(2, 1, 1)
+    plt.imshow(output_v)
+    plt.axis('off')
+    plt.subplot(2, 1, 2)
+    plt.imshow(v_j)
+    plt.axis('off')
 
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '_Resnet.png')
