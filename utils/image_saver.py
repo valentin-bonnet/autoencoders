@@ -120,7 +120,7 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
 
 def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', path='./'):
     print(input_data.shape)
-    output_v, v_j = kast.call_ResNet(input_data, training=training)
+    output_v, v_j = kast.reconstruct_ResNet(input_data, training=training)
 
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
