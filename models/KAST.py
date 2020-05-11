@@ -140,7 +140,7 @@ class KAST(tf.keras.Model):
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=True)
-        output_v, v_j, = self.call_ResNet((inputs, v), training=True)
+        output_v, v_j = self.call_ResNet((inputs, v), training=True)
         abs = tf.math.abs(output_v - v_j)
         loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
         return loss
