@@ -44,7 +44,7 @@ class RKNModel(tf.keras.Model):
         self.generative_net.add(tf.keras.layers.ReLU())
         self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=layer_channel_1, kernel_size=3, strides=2, padding='same'))
         self.generative_net.add(tf.keras.layers.ReLU())
-        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=256*2, kernel_size=3, strides=1, padding='same'))
+        self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=256, kernel_size=3, strides=1, padding='same'))
 
         """
         self.attention_net = tf.keras.Sequential()
@@ -80,6 +80,5 @@ class RKNModel(tf.keras.Model):
         state = self.rkn_layer(encoded)
         state = tf.reshape(state, [-1, self.N])
         output = self.generative_net(state)
-        output = tf.reshape(output, [bs, seq_size, h, w, 512])
-        mean, std = tf.split(output, num_or_size_splits=[256, 256], axis=-1)
-        return mean, std
+        output = tf.reshape(output, [bs, seq_size, h, w, 256])
+        return output

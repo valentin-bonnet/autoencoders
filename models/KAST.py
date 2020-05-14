@@ -140,9 +140,9 @@ class KAST(tf.keras.Model):
         k = k*mask
 
         with tf.name_scope('Rkn'):
-            rkn_mean, rkn_std = self.rkn(k)
+            rkn_k = self.rkn(k)
 
-        return rkn_mean, rkn_std, k
+        return rkn_k, k
 
 
     def _get_affinity_matrix(self, ref, tar):
@@ -181,10 +181,10 @@ class KAST(tf.keras.Model):
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=True)
         #output_v, v_j = self.call_ResNet((inputs, v), training=True)
-        mean, std, k = self.call_RKN((inputs, v), training=True)
+        rkn_k, k = self.call_RKN((inputs, v), training=True)
         #abs = tf.math.abs(output_v - v_j)
         #loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
-        loss = tf.reduce_mean(self.log_normal_pdf(k, mean, std))
+        loss = tf.reduce_mean(self.log_normal_pdf(rkn_k, k, tf.math.log(0.001)))
         print(loss)
         return loss
 
