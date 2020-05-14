@@ -65,7 +65,7 @@ class RKNLayer(tf.keras.layers.Layer):
 
         return z_post, std_u_post, std_l_post, std_s_post
 
-    def call(self, inputs, states, mask):
+    def call(self, inputs, states):
         # (bs, M)
         #print("RKNLayer inputs shape: ", inputs.shape)
         a_mean, a_std = tf.split(inputs, num_or_size_splits=[self.M, self.M], axis=-1)
