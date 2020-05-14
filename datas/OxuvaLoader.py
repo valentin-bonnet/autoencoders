@@ -122,7 +122,8 @@ def _get_size(f, size):
     true_size = files_size // (frames_delta*sequence_size)
     return true_size + size
 
-def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/'):
+def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', seq_size=8):
+    sequence_size = seq_size
     files = glob.glob(path+'*.tfrecords')
     ds_files = tf.data.Dataset.from_tensor_slices(files).shuffle(337, seed=1)
     true_seq_size = sequence_size*frames_delta

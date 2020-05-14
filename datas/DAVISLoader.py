@@ -96,7 +96,8 @@ def _files_to_ds(f):
     ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     return ds
 
-def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS/'):
+def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS/', seq_size=8):
+    sequence_size = seq_size
     files = glob.glob(path+'*.tfrecords')
     ds_files = tf.data.Dataset.from_tensor_slices(files).shuffle(90, seed=1)
     davis_ds = ds_files.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)

@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 from ResNet import ResNet
 from RKNModel import RKNModel
 from Memory import Memory
@@ -39,7 +40,7 @@ class KAST(tf.keras.Model):
         ck = k.shape[4]
 
         with tf.name_scope('Rkn'):
-            attention = self.rkn(i_drop)
+            attention = self.rkn(k)
 
         previous_v = v[:, 0]
 
@@ -109,6 +110,40 @@ class KAST(tf.keras.Model):
         ground_truth = v[:, 1]
         return reconstruction_k, ground_truth
 
+    def call_RKN(self, inputs, **kwargs):
+        # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
+        bs = inputs[1].shape[0]
+        seq_size = inputs[1].shape[1]
+        H = inputs[0].shape[2]
+        W = inputs[0].shape[3]
+        C = inputs[0].shape[4]
+        h = inputs[1].shape[2]
+        w = inputs[1].shape[3]
+        cv = inputs[1].shape[4]
+        output_v = []
+        ground_truth = []
+        i_raw, v = tf.nest.flatten(inputs)
+        # print("i.shape: ", i.shape)
+        # print("v.shape: ", v.shape)
+
+        #with tf.name_scope('Transformation'):
+        #    i_drop = self.transformation(i_raw, **kwargs)
+        with tf.name_scope('ResNet'):
+            k = tf.reshape(self.resnet(tf.reshape(i_raw, [-1, H, W, C])),
+                           [bs, seq_size, h, w, 256])  # (bs, T, h, w, 256)
+
+        mask = np.random.binomial(1, 0.9, [bs, seq_size])
+        mask[:, 0] = 1
+        mask = tf.cast(mask, tf.bool)
+
+        k = k*mask
+
+        with tf.name_scope('Rkn'):
+            rkn_mean, rkn_std = self.rkn(k)
+
+        return rkn_mean, rkn_std, k
+
+
     def _get_affinity_matrix(self, ref, tar):
         # (bs, h*w or m, k), (bs, h*w, k)
         ref_transpose = tf.transpose(ref, [0, 2, 1])
@@ -129,6 +164,10 @@ class KAST(tf.keras.Model):
             self.dropout_seq = 1
         return dropout_seq
 
+    def log_normal_pdf(self, sample, mean, logvar):
+      log2pi = tf.math.log(2. * np.pi)
+      return -.5 * ((sample - mean) ** 2. * tf.exp(-logvar) + logvar + log2pi)
+
     def compute_loss(self, inputs):
         seq_size = inputs.shape[1]
         H = inputs.shape[2]
@@ -140,9 +179,11 @@ class KAST(tf.keras.Model):
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=True)
-        output_v, v_j = self.call_ResNet((inputs, v), training=True)
-        abs = tf.math.abs(output_v - v_j)
-        loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
+        #output_v, v_j = self.call_ResNet((inputs, v), training=True)
+        mean, std, k = self.call_RKN((inputs, v), training=True)
+        #abs = tf.math.abs(output_v - v_j)
+        #loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
+        loss = tf.reduce_mean(self.log_normal_pdf(k, mean, std))
         return loss
 
     def compute_accuracy(self, inputs):
@@ -156,8 +197,9 @@ class KAST(tf.keras.Model):
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=False)
-        output_v, v_j = self.call_ResNet((inputs, v), training=False)
-        return tf.reduce_mean(tf.square(output_v - v_j))
+        #output_v, v_j = self.call_ResNet((inputs, v), training=False)
+        mean, _, k = self.call_RKN((inputs, v), training=False)
+        return tf.reduce_mean(tf.square(mean - k))
 
     def compute_apply_gradients(self, x, optimizer):
         with tf.GradientTape() as tape:

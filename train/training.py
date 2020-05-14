@@ -74,12 +74,12 @@ class Training():
             self.ckpt_resnet = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch, optimizer=self.optimizer, resnet=self.model.resnet)
             self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_resnet, self.ckpt_resnet_path, max_to_keep=2)
             self.ckpt_rkn = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch, optimizer=self.optimizer, rkn=self.model.rkn)
-            self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_rkn, self.ckpt_rkn_path, max_to_keep=2)
+            self.ckpt_rkn_manager = tf.train.CheckpointManager(self.ckpt_rkn, self.ckpt_rkn_path, max_to_keep=2)
 
 
         self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=2)
         self.load_pretrained(self.ckpt_resnet, self.ckpt_resnet_manager)
-        self.load()
+        #self.load()
 
     def forward_percent(self):
         print("forward percent")
@@ -145,6 +145,7 @@ class Training():
                     v_acc_mean.reset_states()
 
                 if i != 0 and i % (epoch_percent_train*self.save_steps) == 0:
+                    """
                     for val_x in self.val_ds.take(1):
                         if self.is_seq:
                             image_saver.KAST_View_Resnet(self.model, val_x, False,
@@ -168,6 +169,7 @@ class Training():
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
                     for test in self.test_ds.take(1):
                         image_saver.KAST_test(self.model, test, self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
+                    """
                     print('i :', i)
                     print('epoch percent train: ', epoch_percent_train)
                     print('save step: ', self.save_steps)
@@ -363,14 +365,17 @@ class Training():
         print("self.ckpt_path", self.ckpt_path)
 
         save_path = self.ckpt_manager.save()
+        save_path_rkn = self.ckpt_rkn_manager.save()
         np.save(t_loss_path, np.asarray(self.t_loss))
         np.save(t_acc_path, np.asarray(self.t_acc))
         np.save(v_loss_path, np.asarray(self.v_loss))
         np.save(v_acc_path, np.asarray(self.v_acc))
         if self.step_is_epoch:
             print("Saved checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path))
+            print("Saved RKN checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path_rkn))
         else:
             print("Saved checkpoint for step {}: {}".format(int(self.ckpt.step), save_path))
+            print("Saved RKN checkpoint for step {}: {}".format(int(self.ckpt.step), save_path_rkn))
 
 
 
@@ -382,7 +387,7 @@ class Training():
             print("Initializing from scratch.")
 
     def load(self):
-        self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
+        self.ckpt_rkn.restore(self.ckpt_rkn_manager.latest_checkpoint)
         if self.ckpt_manager.latest_checkpoint:
             print("Restored from {}".format(self.ckpt_manager.latest_checkpoint))
         else:
