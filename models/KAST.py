@@ -185,7 +185,6 @@ class KAST(tf.keras.Model):
         #abs = tf.math.abs(output_v - v_j)
         #loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
         loss = tf.reduce_mean(self.log_normal_pdf(rkn_k, k, tf.math.log(0.001)))
-        print(loss)
         return loss
 
     def compute_accuracy(self, inputs):
