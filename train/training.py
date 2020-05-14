@@ -379,7 +379,7 @@ class Training():
 
 
     def load_pretrained(self, ckpt, ckpt_manager):
-        ckpt.restore(ckpt_manager.latest_checkpoint)
+        ckpt.restore(ckpt_manager.latest_checkpoint).expect_partial()
         if ckpt_manager.latest_checkpoint:
             print("Restored from {}".format(ckpt_manager.latest_checkpoint))
         else:
