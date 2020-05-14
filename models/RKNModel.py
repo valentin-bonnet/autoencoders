@@ -25,7 +25,7 @@ class RKNModel(tf.keras.Model):
         ## RKN
 
         cell = RKNLayer(n//2, k, b, alpha_unit)
-        self.rkn = tf.keras.layers.RNN(cell, return_sequences=True)
+        self.rkn_layer = tf.keras.layers.RNN(cell, return_sequences=True)
 
         ## DECODER
 
@@ -75,7 +75,7 @@ class RKNModel(tf.keras.Model):
         inputs = tf.reshape(inputs, [-1, h, w, k])
         encoded = self.inference_net(inputs)
         encoded = tf.reshape(encoded, [bs, seq_size, self.N])
-        state = self.rkn(encoded)
+        state = self.rkn_layer(encoded)
         state = tf.reshape(state, [-1, self.N])
         output = self.generative_net(state)
         output = tf.reshape(output, [bs, seq_size, h, w, 512])
