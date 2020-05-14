@@ -86,4 +86,4 @@ class RKNLayer(tf.keras.layers.Layer):
         return [z0, std_u, std_l, std_s]
 
     def get_config(self):
-        return {'k': self.K, 'b': self.B, 'alpha_unit': self.alpha_unit}
+        return {'a': self.M, 'k': self.K, 'b': self.B, 'alpha_unit': self.alpha_unit}
