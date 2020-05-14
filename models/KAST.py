@@ -200,8 +200,8 @@ class KAST(tf.keras.Model):
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=False)
         #output_v, v_j = self.call_ResNet((inputs, v), training=False)
-        mean, _, k = self.call_RKN((inputs, v), training=False)
-        return tf.reduce_mean(tf.square(mean - k))
+        rkn_k, k = self.call_RKN((inputs, v), training=False)
+        return tf.reduce_mean(tf.square(rkn_k - k))
 
     def compute_apply_gradients(self, x, optimizer):
         with tf.GradientTape() as tape:
