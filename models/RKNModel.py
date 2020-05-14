@@ -46,6 +46,7 @@ class RKNModel(tf.keras.Model):
         self.generative_net.add(tf.keras.layers.ReLU())
         self.generative_net.add(tf.keras.layers.Conv2DTranspose(filters=256*2, kernel_size=3, strides=1, padding='same'))
 
+        """
         self.attention_net = tf.keras.Sequential()
         self.attention_net.add(tf.keras.layers.Dense(dense_output))
         self.attention_net.add(
@@ -64,6 +65,7 @@ class RKNModel(tf.keras.Model):
         self.attention_net.add(tf.keras.layers.ReLU())
         self.attention_net.add(
             tf.keras.layers.Conv2DTranspose(filters=attention_output, kernel_size=3, strides=1, padding='same'))
+            """
 
     def call(self, inputs):
         # inputs : (bs, T, H, W, K)
