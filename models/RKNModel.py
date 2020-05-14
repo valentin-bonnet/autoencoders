@@ -79,5 +79,5 @@ class RKNModel(tf.keras.Model):
         state = tf.reshape(state, [-1, self.N])
         output = self.generative_net(state)
         output = tf.reshape(output, [bs, seq_size, h, w, 512])
-        mean, std = tf.split(inputs, num_or_size_splits=[256, 256], axis=-1)
+        mean, std = tf.split(output, num_or_size_splits=[256, 256], axis=-1)
         return mean, std
