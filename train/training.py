@@ -71,12 +71,11 @@ class Training():
             self.ckpt = tf.train.Checkpoint(epoch=self.current_epoch, optimizer=self.optimizer, net=self.model)
         else:
             self.ckpt = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch, optimizer=self.optimizer,net=self.model)
-            self.ckpt_resnet = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch, optimizer=self.optimizer, resnet=self.model.resnet)
-            self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_resnet, self.ckpt_resnet_path, max_to_keep=2)
-            self.ckpt_rkn = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch, optimizer=self.optimizer, rkn=self.model.rkn)
-            self.ckpt_rkn_manager = tf.train.CheckpointManager(self.ckpt_rkn, self.ckpt_rkn_path, max_to_keep=2)
 
-
+        self.ckpt_resnet = tf.train.Checkpoint(resnet=self.model.resnet)
+        self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_resnet, self.ckpt_resnet_path, max_to_keep=2)
+        self.ckpt_rkn = tf.train.Checkpoint(rkn=self.model.rkn)
+        self.ckpt_rkn_manager = tf.train.CheckpointManager(self.ckpt_rkn, self.ckpt_rkn_path, max_to_keep=2)
         self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=2)
         self.load_pretrained(self.ckpt_resnet, self.ckpt_resnet_manager)
         #self.load()
