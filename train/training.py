@@ -33,6 +33,8 @@ class Training():
         self.name = '_'.join(filter(None, [dataset.name, model.description]))
         self.path = os.path.join(path_to_directory, self.name)
         self.ckpt_path = os.path.join(self.path, 'ckpts')
+        self.ckpt_resnet_path = os.path.join(self.ckpt_path, 'resnet')
+        self.ckpt_rkn_path = os.path.join(self.ckpt_path, 'rkn')
         self.train_path = os.path.join(self.path, 'training')
         self.val_path = os.path.join(self.path, 'validation')
         self.img_path = os.path.join(self.path, 'imgs')
@@ -51,6 +53,12 @@ class Training():
         if not os.path.isdir(self.ckpt_path):
             os.makedirs(self.ckpt_path)
 
+        if not os.path.isdir(self.ckpt_resnet_path):
+            os.makedirs(self.ckpt_resnet_path)
+
+        if not os.path.isdir(self.ckpt_rkn_path):
+            os.makedirs(self.ckpt_rkn_path)
+
         if not os.path.isdir(self.train_path):
             os.makedirs(self.train_path)
 
@@ -62,9 +70,15 @@ class Training():
         if self.step_is_epoch:
             self.ckpt = tf.train.Checkpoint(epoch=self.current_epoch, optimizer=self.optimizer, net=self.model)
         else:
-            self.ckpt = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch, optimizer=self.optimizer, net=self.model)
-        self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=2)
+            self.ckpt = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch, optimizer=self.optimizer,net=self.model)
+            self.ckpt_resnet = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch, optimizer=self.optimizer, resnet=self.model.resnet)
+            self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_resnet, self.ckpt_resnet_path, max_to_keep=2)
+            self.ckpt_rkn = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch, optimizer=self.optimizer, rkn=self.model.rkn)
+            self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_rkn, self.ckpt_rkn_path, max_to_keep=2)
 
+
+        self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=2)
+        self.load_pretrained(self.ckpt_resnet, self.ckpt_resnet_manager)
         self.load()
 
     def forward_percent(self):
@@ -359,6 +373,13 @@ class Training():
             print("Saved checkpoint for step {}: {}".format(int(self.ckpt.step), save_path))
 
 
+
+    def load_pretrained(self, ckpt, ckpt_manager):
+        ckpt.restore(ckpt_manager.latest_checkpoint)
+        if ckpt_manager.latest_checkpoint:
+            print("Restored from {}".format(ckpt_manager.latest_checkpoint))
+        else:
+            print("Initializing from scratch.")
 
     def load(self):
         self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
