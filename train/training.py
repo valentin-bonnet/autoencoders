@@ -385,6 +385,16 @@ class Training():
         else:
             print("Initializing from scratch.")
 
+        t_loss_path = os.path.join(self.train_path, 'loss.npy')
+        t_acc_path = os.path.join(self.train_path, 'accuracy.npy')
+        v_loss_path = os.path.join(self.val_path, 'loss.npy')
+        v_acc_path = os.path.join(self.val_path, 'accuracy.npy')
+
+        self.t_loss = np.load(t_loss_path).tolist() if os.path.isfile(t_loss_path) else []
+        self.t_acc = np.load(t_acc_path).tolist() if os.path.isfile(t_acc_path) else []
+        self.v_loss = np.load(v_loss_path).tolist() if os.path.isfile(v_loss_path) else []
+        self.v_acc = np.load(v_acc_path).tolist() if os.path.isfile(v_acc_path) else []
+
     def load(self):
         self.ckpt_rkn.restore(self.ckpt_rkn_manager.latest_checkpoint)
         if self.ckpt_manager.latest_checkpoint:
