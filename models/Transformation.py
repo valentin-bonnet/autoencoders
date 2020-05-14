@@ -20,7 +20,7 @@ class Transformation(tf.keras.layers.Layer):
         if training:
 
             mask = np.random.binomial(1, self.p_seq, [self.batch_shape, self.seq_size-1])
-            mask = tf.cast(mask, tf.bool)
+            #mask = tf.cast(mask, tf.bool)
             if np.random.random() < self.p:
                 return inputs, mask
 
@@ -30,7 +30,7 @@ class Transformation(tf.keras.layers.Layer):
             return inputs * drop_out, mask
         else:
             mask = tf.zeros([self.batch_shape, self.seq_size-1], dtype=tf.int32)
-            mask = tf.cast(mask, tf.bool)
+            #mask = tf.cast(mask, tf.bool)
             return inputs, mask
 
     """

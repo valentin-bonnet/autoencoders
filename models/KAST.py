@@ -134,7 +134,7 @@ class KAST(tf.keras.Model):
 
         mask = np.random.binomial(1, 0.9, [bs, seq_size])
         mask[:, 0] = 1
-        mask = tf.cast(mask, tf.bool)
+        #mask = tf.cast(mask, tf.bool)
 
         k = k*mask
 
