@@ -68,9 +68,9 @@ class Training():
         self.current_epoch = tf.Variable(0)
         self.current_step = tf.Variable(0)
         if self.step_is_epoch:
-            self.ckpt = tf.train.Checkpoint(epoch=self.current_epoch, optimizer=self.optimizer, net=self.model)
+            self.ckpt = tf.train.Checkpoint(epoch=self.current_epoch, optimizer=self.optimizer)
         else:
-            self.ckpt = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch, optimizer=self.optimizer,net=self.model)
+            self.ckpt = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch)
 
         self.ckpt_resnet = tf.train.Checkpoint(resnet=self.model.resnet)
         self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_resnet, self.ckpt_resnet_path, max_to_keep=2)
@@ -397,6 +397,11 @@ class Training():
 
     def load(self):
         self.ckpt_rkn.restore(self.ckpt_rkn_manager.latest_checkpoint)
+        if self.ckpt_rkn_manager.latest_checkpoint:
+            print("Restored from {}".format(self.ckpt_rkn_manager.latest_checkpoint))
+        else:
+            print("Initializing from scratch.")
+        self.ckpt.restore(self.ckpt_manager.latest_checkpoint).expect_partial()
         if self.ckpt_manager.latest_checkpoint:
             print("Restored from {}".format(self.ckpt_manager.latest_checkpoint))
         else:
