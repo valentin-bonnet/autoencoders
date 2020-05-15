@@ -132,7 +132,7 @@ class KAST(tf.keras.Model):
             k = tf.reshape(self.resnet(tf.reshape(i_raw, [-1, H, W, C])),
                            [bs, seq_size, h, w, 256])  # (bs, T, h, w, 256)
 
-        mask = np.random.binomial(1, 0.9, [bs, seq_size])
+        mask = np.random.binomial(1, 0.6, [bs, seq_size])
         mask[:, 0] = 1
 
         mask = tf.cast(tf.reshape(mask, [bs, seq_size, 1, 1, 1]), tf.float32)
