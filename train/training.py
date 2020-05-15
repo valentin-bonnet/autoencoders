@@ -77,8 +77,8 @@ class Training():
         self.ckpt_rkn = tf.train.Checkpoint(rkn=self.model.rkn)
         self.ckpt_rkn_manager = tf.train.CheckpointManager(self.ckpt_rkn, self.ckpt_rkn_path, max_to_keep=2)
         self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=2)
-        self.load_pretrained(self.ckpt_resnet, self.ckpt_resnet_manager)
-        #self.load()
+        #self.load_pretrained(self.ckpt_resnet, self.ckpt_resnet_manager)
+        self.load()
 
     def forward_percent(self):
         print("forward percent")
