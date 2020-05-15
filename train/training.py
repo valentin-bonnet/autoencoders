@@ -77,8 +77,8 @@ class Training():
         self.ckpt_rkn = tf.train.Checkpoint(rkn=self.model.rkn)
         self.ckpt_rkn_manager = tf.train.CheckpointManager(self.ckpt_rkn, self.ckpt_rkn_path, max_to_keep=2)
         self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=2)
-        self.load_pretrained(self.ckpt_resnet, self.ckpt_resnet_manager)
-        #self.load()
+        #self.load_pretrained(self.ckpt_resnet, self.ckpt_resnet_manager)
+        self.load()
 
     def forward_percent(self):
         print("forward percent")
@@ -396,11 +396,16 @@ class Training():
         self.v_acc = np.load(v_acc_path).tolist() if os.path.isfile(v_acc_path) else []
 
     def load(self):
+        self.ckpt_resnet.restore(self.ckpt_resnet_manager.latest_checkpoint)
+        if self.ckpt_resnet_manager.latest_checkpoint:
+            print("Restored Resnet from {}".format(self.ckpt_resnet_manager.latest_checkpoint))
+        else:
+            print("Initializing Resnet from scratch.")
         self.ckpt_rkn.restore(self.ckpt_rkn_manager.latest_checkpoint)
         if self.ckpt_rkn_manager.latest_checkpoint:
-            print("Restored from {}".format(self.ckpt_rkn_manager.latest_checkpoint))
+            print("Restored RKN from {}".format(self.ckpt_rkn_manager.latest_checkpoint))
         else:
-            print("Initializing from scratch.")
+            print("Initializing RKN from scratch.")
         self.ckpt.restore(self.ckpt_manager.latest_checkpoint).expect_partial()
         if self.ckpt_manager.latest_checkpoint:
             print("Restored from {}".format(self.ckpt_manager.latest_checkpoint))
