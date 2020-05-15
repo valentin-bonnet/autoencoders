@@ -132,7 +132,7 @@ class KAST(tf.keras.Model):
         mask[:, 0] = 1
         mask = tf.cast(mask, tf.bool)
 
-        mask = tf.reshape(mask, [bs, seq_size, 1, 1, 1])
+        mask = tf.reshape(mask, [bs, seq_size, 1])
 
         with tf.name_scope('Rkn'):
             rkn_k = self.rkn((k, mask))
