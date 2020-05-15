@@ -120,11 +120,7 @@ class KAST(tf.keras.Model):
         h = inputs[1].shape[2]
         w = inputs[1].shape[3]
         cv = inputs[1].shape[4]
-        output_v = []
-        ground_truth = []
         i_raw, v = tf.nest.flatten(inputs)
-        # print("i.shape: ", i.shape)
-        # print("v.shape: ", v.shape)
 
         #with tf.name_scope('Transformation'):
         #    i_drop = self.transformation(i_raw, **kwargs)
@@ -132,15 +128,15 @@ class KAST(tf.keras.Model):
             k = tf.reshape(self.resnet(tf.reshape(i_raw, [-1, H, W, C])),
                            [bs, seq_size, h, w, 256])  # (bs, T, h, w, 256)
 
-        mask = np.random.binomial(1, 0.3, [bs, seq_size])
+        mask = np.random.binomial(1, 0.9, [bs, seq_size])
         mask[:, 0] = 1
 
         mask = tf.cast(tf.reshape(mask, [bs, seq_size, 1, 1, 1]), tf.float32)
 
-        k = k*mask
+        k_mask = k*mask
 
         with tf.name_scope('Rkn'):
-            rkn_k = self.rkn(k)
+            rkn_k = self.rkn(k_mask)
 
         return rkn_k, k
 
