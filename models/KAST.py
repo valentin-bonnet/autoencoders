@@ -130,13 +130,12 @@ class KAST(tf.keras.Model):
 
         mask = np.random.binomial(1, 0.6, [bs, seq_size])
         mask[:, 0] = 1
+        mask = tf.cast(mask, tf.bool)
 
-        mask = tf.cast(tf.reshape(mask, [bs, seq_size, 1, 1, 1]), tf.float32)
-
-        k_mask = k*mask
+        mask = tf.reshape(mask, [bs, seq_size, 1, 1, 1])
 
         with tf.name_scope('Rkn'):
-            rkn_k = self.rkn(k_mask)
+            rkn_k = self.rkn((k, mask))
 
         return rkn_k, k
 

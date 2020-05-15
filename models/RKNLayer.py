@@ -14,7 +14,7 @@ class RKNLayer(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         # [(bs, m)]
-        self.batch_size = input_shape[0]
+        self.batch_size = input_shape[0][0]
         init_std_trans_u = tf.ones((self.batch_size, self.M)) * 1.1
         init_std_trans_l = tf.ones((self.batch_size, self.M)) * 1.1
 
@@ -52,6 +52,16 @@ class RKNLayer(tf.keras.layers.Layer):
 
         return z_prior, std_u_prior, std_l_prior, std_s_prior
 
+    def _masked_update(self, z_prior, std_u_prior, std_l_prior, std_s_prior, a_mean, a_std, mask):
+        z_post, std_u_post, std_l_post, std_s_post = self._update(z_prior, std_u_prior, std_l_prior, std_s_prior, a_mean, a_std)
+
+        masked_z_post = tf.where(mask, z_post, z_prior)
+        masked_std_u_post = tf.where(mask, std_u_post, std_u_prior)
+        masked_std_l_prior = tf.where(mask, std_l_post, std_l_prior)
+        masked_std_s_prior = tf.where(mask, std_s_post, std_s_prior)
+
+        return masked_z_post, masked_std_u_post, masked_std_l_prior, masked_std_s_prior
+
     def _update(self, z_prior, std_u_prior, std_l_prior, std_s_prior, a_mean, a_std):
         q_u = std_u_prior / (std_u_prior + a_std)
         q_l = std_s_prior / (std_u_prior + a_std)
@@ -68,10 +78,11 @@ class RKNLayer(tf.keras.layers.Layer):
     def call(self, inputs, states):
         # (bs, M)
         #print("RKNLayer inputs shape: ", inputs.shape)
-        a_mean, a_std = tf.split(inputs, num_or_size_splits=[self.M, self.M], axis=-1)
+        encoded, mask = tf.nest.flatten(inputs)
+        a_mean, a_std = tf.split(encoded, num_or_size_splits=[self.M, self.M], axis=-1)
         z, std_u, std_l, std_s = tf.nest.flatten(states)
         z_prior, std_u_prior, std_l_prior, std_s_prior = self._pred(z, std_u, std_l, std_s)
-        z_post, std_u_post, std_l_post, std_s_post = self._update(z_prior, std_u_prior, std_l_prior, std_s_prior, a_mean, a_std)
+        z_post, std_u_post, std_l_post, std_s_post = self._masked_update(z_prior, std_u_prior, std_l_prior, std_s_prior, a_mean, a_std, mask)
         return z_post, [z_post, std_u_post, std_l_post, std_s_post]
 
     def get_initial_state(self, inputs=None, batch_size=None, dtype=None):

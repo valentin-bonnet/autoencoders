@@ -69,15 +69,16 @@ class RKNModel(tf.keras.Model):
 
     def call(self, inputs):
         # inputs : (bs, T, H, W, K)
-        bs = inputs.shape[0]
-        seq_size = inputs.shape[1]
-        h = inputs.shape[2]
-        w = inputs.shape[3]
-        k = inputs.shape[4]
-        inputs = tf.reshape(inputs, [-1, h, w, k])
+        k, mask = tf.nest.flatten(inputs)
+        bs = k.shape[0]
+        seq_size = k.shape[1]
+        h = k.shape[2]
+        w = k.shape[3]
+        k = k.shape[4]
+        inputs = tf.reshape(k, [-1, h, w, k])
         encoded = self.inference_net(inputs)
         encoded = tf.reshape(encoded, [bs, seq_size, self.N])
-        state = self.rkn_layer(encoded)
+        state = self.rkn_layer((encoded, mask))
         state = tf.reshape(state, [-1, self.N])
         output = self.generative_net(state)
         output = tf.reshape(output, [bs, seq_size, h, w, 256])
