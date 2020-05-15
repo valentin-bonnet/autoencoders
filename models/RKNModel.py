@@ -74,8 +74,8 @@ class RKNModel(tf.keras.Model):
         seq_size = k.shape[1]
         h = k.shape[2]
         w = k.shape[3]
-        k = k.shape[4]
-        inputs = tf.reshape(k, [-1, h, w, k])
+        kv = k.shape[4]
+        inputs = tf.reshape(k, [-1, h, w, kv])
         encoded = self.inference_net(inputs)
         encoded = tf.reshape(encoded, [bs, seq_size, self.N])
         state = self.rkn_layer((encoded, mask))
