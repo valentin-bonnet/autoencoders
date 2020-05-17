@@ -173,8 +173,8 @@ class KAST(tf.keras.Model):
         rkn_score = tf.reshape(rkn_score, [bs, seq_size, h*w, 1]) * mask_score
 
         with tf.name_scope("Memory"):
-        mem = self.memory((k, v, rkn_score))
-        m_k, m_v, m_u, m_rkn_score = tf.nest.flatten(mem)
+            mem = self.memory((k, v, rkn_score))
+            m_k, m_v, m_u, m_rkn_score = tf.nest.flatten(mem)
         return rkn_score[:, 0], m_rkn_score[:, 4]
 
 
