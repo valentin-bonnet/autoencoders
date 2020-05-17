@@ -45,6 +45,7 @@ class Memory(tf.keras.layers.Layer):
         max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
         print(tf.reduce_max(max_s_hw))
+        print(tf.math.top_k(max_s_hw, k=10))
         wv_bool = tf.where(max_s_hw < self.threshold, True, False)  # (bs, top)
         all_ones = tf.ones([self.batch_shape, self.hw_shape], dtype=tf.float32)
 
