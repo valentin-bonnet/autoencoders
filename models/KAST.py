@@ -167,7 +167,7 @@ class KAST(tf.keras.Model):
         with tf.name_scope('Rkn'):
             rkn_score = self.rkn((k, mask))
 
-        mask_score = tf.concat([tf.ones([bs, 1, h*w, 1]), tf.zeros(bs, seq_size-1, h*w, 1)], 1)
+        mask_score = tf.concat([tf.ones([bs, 1, h*w, 1]), tf.zeros([bs, seq_size-1, h*w, 1])], 1)
         k = tf.reshape(k, [bs, seq_size, h*w, 256])
         v = tf.reshape(v, [bs, seq_size, h*w, 3])
         rkn_score = tf.reshape(v, [bs, seq_size, h*w, 1]) * mask_score
