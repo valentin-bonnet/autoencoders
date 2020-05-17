@@ -16,9 +16,9 @@ class Memory(tf.keras.layers.Layer):
         super(Memory, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        # input : [(batch size, H, W, A), (batch size, H, W, K), (batch size, H, W, V)]
+        # input : [(batch size, HW, K), (batch size, HW, V), (batch size, HW, 1)]
         self.batch_shape = input_shape[0][0]
-        self.hw_shape = input_shape[0][1] * input_shape[0][2]
+        self.hw_shape = input_shape[0][1]
         #self.a_shape = input_shape[0][3]
 
         self.m_k = self.add_weight(shape=(self.batch_shape, self.m, self.k_shape), initializer='zeros', trainable=False, name='mk')
@@ -41,7 +41,7 @@ class Memory(tf.keras.layers.Layer):
         m_rkn_score_sorted = tf.gather(m_rkn_score, idx, batch_dims=1, axis=1)
 
 
-        s = tf.nn.softmax(tf.reshape(k, [self.batch_shape, self.hw_shape, self.k_shape]) @ tf.transpose(m_k, [0, 2, 1]), axis=-1) # (bs, HW, M)
+        s = tf.nn.softmax(k @ tf.transpose(m_k, [0, 2, 1]), axis=-1) # (bs, HW, M)
         max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
         print(tf.math.reduce_mean(max_s_hw, -1))
