@@ -10,8 +10,8 @@ class Memory(tf.keras.layers.Layer):
         #self.lstm = tf.keras.Sequential()
         #self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
         #self.lstm.add(tf.keras.layers.LSTM(self.m+self.top_a, stateful=True))
-        self.state_size = [[self.m, self.k_shape], [self.m, self.v_shape]]
-        self.output_size = [[self.m, self.k_shape], [self.m, self.v_shape]]
+        self.state_size = [[self.m, self.k_shape], [self.m, self.v_shape], [self.m], [self.m, 1]]
+        self.output_size = [[self.m, self.k_shape], [self.m, self.v_shape], [self.m], [self.m, 1]]
 
         super(Memory, self).__init__(**kwargs)
 
@@ -64,7 +64,7 @@ class Memory(tf.keras.layers.Layer):
         m_v = m_v_sorted*(1. - write_ones) + write_v
         m_rkn_score = m_rkn_score_sorted * (1. - write_ones) + rkn_score_sorted
 
-        return m_k, m_v, m_u, m_rkn_score, [m_k, m_v, m_u, m_rkn_score]
+        return [m_k, m_v, m_u, m_rkn_score], [m_k, m_v, m_u, m_rkn_score]
 
 
 
