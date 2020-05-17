@@ -44,8 +44,7 @@ class Memory(tf.keras.layers.Layer):
         s = tf.nn.softmax(k @ tf.transpose(m_k, [0, 2, 1]), axis=-1) # (bs, HW, M)
         max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
-        print("MEAN : ", tf.math.reduce_mean(tf.math.abs(max_s_hw), -1))
-        print("STD : ", tf.math.reduce_std(max_s_hw, -1))
+        print(max_s_hw)
         wv_bool = tf.where(max_s_hw < self.threshold, True, False)  # (bs, top)
         all_ones = tf.ones([self.batch_shape, self.hw_shape], dtype=tf.float32)
 
