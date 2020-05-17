@@ -57,12 +57,13 @@ class Memory(tf.keras.layers.Layer):
         write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
         write_k = tf.ragged.boolean_mask(k_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.k_shape])
         write_v = tf.ragged.boolean_mask(v_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.v_shape])
+        write_rkn_score = tf.ragged.boolean_mask(rkn_score_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.v_shape])
 
         m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones
         write_ones = tf.expand_dims(write_ones, -1)
         m_k = m_k_sorted*(1. - write_ones) + write_k
         m_v = m_v_sorted*(1. - write_ones) + write_v
-        m_rkn_score = m_rkn_score_sorted * (1. - write_ones) + rkn_score_sorted
+        m_rkn_score = m_rkn_score_sorted * (1. - write_ones) + write_rkn_score
 
         return [m_k, m_v, m_u, m_rkn_score], [m_k, m_v, m_u, m_rkn_score]
 
