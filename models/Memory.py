@@ -1,9 +1,10 @@
 import tensorflow as tf
 
 class Memory(tf.keras.layers.Layer):
-    def __init__(self, unit=100, k=256, c=3, top_a=200, **kwargs):
+    def __init__(self, unit=100, decay=0.9, threshold=0.9,  k=256, c=3,  **kwargs):
         self.m = unit
-        self.top_a = top_a
+        self.decay = decay
+        self.threshold = threshold
         self.k_shape = k
         self.v_shape = c
         #self.lstm = tf.keras.Sequential()
@@ -18,15 +19,55 @@ class Memory(tf.keras.layers.Layer):
         # input : [(batch size, H, W, A), (batch size, H, W, K), (batch size, H, W, V)]
         self.batch_shape = input_shape[0][0]
         self.hw_shape = input_shape[0][1] * input_shape[0][2]
-        self.a_shape = input_shape[0][3]
+        #self.a_shape = input_shape[0][3]
 
         self.m_k = self.add_weight(shape=(self.batch_shape, self.m, self.k_shape), initializer='zeros', trainable=False, name='mk')
         self.m_v = self.add_weight(shape=(self.batch_shape, self.m, self.v_shape), initializer='zeros', trainable=False, name='mv')
+        self.m_u = self.add_weight(shape=(self.batch_shape, self.m), initializer='ones', trainable=False, name='mu')
+        self.m_rkn_score = self.add_weight(shape=(self.batch_shape, self.m, 1), initializer='ones', trainable=False, name='m_rkn')
 
-        self.wf = self.add_weight(shape=(self.m, self.m+self.a_shape), initializer='random_normal', trainable=True, name='wf')
-        self.bf = self.add_weight(shape=(self.m, ), initializer='zeros', trainable=True, name='bf')
+        #self.wf = self.add_weight(shape=(self.m, self.m+self.a_shape), initializer='random_normal', trainable=True, name='wf')
+        #self.bf = self.add_weight(shape=(self.m, ), initializer='zeros', trainable=True, name='bf')
 
-        self.wi = self.add_weight(shape=(self.m, self.hw_shape), initializer='random_normal', trainable=True, name='wi')
+        #self.wi = self.add_weight(shape=(self.m, self.hw_shape), initializer='random_normal', trainable=True, name='wi')
+
+    def call(self, inputs, states):
+        m_k, m_v, m_u, m_rkn_score, first_write = tf.nest.flatten(states) # [(bs, m, K), (bs, m, V)]
+        k, v, rkn_score = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
+        idx = tf.argsort(m_u, axis=-1, direction='ASCENDING', name=None)
+        m_u_sorted = tf.gather(m_u, idx, batch_dims=1, axis=1)
+        m_k_sorted = tf.gather(m_k, idx, batch_dims=1, axis=1)
+        m_v_sorted = tf.gather(m_v, idx, batch_dims=1, axis=1)
+        m_rkn_score_sorted = tf.gather(m_rkn_score, idx, batch_dims=1, axis=1)
+
+
+        s = tf.nn.softmax(tf.reshape(k, [self.batch_shape, self.hw_shape, self.k_shape]) @ tf.transpose(m_k, [0, 2, 1]), axis=-1) # (bs, HW, M)
+        max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
+        max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
+        print(tf.math.reduce_mean(max_s_hw, -1))
+        print(tf.math.reduce_std(max_s_hw, -1))
+        wv_bool = tf.where(max_s_hw < self.threshold, True, False)  # (bs, top)
+        all_ones = tf.ones([self.batch_shape, self.hw_shape], dtype=tf.float32)
+
+        idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
+        k_sorted = tf.gather(k, idx, batch_dims=1, axis=1)
+        v_sorted = tf.gather(v, idx, batch_dims=1, axis=1)
+        rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
+
+        write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
+        write_k = tf.ragged.boolean_mask(k_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.k_shape])
+        write_v = tf.ragged.boolean_mask(v_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.v_shape])
+
+        m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones
+        write_ones = tf.expand_dims(write_ones, -1)
+        m_k = m_k_sorted*(1. - write_ones) + write_k
+        m_v = m_v_sorted*(1. - write_ones) + write_v
+        m_rkn_score = m_rkn_score_sorted * (1. - write_ones) + rkn_score_sorted
+
+        return m_k, m_v, m_u, m_rkn_score, [m_k, m_v, m_u, m_rkn_score]
+
+
+
 
     """
     def call(self, inputs, states):        
@@ -52,7 +93,7 @@ class Memory(tf.keras.layers.Layer):
 
         return [m_k, m_v], [m_k, m_v]  # inputs, states"""
 
-    def call(self, inputs):
+    """def call(self, inputs):
         attention, k, v = tf.nest.flatten(inputs) # [(bs, H, W, A), (bs, H, W, K), (bs, H, W, V)]
         attention = tf.reshape(attention, [self.batch_shape, self.a_shape, self.hw_shape]) # (bs, A, HW)
         k = tf.reshape(k, [self.batch_shape, self.hw_shape, self.k_shape]) # (bs, HW, K)
@@ -71,14 +112,16 @@ class Memory(tf.keras.layers.Layer):
         self.m_k = tf.reshape(self.m_k, [-1, self.m, self.k_shape])
         self.m_v = tf.reshape(self.m_v, [-1, self.m, self.v_shape])
 
-        return [self.m_k, self.m_v], #inputs, states
+        return [self.m_k, self.m_v], #inputs, states"""
 
 
     def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
         #self.lstm.reset_states()
         self.m_k = tf.zeros_like(self.m_k)
         self.m_v = tf.zeros_like(self.m_v)
-        return [self.m_k, self.m_v]
+        self.m_u = tf.ones_like(self.m_u)
+        self.m_rkn_score = tf.ones_like(self.m_rkn_score)
+        return [self.m_k, self.m_v, self.m_u, self.m_rkn_score]
 
     def get_config(self):
         return {'units': self.m}
