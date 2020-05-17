@@ -403,20 +403,21 @@ class Training():
 
     def load(self):
         ## RESNET
-        self.ckpt_resnet.restore(self.ckpt_resnet_manager.latest_checkpoint)
+        self.ckpt_resnet.restore(self.ckpt_resnet_manager.latest_checkpoint).expect_partial()
         if self.ckpt_resnet_manager.latest_checkpoint:
             print("Restored Resnet from {}".format(self.ckpt_resnet_manager.latest_checkpoint))
         else:
             print("Initializing Resnet from scratch.")
 
         ## RKN ENCODER
-        self.ckpt_rkn_encoder.restore(self.ckpt_rkn_encoder_manager.latest_checkpoint)
+        self.ckpt_rkn_encoder.restore(self.ckpt_rkn_encoder_manager.latest_checkpoint).expect_partial()
         if self.ckpt_rkn_encoder_manager.latest_checkpoint:
             print("Restored RKN encoder from {}".format(self.ckpt_rkn_encoder_manager.latest_checkpoint))
         else:
             print("Initializing RKN encoder from scratch.")
 
         ## RKN ATTENTION
+        self.ckpt_rkn_score.restore(self.ckpt_rkn_score_manager.latest_checkpoint)
         if self.ckpt_rkn_score_manager.latest_checkpoint:
             print("Restored RKN score from {}".format(self.ckpt_rkn_score_manager.latest_checkpoint))
         else:
