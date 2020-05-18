@@ -47,7 +47,10 @@ class KAST(tf.keras.Model):
 
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
-                m_kv = self.memory((score[:, i], k[:, i], previous_v))
+                print(k[:, i].shape)
+                print(previous_v.shape)
+                print(score[:, i].shape)
+                m_kv = self.memory((k[:, i], previous_v, score[:, i]))
                 m_k, m_v = tf.nest.flatten(m_kv)
 
             km_k = tf.concat([tf.reshape(k[:, i], [-1, h*w, ck]), m_k], 1)  # (bs, h*w + m, ck)
