@@ -150,10 +150,10 @@ class Training():
                     v_acc_mean.reset_states()
 
                 if i != 0 and i % (epoch_percent_train*self.save_steps) == 0:
-                    """
+
                     for val_x in self.val_ds.take(1):
                         if self.is_seq:
-                            image_saver.KAST_View_Resnet(self.model, val_x, False,
+                            image_saver.KAST_View(self.model, val_x, False,
                                                                              self.name + '_epoch_{:03d}_step_{:03d}_test'.format(
                                                                                  epoch, i // epoch_percent_train),
                                                                              self.img_path)
@@ -165,7 +165,7 @@ class Training():
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_test'.format(epoch, i//epoch_percent_train), self.img_path)
                     for train_x in self.train_ds.take(1):
                         if self.is_seq:
-                            image_saver.KAST_View_Resnet(self.model, train_x, True,
+                            image_saver.KAST_View(self.model, train_x, True,
                                                                              self.name + '_epoch_{:03d}_step_{:03d}_train'.format(
                                                                                  epoch, i // epoch_percent_train),
                                                                              self.img_path)
@@ -174,7 +174,7 @@ class Training():
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
                     for test in self.test_ds.take(1):
                         image_saver.KAST_test(self.model, test, self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
-                    """
+
                     print('i :', i)
                     print('epoch percent train: ', epoch_percent_train)
                     print('save step: ', self.save_steps)
@@ -371,15 +371,21 @@ class Training():
 
         save_path = self.ckpt_manager.save()
         save_path_rkn_score = self.ckpt_rkn_score_manager.save()
+        save_path_rkn_encoder = self.ckpt_rkn_encoder_manager.save()
+        save_path_resnet = self.ckpt_resnet_manager.save()
         np.save(t_loss_path, np.asarray(self.t_loss))
         np.save(t_acc_path, np.asarray(self.t_acc))
         np.save(v_loss_path, np.asarray(self.v_loss))
         np.save(v_acc_path, np.asarray(self.v_acc))
         if self.step_is_epoch:
             print("Saved checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path))
+            print("Saved Resnet checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path_resnet))
+            print("Saved RKN encoder checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path_rkn_encoder))
             print("Saved RKN score checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path_rkn_score))
         else:
             print("Saved checkpoint for step {}: {}".format(int(self.ckpt.step), save_path))
+            print("Saved Resnet checkpoint for step {}: {}".format(int(self.ckpt.step), save_path_resnet))
+            print("Saved RKN encoder checkpoint for step {}: {}".format(int(self.ckpt.step), save_path_rkn_encoder))
             print("Saved RKN score checkpoint for step {}: {}".format(int(self.ckpt.step), save_path_rkn_score))
 
 
@@ -416,12 +422,13 @@ class Training():
         else:
             print("Initializing RKN encoder from scratch.")
 
-        ## RKN ATTENTION
-        self.ckpt_rkn_score.restore(self.ckpt_rkn_score_manager.latest_checkpoint)
+        ## RKN SCORE
+        self.ckpt_rkn_score.restore(self.ckpt_rkn_score_manager.latest_checkpoint).expect_partial()
         if self.ckpt_rkn_score_manager.latest_checkpoint:
             print("Restored RKN score from {}".format(self.ckpt_rkn_score_manager.latest_checkpoint))
         else:
             print("Initializing RKN score from scratch.")
+
 
         ## TRAINING
         self.ckpt.restore(self.ckpt_manager.latest_checkpoint).expect_partial()

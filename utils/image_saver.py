@@ -80,8 +80,8 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
 
 
 def KAST_test(kast, davis, file_name_head='image', path='./'):
-    #output_v, v_j, _ = kast.call(davis, training=False)
-    output_v, v_j= kast.call_ResNet(davis, training=False)
+    output_v, v_j, _ = kast.call(davis, training=False)
+    #output_v, v_j= kast.call_ResNet(davis, training=False)
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
 
@@ -144,16 +144,12 @@ def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', pa
     plt.close(fig)
 
 def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'):
-    output, ground_truth, dict_view = kast.reconstruct(input_data, training)
-    image_drop_out = dict_view['input_dropout']
-    attention = dict_view['attention']
+    output, ground_truth, image_drop_out = kast.reconstruct(input_data, training)
     ground_truth = ground_truth[0].numpy()
-    ground_truth_attention = ground_truth[:-1]
     ground_truth = ground_truth[1:]
     seq_size = ground_truth.shape[0]
     output = output[0].numpy()
     image_drop_out = image_drop_out[0].numpy()[1:]
-    attention = attention[0].numpy()[:-1]
 
 
     # Input / output / drop_out to LAB
@@ -193,35 +189,7 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
     file_path = os.path.join(path, file_name_head)
     im[0].save(file_path + '.gif', save_all=True, append_images=im[1:], duration=150)
 
-    # Input with input / attention
 
-    attention_size = attention.shape[3]
-    attention_rgb = tf.tile(tf.expand_dims(attention, -1), [1, 1, 1, 1, 3])
-
-    fig = plt.figure(figsize=(seq_size, attention_size+1))
-    for i in range(seq_size):
-        plt.subplot(attention_size + 1, seq_size, i + 1)
-        plt.imshow(ground_truth[i])
-        plt.axis('off')
-        for j in range(attention_size):
-            plt.subplot(attention_size + 1, seq_size, (seq_size) * (j+1) + i + 1)
-            plt.imshow(attention_rgb[i, :, :, j, :])
-            plt.axis('off')
-
-    file_path = os.path.join(path, file_name_head)
-    plt.savefig(file_path + '_attention.png')
-    plt.close(fig)
-
-    # Gif with input / attention
-    attention_unstack = tf.unstack(attention, axis=-1)
-    attention_concat = tf.tile(tf.expand_dims(tf.concat(attention_unstack, axis=2), -1), [1, 1, 1, 3])
-    images_attention = tf.concat([ground_truth_attention, attention_concat], axis=2).numpy()
-    im = []
-    for image_attention in images_attention:
-        im.append(Image.fromarray(np.uint8(image_attention * [255.0, 255.0, 255.0])))
-
-    file_path = os.path.join(path, file_name_head)
-    im[0].save(file_path + '_attention.gif', save_all=True, append_images=im[1:], duration=150)
 
 
 def generate_and_save_images_compare_seq_lab(model, test_inputs, file_name_head='image', path='./', seq_size=8):

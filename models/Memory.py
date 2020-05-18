@@ -10,8 +10,8 @@ class Memory(tf.keras.layers.Layer):
         #self.lstm = tf.keras.Sequential()
         #self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
         #self.lstm.add(tf.keras.layers.LSTM(self.m+self.top_a, stateful=True))
-        self.state_size = [[self.m, self.k_shape], [self.m, self.v_shape], [self.m], [self.m, 1]]
-        self.output_size = [[self.m, self.k_shape], [self.m, self.v_shape], [self.m], [self.m, 1]]
+        self.state_size = [[self.m, self.k_shape], [self.m, self.v_shape], [self.m]]
+        self.output_size = [[self.m, self.k_shape], [self.m, self.v_shape], [self.m]]
 
         super(Memory, self).__init__(**kwargs)
 
@@ -32,13 +32,12 @@ class Memory(tf.keras.layers.Layer):
         #self.wi = self.add_weight(shape=(self.m, self.hw_shape), initializer='random_normal', trainable=True, name='wi')
 
     def call(self, inputs, states):
-        m_k, m_v, m_u, m_rkn_score = tf.nest.flatten(states) # [(bs, m, K), (bs, m, V)]
+        m_k, m_v, m_u = tf.nest.flatten(states) # [(bs, m, K), (bs, m, V)]
         k, v, rkn_score = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
         idx = tf.argsort(m_u, axis=-1, direction='ASCENDING', name=None)
         m_u_sorted = tf.gather(m_u, idx, batch_dims=1, axis=1)
         m_k_sorted = tf.gather(m_k, idx, batch_dims=1, axis=1)
         m_v_sorted = tf.gather(m_v, idx, batch_dims=1, axis=1)
-        m_rkn_score_sorted = tf.gather(m_rkn_score, idx, batch_dims=1, axis=1)
 
 
         s = tf.nn.softmax(k @ tf.transpose(m_k, [0, 2, 1]), axis=-1) # (bs, HW, M)
@@ -55,15 +54,13 @@ class Memory(tf.keras.layers.Layer):
         write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
         write_k = tf.ragged.boolean_mask(k_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.k_shape])
         write_v = tf.ragged.boolean_mask(v_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.v_shape])
-        write_rkn_score = tf.ragged.boolean_mask(rkn_score_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, 1])
 
-        m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones
+        m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones + tf.squeeze(rkn_score_sorted)
         write_ones = tf.expand_dims(write_ones, -1)
         m_k = m_k_sorted*(1. - write_ones) + write_k
         m_v = m_v_sorted*(1. - write_ones) + write_v
-        m_rkn_score = m_rkn_score_sorted * (1. - write_ones) + write_rkn_score
 
-        return [m_k, m_v, m_u, m_rkn_score], [m_k, m_v, m_u, m_rkn_score]
+        return [m_k, m_v, m_u], [m_k, m_v, m_u]
 
 
 
@@ -119,8 +116,7 @@ class Memory(tf.keras.layers.Layer):
         self.m_k = tf.zeros_like(self.m_k)
         self.m_v = tf.zeros_like(self.m_v)
         self.m_u = tf.ones_like(self.m_u)
-        self.m_rkn_score = tf.ones_like(self.m_rkn_score)
-        return [self.m_k, self.m_v, self.m_u, self.m_rkn_score]
+        return [self.m_k, self.m_v, self.m_u]
 
     def get_config(self):
         return {'units': self.m}

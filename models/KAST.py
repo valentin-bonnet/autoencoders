@@ -13,7 +13,7 @@ class KAST(tf.keras.Model):
         self.resnet = ResNet()
         self.rkn = RKNModel()
         memory_cell = Memory()
-        self.memory = tf.keras.layers.RNN(memory_cell, return_sequences=True)
+        self.memory = tf.keras.layers.RNN(memory_cell, stateful=True)
         self.coef_memory = coef_memory
         self.description = 'KAST'
 
@@ -41,23 +41,29 @@ class KAST(tf.keras.Model):
         ck = k.shape[4]
 
         with tf.name_scope('Rkn'):
-            attention = self.rkn(k)
+            score = self.rkn(k)
 
         previous_v = v[:, 0]
 
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
-                m_kv = self.memory((attention[:, i], k[:, i], previous_v))
+                m_kv = self.memory((score[:, i], k[:, i], previous_v))
                 m_k, m_v = tf.nest.flatten(m_kv)
-            with tf.name_scope('Similarity_K'):
-                similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck])) # (bs, h*w, h*w)
-            with tf.name_scope('Similarity_M'):
-                similarity_m = self._get_affinity_matrix(m_k, tf.reshape(k[:, i+1], [-1, h * w, ck]))  # (bs, h*w, m)
+
+            km_k = tf.concat([tf.reshape(k[:, i], [-1, h*w, ck]), m_k], 1)  # (bs, h*w + m, ck)
+            vm_v = tf.concat([tf.reshape(previous_v, [-1, h*w, cv]), m_v], 1)  # (bs, h*w + m, cv)
+            with tf.name_scope('Similarity_matrix'):
+                similarity = self._get_affinity_matrix(km_k, tf.reshape(k[:, i+1], [-1, h*w, ck]))  # (bs, h*w, h*w+m)
+            #with tf.name_scope('Similarity_K'):
+            #    similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck])) # (bs, h*w, h*w)
+            #with tf.name_scope('Similarity_M'):
+            #    similarity_m = self._get_affinity_matrix(m_k, tf.reshape(k[:, i+1], [-1, h * w, ck]))  # (bs, h*w, m)
 
 
-            reconstruction_k = similarity_k @ tf.reshape(previous_v, [-1, h * w, cv])  # (bs, h*w, v)
-            reconstruction_m = similarity_m @ m_v
-            output_v_i = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
+            #reconstruction_k = similarity_k @ tf.reshape(previous_v, [-1, h * w, cv])  # (bs, h*w, v)
+            #reconstruction_m = similarity_m @ m_v
+            output_v_i = similarity @ vm_v
+            #output_v_i = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
             previous_v = tf.where(tf.reshape(seq_mask[:, i], [bs, 1, 1, 1]), v[:, i], tf.reshape(output_v_i, [-1, h, w, cv]))
             output_v_i = tf.reshape(output_v_i, [-1, 1, h, w, cv])
             output_v.append(output_v_i)
@@ -70,14 +76,10 @@ class KAST(tf.keras.Model):
         #print("ground_truth len: ", len(ground_truth))
         #print("ground_truth[0].shape: ", ground_truth[0].shape)
 
-        dict_view = {
-            'input_dropout': i_drop,
-            'attention': attention,
-        }
 
         self.memory.get_initial_state()
 
-        return tf.concat(output_v, 1), tf.concat(ground_truth, 1), dict_view
+        return tf.concat(output_v, 1), tf.concat(ground_truth, 1), i_drop
 
     def call_ResNet(self, inputs, **kwargs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
@@ -181,11 +183,11 @@ class KAST(tf.keras.Model):
 
 
     def _get_affinity_matrix(self, ref, tar):
-        # (bs, h*w or m, k), (bs, h*w, k)
+        # (bs, h*w + m, k), (bs, h*w, k)
         ref_transpose = tf.transpose(ref, [0, 2, 1])
         inner_product = tar @ ref_transpose
         similarity = tf.nn.softmax(inner_product, -1)
-        return similarity
+        return similarity  # (bs, h*w, h*w+m)
 
     def set_coef_memory(self, coef_memory):
         if coef_memory < 0:
@@ -214,14 +216,14 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        #output_v, v_j, _ = self.call((inputs, v), training=True)
+        output_v, v_j, _ = self.call((inputs, v), training=True)
         #output_v, v_j = self.call_ResNet((inputs, v), training=True)
         #rkn_k, k = self.call_RKN((inputs, v), training=True)
-        rkn_score, m_rkn_score = self.call_Score((inputs, v), training=True)
-        #abs = tf.math.abs(output_v - v_j)
-        #loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
+        #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=True)
+        abs = tf.math.abs(output_v - v_j)
+        loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
         #loss = -tf.reduce_mean(self.log_normal_pdf(rkn_k, k, tf.math.log(0.001)))
-        loss = tf.reduce_mean(tf.square(rkn_score - m_rkn_score))
+        #loss = tf.reduce_mean(tf.square(rkn_score - m_rkn_score))
         return loss
 
     def compute_accuracy(self, inputs):
@@ -234,19 +236,19 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        #output_v, v_j, _ = self.call((inputs, v), training=False)
+        output_v, v_j, _ = self.call((inputs, v), training=False)
         #output_v, v_j = self.call_ResNet((inputs, v), training=False)
         #rkn_k, k = self.call_RKN((inputs, v), training=False)
-        rkn_score, m_rkn_score = self.call_Score((inputs, v), training=False)
-        return tf.reduce_mean(tf.square(rkn_score - m_rkn_score))
+        #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=False)
+        return tf.reduce_mean(tf.square(output_v - v_j))
 
     def compute_apply_gradients(self, x, optimizer):
         with tf.GradientTape() as tape:
             loss = self.compute_loss(x)
         #gradients = tape.gradient(loss, self.trainable_variables)
-        gradients = tape.gradient(loss, self.rkn.score_net.trainable_variables)
+        gradients = tape.gradient(loss, self.trainable_variables)
         #optimizer.apply_gradients(zip(gradients, self.trainable_variables))
-        optimizer.apply_gradients(zip(gradients, self.rkn.score_net.trainable_variables))
+        optimizer.apply_gradients(zip(gradients, self.trainable_variables))
         return loss
 
     def reconstruct_ResNet(self, inputs, training=True):
@@ -272,10 +274,8 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j, dict_view = self.call((inputs, v), training=training)
-        drop_out = dict_view['input_dropout']
+        output_v, v_j, drop_out = self.call((inputs, v), training=training)
         drop_out = tf.reshape(drop_out, [-1, H, W, cv])
         drop_out = tf.image.resize(drop_out, [h, w])
         drop_out = tf.reshape(drop_out, [-1, seq_size, h, w, cv])
-        dict_view['input_dropout'] = drop_out
-        return output_v, v, dict_view
+        return output_v, v, drop_out
