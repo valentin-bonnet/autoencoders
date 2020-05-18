@@ -40,6 +40,9 @@ class Memory(tf.keras.layers.Layer):
         m_k = states[0] # [(bs, m, K), (bs, m, V)]
         m_v = states[1] # [(bs, m, K), (bs, m, V)]
         m_u = states[2] # [(bs, m, K), (bs, m, V)]
+        print(m_k)
+        print(m_v)
+        print(m_u)
         print(m_k.shape)
         print(m_v.shape)
         print(m_u.shape)
