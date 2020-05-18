@@ -31,6 +31,7 @@ class Memory(tf.keras.layers.Layer):
         #self.wi = self.add_weight(shape=(self.m, self.hw_shape), initializer='random_normal', trainable=True, name='wi')
 
     def call(self, inputs, states):
+        print(len(states))
         m_k, m_v, m_u = tf.nest.flatten(states) # [(bs, m, K), (bs, m, V)]
         print(m_k.shape)
         print(m_v.shape)
