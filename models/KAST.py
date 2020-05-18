@@ -44,7 +44,7 @@ class KAST(tf.keras.Model):
             score = self.rkn((k, tf.reshape(seq_mask, [bs, seq_size, 1])))
 
         previous_v = v[:, 0]
-        self.memory.get_initial_state()
+
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
                 m_kv = self.memory((tf.reshape(k[:, i], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv]), tf.reshape(score[:, i], [bs, h*w, 1])))
@@ -77,7 +77,7 @@ class KAST(tf.keras.Model):
         #print("ground_truth[0].shape: ", ground_truth[0].shape)
 
 
-
+        self.memory.get_initial_state()
 
         return tf.concat(output_v, 1), tf.concat(ground_truth, 1), i_drop
 
