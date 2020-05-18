@@ -11,7 +11,7 @@ class Memory(tf.keras.layers.Layer):
         #self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
         #self.lstm.add(tf.keras.layers.LSTM(self.m+self.top_a, stateful=True))
         self.state_size = [[self.m, self.k_shape], [self.m, self.v_shape], [self.m]]
-        self.output_size = [[self.m, self.k_shape], [self.m, self.v_shape], [self.m]]
+        self.output_size = [[self.m, self.k_shape], [self.m, self.v_shape]]
 
         super(Memory, self).__init__(**kwargs)
 
@@ -24,7 +24,6 @@ class Memory(tf.keras.layers.Layer):
         self.m_k = self.add_weight(shape=(self.batch_shape, self.m, self.k_shape), initializer='zeros', trainable=False, name='mk')
         self.m_v = self.add_weight(shape=(self.batch_shape, self.m, self.v_shape), initializer='zeros', trainable=False, name='mv')
         self.m_u = self.add_weight(shape=(self.batch_shape, self.m), initializer='ones', trainable=False, name='mu')
-        self.m_rkn_score = self.add_weight(shape=(self.batch_shape, self.m, 1), initializer='ones', trainable=False, name='m_rkn')
 
         #self.wf = self.add_weight(shape=(self.m, self.m+self.a_shape), initializer='random_normal', trainable=True, name='wf')
         #self.bf = self.add_weight(shape=(self.m, ), initializer='zeros', trainable=True, name='bf')
@@ -60,7 +59,7 @@ class Memory(tf.keras.layers.Layer):
         m_k = m_k_sorted*(1. - write_ones) + write_k
         m_v = m_v_sorted*(1. - write_ones) + write_v
 
-        return [m_k, m_v, m_u], [m_k, m_v, m_u]
+        return [m_k, m_v], [m_k, m_v, m_u]
 
 
 
