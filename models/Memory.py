@@ -25,6 +25,11 @@ class Memory(tf.keras.layers.Layer):
         self.m_v = self.add_weight(shape=(self.batch_shape, self.m, self.v_shape), initializer='zeros', trainable=False, name='mv')
         self.m_u = self.add_weight(shape=(self.batch_shape, self.m), initializer='ones', trainable=False, name='mu')
 
+        print(self.m_k.shape)
+        print(self.m_v.shape)
+        print(self.m_u.shape)
+
+
         #self.wf = self.add_weight(shape=(self.m, self.m+self.a_shape), initializer='random_normal', trainable=True, name='wf')
         #self.bf = self.add_weight(shape=(self.m, ), initializer='zeros', trainable=True, name='bf')
 
