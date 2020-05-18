@@ -31,10 +31,10 @@ class Memory(tf.keras.layers.Layer):
         #self.wi = self.add_weight(shape=(self.m, self.hw_shape), initializer='random_normal', trainable=True, name='wi')
 
     def call(self, inputs, states):
-        print(states[0].shape)
-        print(states[1].shape)
-        print(states[2].shape)
-        print(states[3].shape)
+        print(states[0])
+        print(states[1])
+        print(states[2])
+        print(states[3])
         m_k, m_v, m_u = tf.nest.flatten(states) # [(bs, m, K), (bs, m, V)]
         k, v, rkn_score = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
         idx = tf.argsort(m_u, axis=-1, direction='ASCENDING', name=None)
