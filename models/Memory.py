@@ -37,7 +37,9 @@ class Memory(tf.keras.layers.Layer):
 
     def call(self, inputs, states):
         print(len(states))
-        m_k, m_v, m_u = tf.nest.flatten(states) # [(bs, m, K), (bs, m, V)]
+        m_k = states[0] # [(bs, m, K), (bs, m, V)]
+        m_v = states[1] # [(bs, m, K), (bs, m, V)]
+        m_u = states[2] # [(bs, m, K), (bs, m, V)]
         print(m_k.shape)
         print(m_v.shape)
         print(m_u.shape)
