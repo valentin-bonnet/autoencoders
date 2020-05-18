@@ -46,6 +46,7 @@ class Memory(tf.keras.layers.Layer):
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
         wv_bool = tf.where(max_s_hw < self.threshold, True, False)  # (bs, top)
         all_ones = tf.ones([self.batch_shape, self.hw_shape], dtype=tf.float32)
+        print(tf.reduce_max(max_s_hw))
 
         idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
         k_sorted = tf.gather(k, idx, batch_dims=1, axis=1)
