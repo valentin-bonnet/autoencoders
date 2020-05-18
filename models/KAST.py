@@ -41,7 +41,7 @@ class KAST(tf.keras.Model):
         ck = k.shape[4]
 
         with tf.name_scope('Rkn'):
-            score = self.rkn((k, seq_mask))
+            score = self.rkn((k, tf.reshape(seq_mask, [bs, seq_size, 1])))
 
         previous_v = v[:, 0]
 
