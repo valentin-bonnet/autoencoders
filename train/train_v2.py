@@ -290,7 +290,7 @@ def lr_fn(lr, step):
         return lr
 lrs_fn = [lr_fn]
 batch_size = 4
-epochs_max = [5]
+epochs_max = [3]
 saves_epochs = [100]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'

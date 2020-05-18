@@ -177,7 +177,6 @@ class KAST(tf.keras.Model):
             m_k, m_v, m_u, m_rkn_score = tf.nest.flatten(mem)
             m_u = tf.expand_dims(m_u, -1)
 
-        print(m_rkn_score[:, 0])
         return m_rkn_score[:, 0], m_u[:, 4]
 
 
