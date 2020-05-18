@@ -68,7 +68,7 @@ class Memory(tf.keras.layers.Layer):
         m_k = m_k_sorted*(1. - write_ones) + write_k
         m_v = m_v_sorted*(1. - write_ones) + write_v
 
-        return [m_k, m_v], [m_k, m_v, m_u]
+        return (m_k, m_v), (m_k, m_v, m_u)
 
 
 
@@ -124,7 +124,7 @@ class Memory(tf.keras.layers.Layer):
         self.m_k = tf.zeros_like(self.m_k)
         self.m_v = tf.zeros_like(self.m_v)
         self.m_u = tf.ones_like(self.m_u)
-        return [self.m_k, self.m_v, self.m_u]
+        return (self.m_k, self.m_v, self.m_u)
 
     def get_config(self):
         return {'units': self.m}
