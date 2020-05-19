@@ -80,12 +80,8 @@ class KAST(tf.keras.Model):
 
 
         #self.memory.get_initial_state()
-        output_v = tf.concat(output_v, 1)
-        ground_truth = tf.concat(ground_truth, 1)
-        print(output_v.shape)
-        print(ground_truth.shape)
-        print(i_drop.shape)
-        return output_v, ground_truth, i_drop
+
+        return tf.concat(output_v, 1), tf.concat(ground_truth, 1), i_drop
 
     def call_ResNet(self, inputs, **kwargs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
