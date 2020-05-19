@@ -155,7 +155,7 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
     output, ground_truth, image_drop_out, first_sim = kast.reconstruct(input_data, training)
     first_ground_truth = ground_truth[0].numpy()[0]
     first_output = output[0].numpy()[0]
-    first_similarity = first_sim[0]
+    first_similarity = first_sim[0].numpy()
     ground_truth = ground_truth[0].numpy()
     seq_size = ground_truth.shape[0]
     output = output[0].numpy()
