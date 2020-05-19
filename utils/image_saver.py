@@ -82,7 +82,7 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
 def KAST_test(kast, davis, file_name_head='image', path='./'):
     output_v, v_j, i_drop = kast.call(davis, training=False)
     #output_v, v_j= kast.call_ResNet(davis, training=False)
-    raw = tf.image.resize(i_drop[0][0:], [64, 64]).numpy
+    raw = tf.image.resize(i_drop[0][0:], [64, 64]).numpy()
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
     seq_size = output_v.shape[0]
