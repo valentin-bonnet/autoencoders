@@ -6,7 +6,7 @@ from Memory import Memory
 from Transformation import Transformation
 
 class KAST(tf.keras.Model):
-    def __init__(self, coef_memory=0.1, dropout_seq=0.6):
+    def __init__(self, coef_memory=0.1, dropout_seq=0.9):
         super(KAST, self).__init__()
         self.dropout_seq = dropout_seq
         self.transformation = Transformation(trainable=False)

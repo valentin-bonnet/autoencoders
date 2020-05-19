@@ -107,6 +107,7 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         plt.axis('off')
         plt.subplot(3, seq_size, i+1+(seq_size*2))
         plt.imshow(raw[i])
+        plt.axis('off')
 
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '_DAVIS.png')
