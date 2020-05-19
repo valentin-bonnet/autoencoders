@@ -123,13 +123,13 @@ class Memory(tf.keras.layers.Layer):
 
         return [self.m_k, self.m_v], #inputs, states"""
 
-    """
+
     def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
         self.m_k = tf.zeros_like(self.m_k)
         self.m_v = tf.zeros_like(self.m_v)
         self.m_u = tf.ones_like(self.m_u)
         return [self.m_k, self.m_v, self.m_u]
-        """
+
 
     def get_init_state(self, bs):
         m_k = tf.zeros([bs, self.m, self.k_shape])
