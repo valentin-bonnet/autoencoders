@@ -84,6 +84,7 @@ class KAST(tf.keras.Model):
         ground_truth = tf.concat(ground_truth, 1)
         print(output_v.shape)
         print(ground_truth.shape)
+        print(i_drop.shape)
         return output_v, ground_truth, i_drop
 
     def call_ResNet(self, inputs, **kwargs):
