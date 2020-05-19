@@ -46,7 +46,7 @@ class KAST(tf.keras.Model):
         previous_v = v[:, 0]
 
         #init_state = self.memory.get_initial_state()
-        self.memory.reset_states()
+        #self.memory.reset_states(init_state)
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
                 m_kv = self.memory((tf.reshape(k[:, i], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv]), tf.reshape(score[:, i], [bs, h*w, 1])))
