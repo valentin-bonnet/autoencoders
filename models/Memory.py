@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 class Memory(tf.keras.layers.Layer):
-    def __init__(self, unit=100, decay=0.9, threshold=0.05,  k=256, c=3,  **kwargs):
+    def __init__(self, unit=100, decay=0.9, threshold=0.1,  k=256, c=3,  **kwargs):
         self.m = unit
         self.decay = decay
         self.threshold = threshold
