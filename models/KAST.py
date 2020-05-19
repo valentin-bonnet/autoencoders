@@ -12,9 +12,8 @@ class KAST(tf.keras.Model):
         self.transformation = Transformation(trainable=False)
         self.resnet = ResNet()
         self.rkn = RKNModel()
-        memory_cell = Memory()
-        self.init_state = memory_cell.get_init_state()
-        self.memory = tf.keras.layers.RNN(memory_cell, stateful=True, batch_input_shape=[4])
+        self.memory_cell = Memory()
+        self.memory = tf.keras.layers.RNN(self.memory_cell, stateful=True, batch_input_shape=[4])
         self.coef_memory = coef_memory
         self.description = 'KAST'
 
@@ -45,8 +44,8 @@ class KAST(tf.keras.Model):
             score = self.rkn((k, tf.reshape(seq_mask, [bs, seq_size, 1])))
 
         previous_v = v[:, 0]
-
-        self.memory.reset_states(self.init_state)
+        init_state = self.memory_cell.get_init_state(bs)
+        self.memory.reset_states(init_state)
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
                 m_kv = self.memory((tf.reshape(k[:, i], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv]), tf.reshape(score[:, i], [bs, h*w, 1])))

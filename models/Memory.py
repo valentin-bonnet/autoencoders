@@ -131,11 +131,11 @@ class Memory(tf.keras.layers.Layer):
         return [self.m_k, self.m_v, self.m_u]
         """
 
-    def get_init_state(self):
-        self.m_k = tf.zeros_like(self.m_k)
-        self.m_v = tf.zeros_like(self.m_v)
-        self.m_u = tf.ones_like(self.m_u)
-        return [self.m_k, self.m_v, self.m_u]
+    def get_init_state(self, bs):
+        m_k = tf.zeros([bs, self.m, self.k_shape])
+        m_v = tf.zeros([bs, self.m, self.v_shape])
+        m_u = tf.ones([bs, self.m])
+        return [m_k, m_v, m_u]
 
     def get_config(self):
         return {'units': self.m}
