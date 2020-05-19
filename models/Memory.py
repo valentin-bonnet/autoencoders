@@ -11,7 +11,7 @@ class Memory(tf.keras.layers.Layer):
         #self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
         #self.lstm.add(tf.keras.layers.LSTM(self.m+self.top_a, stateful=True))
         self.state_size = [tf.TensorShape([self.m, self.k_shape]), tf.TensorShape([self.m, self.v_shape]), tf.TensorShape([self.m])]
-        self.output_size = [tf.TensorShape([self.m, self.k_shape]), tf.TensorShape([self.m, self.v_shape]), tf.TensorShape([self.m])]
+        self.output_size = [tf.TensorShape([self.m, self.k_shape]), tf.TensorShape([self.m, self.v_shape])]
 
         super(Memory, self).__init__(**kwargs)
 
@@ -25,10 +25,6 @@ class Memory(tf.keras.layers.Layer):
         self.m_v = self.add_weight(shape=(self.batch_shape, self.m, self.v_shape), initializer='zeros', trainable=False, name='mv')
         self.m_u = self.add_weight(shape=(self.batch_shape, self.m), initializer='ones', trainable=False, name='mu')
 
-        print(self.m_k.shape)
-        print(self.m_v.shape)
-        print(self.m_u.shape)
-
 
         #self.wf = self.add_weight(shape=(self.m, self.m+self.a_shape), initializer='random_normal', trainable=True, name='wf')
         #self.bf = self.add_weight(shape=(self.m, ), initializer='zeros', trainable=True, name='bf')
@@ -41,15 +37,13 @@ class Memory(tf.keras.layers.Layer):
         print(len(states))
         print(tf.nest.is_nested(states))
         print(len(tf.nest.flatten(states)))
-        m_k, m_v, m_u, m4, m5 = tf.nest.flatten(states)
+        m_k, m_v, m_u= tf.nest.flatten(states)
         # m_k = states[0] # [(bs, m, K), (bs, m, V)]
         # m_v = states[1] # [(bs, m, K), (bs, m, V)]
         # m_u = states[2] # [(bs, m, K), (bs, m, V)]
         print(m_k)
         print(m_v)
         print(m_u)
-        print(m4)
-        print(m5)
         print(m_k.shape)
         print(m_v.shape)
         print(m_u.shape)
@@ -79,7 +73,7 @@ class Memory(tf.keras.layers.Layer):
         m_k = m_k_sorted*(1. - write_ones) + write_k
         m_v = m_v_sorted*(1. - write_ones) + write_v
 
-        return [m_k, m_v, m_u], [m_k, m_v, m_u]
+        return [m_k, m_v], [m_k, m_v, m_u]
 
 
 
