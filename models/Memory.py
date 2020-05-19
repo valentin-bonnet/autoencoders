@@ -41,13 +41,15 @@ class Memory(tf.keras.layers.Layer):
         print(len(states))
         print(tf.nest.is_nested(states))
         print(len(tf.nest.flatten(states)))
-        m_k, m_v, m_u = tf.nest.flatten(states)
+        m_k, m_v, m_u, m4, m5 = tf.nest.flatten(states)
         # m_k = states[0] # [(bs, m, K), (bs, m, V)]
         # m_v = states[1] # [(bs, m, K), (bs, m, V)]
         # m_u = states[2] # [(bs, m, K), (bs, m, V)]
         print(m_k)
         print(m_v)
         print(m_u)
+        print(m4)
+        print(m5)
         print(m_k.shape)
         print(m_v.shape)
         print(m_u.shape)
