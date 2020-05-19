@@ -200,9 +200,8 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
     plt.savefig(file_path + '.png')
     plt.close(fig)
 
-    print(first_ground_truth)
-    im_gt = Image.fromarray(first_ground_truth)
-    im_out = Image.fromarray(first_output)
+    im_gt = Image.fromarray((first_ground_truth*255.0).astype('uint8'))
+    im_out = Image.fromarray((first_output*255.0).astype('uint8'))
     im_gt.save(file_path + '_first_ground_truth.png')
     im_out.save(file_path + '_first_output.png')
     np.save(first_similarity, file_path+'first_similarity.npy')
