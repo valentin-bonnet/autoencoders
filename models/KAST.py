@@ -248,9 +248,9 @@ class KAST(tf.keras.Model):
         with tf.GradientTape() as tape:
             loss = self.compute_loss(x)
         #gradients = tape.gradient(loss, self.trainable_variables)
-        gradients = tape.gradient(loss, self.trainable_variables)
+        gradients = tape.gradient(loss, self.resnet.trainable_variables)
         #optimizer.apply_gradients(zip(gradients, self.trainable_variables))
-        optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+        optimizer.apply_gradients(zip(gradients, self.resnet.trainable_variables))
         return loss
 
     def reconstruct_ResNet(self, inputs, training=True):

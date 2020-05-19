@@ -370,9 +370,9 @@ class Training():
         print("self.ckpt_path", self.ckpt_path)
 
         save_path = self.ckpt_manager.save()
-        save_path_rkn_score = self.ckpt_rkn_score_manager.save()
-        save_path_rkn_encoder = self.ckpt_rkn_encoder_manager.save()
         save_path_resnet = self.ckpt_resnet_manager.save()
+        #save_path_rkn_score = self.ckpt_rkn_score_manager.save()
+        #save_path_rkn_encoder = self.ckpt_rkn_encoder_manager.save()
         np.save(t_loss_path, np.asarray(self.t_loss))
         np.save(t_acc_path, np.asarray(self.t_acc))
         np.save(v_loss_path, np.asarray(self.v_loss))
@@ -380,13 +380,13 @@ class Training():
         if self.step_is_epoch:
             print("Saved checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path))
             print("Saved Resnet checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path_resnet))
-            print("Saved RKN encoder checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path_rkn_encoder))
-            print("Saved RKN score checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path_rkn_score))
+            #print("Saved RKN encoder checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path_rkn_encoder))
+            #print("Saved RKN score checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path_rkn_score))
         else:
             print("Saved checkpoint for step {}: {}".format(int(self.ckpt.step), save_path))
             print("Saved Resnet checkpoint for step {}: {}".format(int(self.ckpt.step), save_path_resnet))
-            print("Saved RKN encoder checkpoint for step {}: {}".format(int(self.ckpt.step), save_path_rkn_encoder))
-            print("Saved RKN score checkpoint for step {}: {}".format(int(self.ckpt.step), save_path_rkn_score))
+            #print("Saved RKN encoder checkpoint for step {}: {}".format(int(self.ckpt.step), save_path_rkn_encoder))
+            #print("Saved RKN score checkpoint for step {}: {}".format(int(self.ckpt.step), save_path_rkn_score))
 
 
 
