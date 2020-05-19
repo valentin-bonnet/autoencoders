@@ -1,12 +1,12 @@
 import tensorflow as tf
 
 class Memory(tf.keras.layers.Layer):
-    def __init__(self, unit=100, decay=0.9, threshold=0.1,  k=256, c=3,  **kwargs):
+    def __init__(self, unit=100, decay=0.8, threshold=0.1,  k=256, c=3,  **kwargs):
         self.m = unit
         self.decay = decay
-        self.threshold = threshold
         self.k_shape = k
         self.v_shape = c
+        self.threshold = threshold*(float(unit)/100.0)
         #self.lstm = tf.keras.Sequential()
         #self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
         #self.lstm.add(tf.keras.layers.LSTM(self.m+self.top_a, stateful=True))
@@ -67,7 +67,41 @@ class Memory(tf.keras.layers.Layer):
 
         return [self.m_k, self.m_v]
 
+    def call_init(self, inputs):
+        k, v, rkn_score = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
+        # self.m_k, self.m_v, self.m_u= tf.nest.flatten(states)
+        # m_k = states[0] # [(bs, m, K), (bs, m, V)]
+        # m_v = states[1] # [(bs, m, K), (bs, m, V)]
+        # m_u = states[2] # [(bs, m, K), (bs, m, V)]
+        idx = tf.argsort(self.m_u, axis=-1, direction='ASCENDING', name=None)
+        m_u_sorted = tf.gather(self.m_u, idx, batch_dims=1, axis=1)
+        m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
+        m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
+        s = tf.nn.softmax(k @ tf.transpose(self.m_k, [0, 2, 1]), axis=-1)  # (bs, HW, M)
+        max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
+        max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
+        wv_bool = tf.where(max_s_hw < 100., True, False)  # (bs, top)
+        all_ones = tf.ones([self.batch_shape, self.hw_shape], dtype=tf.float32)
+
+        idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
+        k_sorted = tf.gather(k, idx, batch_dims=1, axis=1)
+        v_sorted = tf.gather(v, idx, batch_dims=1, axis=1)
+        rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
+
+        write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0.,
+                                                                         shape=[self.batch_shape, self.m])
+        write_k = tf.ragged.boolean_mask(k_sorted, wv_bool).to_tensor(default_value=0.,
+                                                                      shape=[self.batch_shape, self.m, self.k_shape])
+        write_v = tf.ragged.boolean_mask(v_sorted, wv_bool).to_tensor(default_value=0.,
+                                                                      shape=[self.batch_shape, self.m, self.v_shape])
+        write_rkn_score = tf.ragged.boolean_mask(rkn_score_sorted, wv_bool).to_tensor(default_value=0.,
+                                                                                      shape=[self.batch_shape, self.m])
+
+        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones + write_rkn_score
+        write_ones = tf.expand_dims(write_ones, -1)
+        self.m_k = m_k_sorted * (1. - write_ones) + write_k
+        self.m_v = m_v_sorted * (1. - write_ones) + write_v
 
 
     """
@@ -127,6 +161,7 @@ class Memory(tf.keras.layers.Layer):
         self.m_k = tf.zeros([bs, self.m, self.k_shape])
         self.m_v = tf.zeros([bs, self.m, self.v_shape])
         self.m_u = tf.ones([bs, self.m])
+        self.threshold = 100.
 
     def get_config(self):
         return {'units': self.m}
