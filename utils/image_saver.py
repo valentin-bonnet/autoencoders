@@ -204,7 +204,7 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
     im_out = Image.fromarray((first_output*255.0).astype('uint8'))
     im_gt.save(file_path + '_first_ground_truth.png')
     im_out.save(file_path + '_first_output.png')
-    np.save(first_similarity, file_path+'first_similarity.npy')
+    np.save(file_path+'first_similarity.npy', first_similarity)
 
     # Gif with input / drop_out / output
     images = tf.concat([ground_truth, image_drop_out, output], axis=2).numpy()
