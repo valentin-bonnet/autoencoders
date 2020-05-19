@@ -40,6 +40,7 @@ class Memory(tf.keras.layers.Layer):
         k, v, rkn_score = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
         print(len(states))
         print(tf.nest.is_nested(states))
+        print(len(tf.nest.flatten(states)))
         m_k, m_v, m_u = tf.nest.flatten(states)
         # m_k = states[0] # [(bs, m, K), (bs, m, V)]
         # m_v = states[1] # [(bs, m, K), (bs, m, V)]
