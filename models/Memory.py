@@ -11,7 +11,7 @@ class Memory(tf.keras.layers.Layer):
         #self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
         #self.lstm.add(tf.keras.layers.LSTM(self.m+self.top_a, stateful=True))
         self.state_size = [[self.m, self.k_shape], [self.m, self.v_shape], [self.m]]
-        self.output_size = [[self.m, self.k_shape], [self.m, self.v_shape]]
+        self.output_size = [[self.m, self.k_shape], [self.m, self.v_shape], [self.m]]
 
         super(Memory, self).__init__(**kwargs)
 
