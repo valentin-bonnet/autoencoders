@@ -125,7 +125,7 @@ class Memory(tf.keras.layers.Layer):
 
 
     def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
-        #self.lstm.reset_states()
+        print("GET INIT STATE")
         self.m_k = tf.zeros_like(self.m_k)
         self.m_v = tf.zeros_like(self.m_v)
         self.m_u = tf.ones_like(self.m_u)
