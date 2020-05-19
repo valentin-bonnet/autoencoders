@@ -12,7 +12,7 @@ class KAST(tf.keras.Model):
         self.transformation = Transformation(trainable=False)
         self.resnet = ResNet()
         self.rkn = RKNModel()
-        self.memory = Memory(unit=1)
+        self.memory = Memory(unit=1000)
         #self.memory = tf.keras.Sequential()
         #self.memory.add(tf.keras.layers.Input(input_shape=((None, None, 256)), batch_input_shape=[4]))
         #self.memory.add(tf.keras.layers.RNN(self.memory_cell, stateful=True))
