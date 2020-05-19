@@ -133,7 +133,7 @@ class Training():
                 if i % epoch_percent_train == 0 and i != 0:
                     progbar.add(1)
 
-                if i % (epoch_percent_train*5) == 0 and i != 0:
+                if i % (epoch_percent_train*50) == 0 and i != 0:
                     for val_x in self.val_ds.take(epoch_percent_val):
                         v_loss_mean(self.model.compute_loss(val_x))
                         v_acc_mean(self.model.compute_accuracy(val_x))
