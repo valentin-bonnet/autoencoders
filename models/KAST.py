@@ -13,6 +13,7 @@ class KAST(tf.keras.Model):
         self.resnet = ResNet()
         self.rkn = RKNModel()
         memory_cell = Memory()
+        self.init_state = memory_cell.get_init_state()
         self.memory = tf.keras.layers.RNN(memory_cell, stateful=True, batch_input_shape=[4])
         self.coef_memory = coef_memory
         self.description = 'KAST'
@@ -45,8 +46,7 @@ class KAST(tf.keras.Model):
 
         previous_v = v[:, 0]
 
-        init_state = self.memory.get_initial_state()
-        self.memory.reset_states(init_state)
+        self.memory.reset_states(self.init_state)
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
                 m_kv = self.memory((tf.reshape(k[:, i], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv]), tf.reshape(score[:, i], [bs, h*w, 1])))
