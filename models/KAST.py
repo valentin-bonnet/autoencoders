@@ -45,7 +45,7 @@ class KAST(tf.keras.Model):
 
         previous_v = v[:, 0]
 
-        #init_state = self.memory.get_initial_state()
+        init_state = self.memory.get_initial_state(batch_size=bs)
         #self.memory.reset_states(init_state)
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
