@@ -160,14 +160,14 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
 
 
     # Input / output / drop_out to LAB
-
+    all_white = np.ones([1, 64, 64, 3]) * [1.0, 0., 0.]
+    output = np.concatenate([all_white, output], axis=0)
     for i in range(seq_size):
         ground_truth[i] = cv2.cvtColor(np.float32((ground_truth[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
         output[i] = cv2.cvtColor(np.float32((output[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
         image_drop_out[i] = cv2.cvtColor(np.float32((image_drop_out[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
 
-    all_white = np.ones([1, 64, 64, 3])
-    output = np.concatenate([all_white, output], axis=0)
+
 
     # Input with input / drop_out / output
     if not os.path.isdir(path):
