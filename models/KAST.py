@@ -47,7 +47,7 @@ class KAST(tf.keras.Model):
 
         previous_v = v[:, 0]
         self.memory.get_init_state(bs)
-        self.memory.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv]), tf.reshape(score[:, 0], [bs, h * w])))
+        self.memory.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv]), tf.reshape(score[:, 0], [bs, h * w])), bs)
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
                 m_kv = self.memory.call((tf.reshape(k[:, i], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv]), tf.reshape(score[:, i], [bs, h*w])))
@@ -224,7 +224,7 @@ class KAST(tf.keras.Model):
         #rkn_k, k = self.call_RKN((inputs, v), training=True)
         #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=True)
         abs = tf.math.abs(output_v - v_j)
-        loss = tf.reduce_mean(tf.where(abs < 1, 0.5*abs*abs, abs-0.5))
+        loss = tf.reduce_mean(tf.where(abs < 1., 0.5*abs*abs, abs-0.5))
         #loss = -tf.reduce_mean(self.log_normal_pdf(rkn_k, k, tf.math.log(0.001)))
         #loss = tf.reduce_mean(tf.square(rkn_score - m_rkn_score))
         return loss
