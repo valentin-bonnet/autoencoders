@@ -156,10 +156,12 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
     first_ground_truth = ground_truth[0].numpy()[0]
     first_output = output[0].numpy()[0]
     first_similarity = first_sim[0]
-    ground_truth = ground_truth[0].numpy()[1:]
+    ground_truth = ground_truth[0].numpy()
     seq_size = ground_truth.shape[0]
     output = output[0].numpy()
-    image_drop_out = image_drop_out[0].numpy()[1:]
+    image_drop_out = image_drop_out[0].numpy()
+    all_white = np.ones([1, 64, 64, 3])
+    output = np.concatenate([all_white, output], axis=0)
 
 
     # Input / output / drop_out to LAB
@@ -198,6 +200,7 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
     plt.savefig(file_path + '.png')
     plt.close(fig)
 
+    print(first_ground_truth)
     im_gt = Image.fromarray(first_ground_truth)
     im_out = Image.fromarray(first_output)
     im_gt.save(file_path + '_first_ground_truth.png')
