@@ -54,7 +54,6 @@ class Memory(tf.keras.layers.Layer):
         v_sorted = tf.gather(v, idx, batch_dims=1, axis=1)
         rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
 
-        print(rkn_score_sorted.shape)
 
         write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
         write_k = tf.ragged.boolean_mask(k_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.k_shape])
