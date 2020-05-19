@@ -167,8 +167,6 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
                                    cv2.COLOR_Lab2RGB)
     first_output = cv2.cvtColor(np.float32((first_output + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]),
                                    cv2.COLOR_Lab2RGB)
-    first_similarity = cv2.cvtColor(np.float32((first_similarity + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]),
-                                   cv2.COLOR_Lab2RGB)
 
 
 
