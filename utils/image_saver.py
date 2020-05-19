@@ -97,7 +97,7 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         os.makedirs(path)
 
     #IMAGES
-    fig = plt.figure(figsize=(2, 1))
+    fig = plt.figure(figsize=(seq_size, 3))
     for i in range(seq_size):
         plt.subplot(3, seq_size, 1+i)
         plt.imshow(output_v[i])
