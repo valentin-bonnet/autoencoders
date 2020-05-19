@@ -17,13 +17,16 @@ class Memory(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         # input : [(batch size, HW, K), (batch size, HW, V), (batch size, HW, 1)]
+        print("Hey1")
         self.batch_shape = input_shape[0][0]
         self.hw_shape = input_shape[0][1]
         #self.a_shape = input_shape[0][3]
-
+        print("Hey2")
         self.m_k = self.add_weight(shape=(self.batch_shape, self.m, self.k_shape), initializer='zeros', trainable=False, name='mk')
         self.m_v = self.add_weight(shape=(self.batch_shape, self.m, self.v_shape), initializer='zeros', trainable=False, name='mv')
+        print("Hey3")
         self.m_u = self.add_weight(shape=(self.batch_shape, self.m), initializer='ones', trainable=False, name='mu')
+        print("Hey4")
 
 
         #self.wf = self.add_weight(shape=(self.m, self.m+self.a_shape), initializer='random_normal', trainable=True, name='wf')
