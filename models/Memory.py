@@ -17,16 +17,12 @@ class Memory(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         # input : [(batch size, HW, K), (batch size, HW, V), (batch size, HW, 1)]
-        print("Hey1")
         self.batch_shape = input_shape[0][0]
         self.hw_shape = input_shape[0][1]
         #self.a_shape = input_shape[0][3]
-        print("Hey2")
         self.m_k = self.add_weight(shape=(self.batch_shape, self.m, self.k_shape), initializer='zeros', trainable=False, name='mk')
         self.m_v = self.add_weight(shape=(self.batch_shape, self.m, self.v_shape), initializer='zeros', trainable=False, name='mv')
-        print("Hey3")
         self.m_u = self.add_weight(shape=(self.batch_shape, self.m), initializer='ones', trainable=False, name='mu')
-        print("Hey4")
 
 
         #self.wf = self.add_weight(shape=(self.m, self.m+self.a_shape), initializer='random_normal', trainable=True, name='wf')
@@ -40,23 +36,23 @@ class Memory(tf.keras.layers.Layer):
         print(len(states))
         print(tf.nest.is_nested(states))
         print(len(tf.nest.flatten(states)))
-        m_k, m_v, m_u= tf.nest.flatten(states)
+        #self.m_k, self.m_v, self.m_u= tf.nest.flatten(states)
         # m_k = states[0] # [(bs, m, K), (bs, m, V)]
         # m_v = states[1] # [(bs, m, K), (bs, m, V)]
         # m_u = states[2] # [(bs, m, K), (bs, m, V)]
-        print(m_k)
-        print(m_v)
-        print(m_u)
-        print(m_k.shape)
-        print(m_v.shape)
-        print(m_u.shape)
-        idx = tf.argsort(m_u, axis=-1, direction='ASCENDING', name=None)
-        m_u_sorted = tf.gather(m_u, idx, batch_dims=1, axis=1)
-        m_k_sorted = tf.gather(m_k, idx, batch_dims=1, axis=1)
-        m_v_sorted = tf.gather(m_v, idx, batch_dims=1, axis=1)
+        print(self.m_k)
+        print(self.m_v)
+        print(self.m_u)
+        print(self.m_k.shape)
+        print(self.m_v.shape)
+        print(self.m_u.shape)
+        idx = tf.argsort(self.m_u, axis=-1, direction='ASCENDING', name=None)
+        m_u_sorted = tf.gather(self.m_u, idx, batch_dims=1, axis=1)
+        m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
+        m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
 
-        s = tf.nn.softmax(k @ tf.transpose(m_k, [0, 2, 1]), axis=-1) # (bs, HW, M)
+        s = tf.nn.softmax(k @ tf.transpose(self.m_k, [0, 2, 1]), axis=-1) # (bs, HW, M)
         max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
         wv_bool = tf.where(max_s_hw < self.threshold, True, False)  # (bs, top)
@@ -71,12 +67,12 @@ class Memory(tf.keras.layers.Layer):
         write_k = tf.ragged.boolean_mask(k_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.k_shape])
         write_v = tf.ragged.boolean_mask(v_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.v_shape])
 
-        m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones + tf.squeeze(rkn_score_sorted)
+        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones + tf.squeeze(rkn_score_sorted)
         write_ones = tf.expand_dims(write_ones, -1)
-        m_k = m_k_sorted*(1. - write_ones) + write_k
-        m_v = m_v_sorted*(1. - write_ones) + write_v
+        self.m_k = m_k_sorted*(1. - write_ones) + write_k
+        self.m_v = m_v_sorted*(1. - write_ones) + write_v
 
-        return [m_k, m_v], [m_k, m_v, m_u]
+        return [self.m_k, self.m_v]
 
 
 
@@ -126,19 +122,18 @@ class Memory(tf.keras.layers.Layer):
 
         return [self.m_k, self.m_v], #inputs, states"""
 
-
+    """
     def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
         self.m_k = tf.zeros_like(self.m_k)
         self.m_v = tf.zeros_like(self.m_v)
         self.m_u = tf.ones_like(self.m_u)
         return [self.m_k, self.m_v, self.m_u]
-
+    """
 
     def get_init_state(self, bs):
-        m_k = tf.zeros([bs, self.m, self.k_shape])
-        m_v = tf.zeros([bs, self.m, self.v_shape])
-        m_u = tf.ones([bs, self.m])
-        return [m_k, m_v, m_u]
+        self.m_k = tf.zeros([bs, self.m, self.k_shape])
+        self.m_v = tf.zeros([bs, self.m, self.v_shape])
+        self.m_u = tf.ones([bs, self.m])
 
     def get_config(self):
         return {'units': self.m}
