@@ -56,7 +56,12 @@ class KAST(tf.keras.Model):
             km_k = tf.concat([tf.reshape(k[:, i], [-1, h*w, ck]), m_k], 1)  # (bs, h*w + m, ck)
             vm_v = tf.concat([tf.reshape(previous_v, [-1, h*w, cv]), m_v], 1)  # (bs, h*w + m, cv)
             with tf.name_scope('Similarity_matrix'):
-                similarity = self._get_affinity_matrix(km_k, tf.reshape(k[:, i+1], [-1, h*w, ck]))  # (bs, h*w, h*w+m)
+                if i == 0:
+                    first_similarity = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck]))
+                    output_v_i = first_similarity @ tf.reshape(previous_v, [-1, h*w, cv])
+                else:
+                    similarity = self._get_affinity_matrix(km_k, tf.reshape(k[:, i+1], [-1, h*w, ck]))  # (bs, h*w, h*w+m)
+                    output_v_i = similarity @ vm_v
             #with tf.name_scope('Similarity_K'):
             #    similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck])) # (bs, h*w, h*w)
             #with tf.name_scope('Similarity_M'):
@@ -65,7 +70,7 @@ class KAST(tf.keras.Model):
 
             #reconstruction_k = similarity_k @ tf.reshape(previous_v, [-1, h * w, cv])  # (bs, h*w, v)
             #reconstruction_m = similarity_m @ m_v
-            output_v_i = similarity @ vm_v
+
             #output_v_i = (1 - self.coef_memory) * reconstruction_k + self.coef_memory * reconstruction_m
             previous_v = tf.where(tf.reshape(seq_mask[:, i+1], [bs, 1, 1, 1]), v[:, i], tf.reshape(output_v_i, [-1, h, w, cv]))
             output_v_i = tf.reshape(output_v_i, [-1, 1, h, w, cv])
@@ -82,7 +87,7 @@ class KAST(tf.keras.Model):
 
         #self.memory.get_initial_state()
 
-        return tf.concat(output_v, 1), tf.concat(ground_truth, 1), i_drop
+        return tf.concat(output_v, 1), tf.concat(ground_truth, 1), i_drop, first_similarity
 
     def call_ResNet(self, inputs, **kwargs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
@@ -219,7 +224,7 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j, _ = self.call((inputs, v), training=True)
+        output_v, v_j, _, _ = self.call((inputs, v), training=True)
         #output_v, v_j = self.call_ResNet((inputs, v), training=True)
         #rkn_k, k = self.call_RKN((inputs, v), training=True)
         #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=True)
@@ -239,7 +244,7 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j, _ = self.call((inputs, v), training=False)
+        output_v, v_j, _, _ = self.call((inputs, v), training=False)
         #output_v, v_j = self.call_ResNet((inputs, v), training=False)
         #rkn_k, k = self.call_RKN((inputs, v), training=False)
         #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=False)
@@ -277,8 +282,8 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j, drop_out = self.call((inputs, v), training=training)
+        output_v, v_j, drop_out, first_sim = self.call((inputs, v), training=training)
         drop_out = tf.reshape(drop_out, [-1, H, W, cv])
         drop_out = tf.image.resize(drop_out, [h, w])
         drop_out = tf.reshape(drop_out, [-1, seq_size, h, w, cv])
-        return output_v, v, drop_out
+        return output_v, v, drop_out, first_sim

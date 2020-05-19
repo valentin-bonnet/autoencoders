@@ -152,15 +152,27 @@ def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', pa
     plt.close(fig)
 
 def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'):
-    output, ground_truth, image_drop_out = kast.reconstruct(input_data, training)
-    ground_truth = ground_truth[0].numpy()
-    ground_truth = ground_truth[1:]
+    output, ground_truth, image_drop_out, first_sim = kast.reconstruct(input_data, training)
+    first_ground_truth = ground_truth[0].numpy()[0]
+    first_output = output[0].numpy()[0]
+    first_similarity = first_sim[0]
+    ground_truth = ground_truth[0].numpy()[1:]
     seq_size = ground_truth.shape[0]
     output = output[0].numpy()
     image_drop_out = image_drop_out[0].numpy()[1:]
 
 
     # Input / output / drop_out to LAB
+    first_ground_truth = cv2.cvtColor(np.float32((first_ground_truth + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]),
+                                   cv2.COLOR_Lab2RGB)
+    first_output = cv2.cvtColor(np.float32((first_output + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]),
+                                   cv2.COLOR_Lab2RGB)
+    first_similarity = cv2.cvtColor(np.float32((first_similarity + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]),
+                                   cv2.COLOR_Lab2RGB)
+
+
+
+
 
     for i in range(seq_size):
         ground_truth[i] = cv2.cvtColor(np.float32((ground_truth[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
@@ -188,6 +200,12 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
     plt.savefig(file_path + '.png')
     plt.close(fig)
 
+    im_gt = Image.fromarray(first_ground_truth)
+    im_out = Image.fromarray(first_output)
+    im_gt.save(file_path + '_first_ground_truth.png')
+    im_out.save(file_path + '_first_output.png')
+    np.save(first_similarity, file_path+'first_similarity.npy')
+
     # Gif with input / drop_out / output
     images = tf.concat([ground_truth, image_drop_out, output], axis=2).numpy()
     im = []
@@ -196,6 +214,7 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
 
     file_path = os.path.join(path, file_name_head)
     im[0].save(file_path + '.gif', save_all=True, append_images=im[1:], duration=150)
+
 
 
 
