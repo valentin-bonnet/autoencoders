@@ -79,7 +79,7 @@ class KAST(tf.keras.Model):
         #print("ground_truth[0].shape: ", ground_truth[0].shape)
 
 
-        self.memory.get_initial_state()
+        #self.memory.get_initial_state()
 
         return tf.concat(output_v, 1), tf.concat(ground_truth, 1), i_drop
 
