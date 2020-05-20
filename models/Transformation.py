@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 class Transformation(tf.keras.layers.Layer):
-    def __init__(self, p=0.5, p_seq=0.9, **kwargs):
+    def __init__(self, p=0.5, p_seq=0.5, **kwargs):
         self.p = p
         self.p_seq = p_seq
         super(Transformation, self).__init__(**kwargs)
