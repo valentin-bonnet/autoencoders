@@ -284,13 +284,13 @@ models = [model1]
 lrs = [3e-4]
 optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
 def lr_fn(lr, step):
-    if step == 4 or step == 6 or step == 8:
+    if step == 4 or step == 6 or step == 8 or step == 10 or step == 12 or step == 14 or step == 16 or step == 18:
         return lr*0.5
     else:
         return lr
 lrs_fn = [lr_fn]
 batch_size = 4
-epochs_max = [10]
+epochs_max = [20]
 saves_epochs = [100]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
