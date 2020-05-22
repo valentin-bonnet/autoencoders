@@ -45,9 +45,9 @@ class Memory(tf.keras.layers.Layer):
         m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
         m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
-        k_patch = tf.image.extract_patches(images=k, sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
-        v_patch = tf.image.extract_patches(images=v, sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
-        print(k_patch)
+        k_patch = tf.image.extract_patches(images=tf.reshape(k, [-1, 64, 64, 256]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
+        v_patch = tf.image.extract_patches(images=tf.reshape(v, [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
+        print("k_patch.shape: ", k_patch.shape)
         s = tf.nn.softmax(k_patch[:, :, (self.kernel*self.kernel)//2 + 1, :] @ tf.transpose(self.m_k, [0, 2, 1]), axis=-1) # (bs, HW, M)
         max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, nb_patch)
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
