@@ -203,7 +203,7 @@ class KAST(tf.keras.Model):
         print("k_next.shape: ", k_next.shape)
         inner_product = k_next @ ref_transpose
         print("inner_product.shape: ", inner_product.shape)
-        max_patch = tf.argmax(inner_product)
+        max_patch = tf.argmax(inner_product, -1)
         print("max_patch.shape: ", max_patch.shape)
         m_k_one_patch = tf.gather(max_patch)
         print("m_k_one_patch.shape: ", m_k_one_patch.shape)
