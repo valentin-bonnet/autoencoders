@@ -88,7 +88,7 @@ class Memory(tf.keras.layers.Layer):
         # m_u = states[2] # [(bs, m, K), (bs, m, V)]
         idx = tf.argsort(self.m_u, axis=-1, direction='ASCENDING', name=None)
         m_u_sorted = tf.gather(self.m_u, idx, batch_dims=1, axis=1)
-        m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
+        m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)  # (bs, m, kernel**2)
         m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
         s = tf.nn.softmax(k @ tf.transpose(self.m_k, [0, 2, 1]), axis=-1)  # (bs, HW, M)
@@ -171,8 +171,8 @@ class Memory(tf.keras.layers.Layer):
     """
 
     def get_init_state(self, bs):
-        self.m_k = tf.zeros([self.batch_shape, self.m, self.kernel**2, self.k_shape])
-        self.m_v = tf.zeros([self.batch_shape, self.m, self.kernel**2, self.v_shape])
+        self.m_k = tf.zeros([bs, self.m, self.kernel**2, self.k_shape])
+        self.m_v = tf.zeros([bs, self.m, self.kernel**2, self.v_shape])
         self.m_u = tf.ones([bs, self.m])
         self.threshold = 100.
 
