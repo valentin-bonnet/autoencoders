@@ -202,9 +202,13 @@ class KAST(tf.keras.Model):
         print("ref_transpose.shape: ", ref_transpose.shape)
         print("k_next.shape: ", k_next.shape)
         inner_product = k_next @ ref_transpose
+        print("inner_product.shape: ", inner_product.shape)
         max_patch = tf.argmax(inner_product)
-        m_k_one_patch = m_k[:, max_patch, :, :]
+        print("max_patch.shape: ", max_patch.shape)
+        m_k_one_patch = tf.gather(max_patch)
+        print("m_k_one_patch.shape: ", m_k_one_patch.shape)
         m_v_one_patch = m_v[:, max_patch, :, :]
+        print("k_next.shape: ", k_next.shape)
         inner_product = k_next @ m_k_one_patch
         similarity = tf.nn.softmax(inner_product, -1)
         print("similarity.shape: ", similarity.shape)
