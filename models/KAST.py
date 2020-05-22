@@ -205,15 +205,15 @@ class KAST(tf.keras.Model):
         print("inner_product.shape: ", inner_product.shape)
         max_patch = tf.argmax(inner_product, -1)
         print("max_patch.shape: ", max_patch.shape)
-        m_k_one_patch = tf.gather(m_k, max_patch, batch_dims=1, axis=1)
+        m_k_one_patch = tf.gather(m_k, max_patch, batch_dims=1, axis=1)  # (bs, hw, kernel**2, 256)
         print("m_k_one_patch.shape: ", m_k_one_patch.shape)
-        m_v_one_patch = m_v[:, max_patch, :, :]
-        print("k_next.shape: ", k_next.shape)
-        inner_product = k_next @ m_k_one_patch
+        m_v_one_patch = tf.gather(m_v, max_patch, batch_dims=1, axis=1)
+        print("m_v_one_patch.shape: ", m_v_one_patch.shape)
+        inner_product = tf.expand_dims(k_next, -2) @ tf.transpose(m_k_one_patch, [0, 1, 3, 2]) # (bs, hw, 1, 256) @ (bs, hw, 256, kernel**2)  = (bs, hw, 1, kernel**2)
         similarity = tf.nn.softmax(inner_product, -1)
         print("similarity.shape: ", similarity.shape)
-        print("m_v_one_patch.shape: ", m_v_one_patch.shape)
-        output_i = similarity @ m_v_one_patch
+        output_i = similarity @ m_v_one_patch  # (bs, hw, 1, kernel**2) @ (bs, hw, kernel**2, 3)
+        print("output_i.shape: ", output_i.shape)
         return output_i  # (bs, h*w, h*w+m)
 
     def set_coef_memory(self, coef_memory):
