@@ -171,8 +171,8 @@ class Memory(tf.keras.layers.Layer):
     """
 
     def get_init_state(self, bs):
-        self.m_k = tf.zeros([bs, self.m, self.k_shape])
-        self.m_v = tf.zeros([bs, self.m, self.v_shape])
+        self.m_k = tf.zeros([self.batch_shape, self.m, self.kernel**2, self.k_shape])
+        self.m_v = tf.zeros([self.batch_shape, self.m, self.kernel**2, self.v_shape])
         self.m_u = tf.ones([bs, self.m])
         self.threshold = 100.
 
