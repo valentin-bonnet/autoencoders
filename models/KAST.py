@@ -200,6 +200,7 @@ class KAST(tf.keras.Model):
         print("m_k_patch_center.shape: ", m_k_patch_center.shape)
         ref_transpose = tf.transpose(m_k_patch_center, [0, 2, 1])  # (bs, k, m)
         print("ref_transpose.shape: ", ref_transpose.shape)
+        print("k_next.shape: ", k_next.shape)
         inner_product = k_next @ ref_transpose
         max_patch = tf.argmax(inner_product)
         m_k_one_patch = m_k[:, max_patch, :, :]
