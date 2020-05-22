@@ -205,7 +205,7 @@ class KAST(tf.keras.Model):
         print("inner_product.shape: ", inner_product.shape)
         max_patch = tf.argmax(inner_product, -1)
         print("max_patch.shape: ", max_patch.shape)
-        m_k_one_patch = tf.gather(inner_product, max_patch)
+        m_k_one_patch = tf.gather(inner_product, max_patch, batch_dims=0, axis=1)
         print("m_k_one_patch.shape: ", m_k_one_patch.shape)
         m_v_one_patch = m_v[:, max_patch, :, :]
         print("k_next.shape: ", k_next.shape)
