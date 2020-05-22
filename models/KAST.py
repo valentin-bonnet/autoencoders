@@ -195,25 +195,15 @@ class KAST(tf.keras.Model):
 
     def _get_output_patch(self, m_k, k_next, m_v, v_next):
         # (bs, m, kernel**2, k), (bs, h*w, k)
-        print("m_k.shape: ", m_k.shape)
         m_k_patch_center = m_k[:, :, (self.kernel**2)//2+1, :]
-        print("m_k_patch_center.shape: ", m_k_patch_center.shape)
         ref_transpose = tf.transpose(m_k_patch_center, [0, 2, 1])  # (bs, k, m)
-        print("ref_transpose.shape: ", ref_transpose.shape)
-        print("k_next.shape: ", k_next.shape)
         inner_product = k_next @ ref_transpose
-        print("inner_product.shape: ", inner_product.shape)
         max_patch = tf.argmax(inner_product, -1)
-        print("max_patch.shape: ", max_patch.shape)
         m_k_one_patch = tf.gather(m_k, max_patch, batch_dims=1, axis=1)  # (bs, hw, kernel**2, 256)
-        print("m_k_one_patch.shape: ", m_k_one_patch.shape)
         m_v_one_patch = tf.gather(m_v, max_patch, batch_dims=1, axis=1)
-        print("m_v_one_patch.shape: ", m_v_one_patch.shape)
         inner_product = tf.expand_dims(k_next, -2) @ tf.transpose(m_k_one_patch, [0, 1, 3, 2]) # (bs, hw, 1, 256) @ (bs, hw, 256, kernel**2)  = (bs, hw, 1, kernel**2)
         similarity = tf.nn.softmax(inner_product, -1)
-        print("similarity.shape: ", similarity.shape)
         output_i = similarity @ m_v_one_patch  # (bs, hw, 1, kernel**2) @ (bs, hw, kernel**2, 3)
-        print("output_i.shape: ", output_i.shape)
         return output_i  # (bs, h*w, h*w+m)
 
     def set_coef_memory(self, coef_memory):
