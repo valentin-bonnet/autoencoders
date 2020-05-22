@@ -109,8 +109,8 @@ class Memory(tf.keras.layers.Layer):
         idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
         k_sorted = tf.gather(k_patch, idx, batch_dims=1, axis=1)
         v_sorted = tf.gather(v_patch, idx, batch_dims=1, axis=1)
-        k_sorted = tf.reshape(k_sorted, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
-        v_sorted = tf.reshape(k_sorted, [self.batch_shape, self.m, self.kernel**2, self.v_shape])
+        k_sorted = tf.reshape(k_sorted, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel**2, self.k_shape])
+        v_sorted = tf.reshape(k_sorted, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel**2, self.v_shape])
         rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
         print("k_sorted.shape: ", k_sorted.shape)
 
