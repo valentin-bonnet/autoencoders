@@ -73,7 +73,7 @@ class Memory(tf.keras.layers.Layer):
         print("write_k.shape: ", write_k.shape)
 
         self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones + write_rkn_score # (bs, m)
-        write_ones = tf.expand_dims(tf.expand_dims(write_ones, -1), -1)
+        write_ones = tf.expand_dims(write_ones, -1)
         self.m_k = m_k_sorted*(1. - write_ones) + write_k # (bs, m, kernel**2, k)
         self.m_v = m_v_sorted*(1. - write_ones) + write_v # (bs, m, kernel**2, v)
         print("m_k.shape: ", self.m_k.shape)
