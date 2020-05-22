@@ -8,11 +8,12 @@ from Transformation import Transformation
 class KAST(tf.keras.Model):
     def __init__(self, coef_memory=0.1, dropout_seq=0.9):
         super(KAST, self).__init__()
+        self.kernel = 7
         self.dropout_seq = dropout_seq
         self.transformation = Transformation(trainable=False)
         self.resnet = ResNet()
         self.rkn = RKNModel()
-        self.memory = Memory(unit=1000)
+        self.memory = Memory(unit=1000, kernel=self.kernel)
         #self.memory = tf.keras.Sequential()
         #self.memory.add(tf.keras.layers.Input(input_shape=((None, None, 256)), batch_input_shape=[4]))
         #self.memory.add(tf.keras.layers.RNN(self.memory_cell, stateful=True))
@@ -51,12 +52,12 @@ class KAST(tf.keras.Model):
         for i in range(seq_size-1):
             with tf.name_scope('Memory'):
                 m_kv = self.memory.call((tf.reshape(k[:, i], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv]), tf.reshape(score[:, i], [bs, h*w])))
-                m_k, m_v = tf.nest.flatten(m_kv)
+                m_k, m_v = tf.nest.flatten(m_kv) # (bs, m, kernel**2, k), (bs, m, kernel**2, v)
 
-            km_k = tf.concat([tf.reshape(k[:, i], [-1, h*w, ck]), m_k], 1)  # (bs, h*w + m, ck)
-            vm_v = tf.concat([tf.reshape(previous_v, [-1, h*w, cv]), m_v], 1)  # (bs, h*w + m, cv)
+            #km_k = tf.concat([tf.reshape(k[:, i], [-1, h*w, ck]), m_k], 1)  # (bs, h*w + m, ck)
+            #vm_v = tf.concat([tf.reshape(previous_v, [-1, h*w, cv]), m_v], 1)  # (bs, h*w + m, cv)
             with tf.name_scope('Similarity_matrix'):
-                similarity = self._get_affinity_matrix(km_k, tf.reshape(k[:, i+1], [-1, h*w, ck]))  # (bs, h*w, h*w+m)
+                similarity = self._get_affinity_matrix(m_k, tf.reshape(k[:, i+1], [-1, h*w, ck]))  # (bs, nb_patch, h*w+m)
             #with tf.name_scope('Similarity_K'):
             #    similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck])) # (bs, h*w, h*w)
             #with tf.name_scope('Similarity_M'):
@@ -191,6 +192,21 @@ class KAST(tf.keras.Model):
         inner_product = tar @ ref_transpose
         similarity = tf.nn.softmax(inner_product, -1)
         return similarity  # (bs, h*w, h*w+m)
+
+    def _get_output_patch(self, m_k, k_next, m_v, v_next):
+        # (bs, m, kernel**2, k), (bs, h*w, k)
+        m_k_patch_center = m_k[:, :, (self.kernel**2)//2+1, :]
+        ref_transpose = tf.transpose(m_k_patch_center, [0, 2, 1])  # (bs, k, m)
+        inner_product = k_next @ ref_transpose
+        max_patch = tf.argmax(inner_product)
+        m_k_one_patch = m_k[:, max_patch, :, :]
+        m_v_one_patch = m_v[:, max_patch, :, :]
+        inner_product = k_next @ m_k_one_patch
+        similarity = tf.nn.softmax(inner_product, -1)
+        print("similarity.shape: ", similarity.shape)
+        print("m_v_one_patch.shape: ", m_v_one_patch.shape)
+        output_i = similarity @ m_v_one_patch
+        return output_i  # (bs, h*w, h*w+m)
 
     def set_coef_memory(self, coef_memory):
         if coef_memory < 0:
