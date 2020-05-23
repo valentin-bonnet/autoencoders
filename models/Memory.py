@@ -141,6 +141,7 @@ class Memory(tf.keras.layers.Layer):
 
         #idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
         _, idx = tf.math.top_k(max_s_hw, k=self.m)
+        rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
         idx_x = tf.expand_dims(idx // 64, -1)
         idx_y = tf.expand_dims(idx % 64, -1)
         idx_y1 = idx_y - self.kernel//2
@@ -158,7 +159,7 @@ class Memory(tf.keras.layers.Layer):
         k_crop = tf.reshape(k_crop, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
         v_crop = tf.reshape(v_crop, [self.batch_shape, self.m, self.kernel**2, self.v_shape])
 
-        rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
+
 
 
         write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
