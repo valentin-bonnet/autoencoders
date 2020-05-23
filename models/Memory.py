@@ -101,8 +101,8 @@ class Memory(tf.keras.layers.Layer):
         #idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
         _, idx = tf.math.top_k(tf.reshape(max_s_hw, [self.batch_shape, 64, 64]), k=self.m)
         idx = tf.reshape(idx, [self.batch_shape*self.m, 64, 64])
-        k_glimpse = tf.image.extract_glimpse(tf.reshape(k, [self.batch_shape, 64, 64, 256]), (self.kernel, self.kernel), offsets=idx)
-        v_glimpse = tf.image.extract_glimpse(tf.reshape(v, [self.batch_shape, 64, 64, 3]), (self.kernel, self.kernel), offsets=idx)
+        k_glimpse = tf.image.extract_glimpse(tf.reshape(k, [self.batch_shape, 64, 64, 256]), (self.kernel, self.kernel), offsets=idx, centered=False, normalized=False, noise='zero')
+        v_glimpse = tf.image.extract_glimpse(tf.reshape(v, [self.batch_shape, 64, 64, 3]), (self.kernel, self.kernel), offsets=idx, centered=False, normalized=False, noise='zero')
         k_glimpse = tf.reshape(k_glimpse, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
         v_glimpse = tf.reshape(v_glimpse, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
 
