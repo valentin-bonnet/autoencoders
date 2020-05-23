@@ -143,20 +143,26 @@ class Memory(tf.keras.layers.Layer):
         _, idx = tf.math.top_k(max_s_hw, k=self.m)
         idx_x = tf.expand_dims(idx // 64, -1)
         idx_y = tf.expand_dims(idx % 64, -1)
-        idx = tf.concat([idx_x, idx_y], -1)
-        idx = tf.reshape(idx, [self.batch_shape*self.m, 2])
+        idx_y1 = idx_y - self.kernel//2
+        idx_x1 = idx_x - self.kernel//2
+        idx_y2 = idx_y + self.kernel//2
+        idx_x2 = idx_x + self.kernel//2
+        idx = tf.concat([idx_y1, idx_x1, idx_y2, idx_x2], -1)/64.0
+        idx = tf.reshape(idx, [self.batch_shape*self.m, 4])
         idx = tf.cast(idx, tf.float32)
-        k_glimpse = tf.image.extract_glimpse(tf.reshape(k, [self.batch_shape, 64, 64, 256]), size=(self.kernel, self.kernel), offsets=idx, centered=False, normalized=False, noise='zero')
-        v_glimpse = tf.image.extract_glimpse(tf.reshape(v, [self.batch_shape, 64, 64, 3]), (self.kernel, self.kernel), offsets=idx, centered=False, normalized=False, noise='zero')
-        k_glimpse = tf.reshape(k_glimpse, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
-        v_glimpse = tf.reshape(v_glimpse, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
+        box_idx = tf.expand_dims(tf.range(self.batch_shape), -1)
+        box_idx = tf.tile(box_idx, [1, self.m])
+        k_crop = tf.image.crop_and_resize(k, idx, box_idx, [self.kernel, self.kernel], method='nearest', extrapolation_value=0, name=None)
+        v_crop = tf.image.crop_and_resize(v, idx, box_idx, [self.kernel, self.kernel], method='nearest', extrapolation_value=0, name=None)
+        k_crop = tf.reshape(k_crop, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
+        v_crop = tf.reshape(v_crop, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
 
         rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
 
 
         write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
-        write_k = tf.ragged.boolean_mask(k_glimpse, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.kernel*self.kernel, self.k_shape])
-        write_v = tf.ragged.boolean_mask(v_glimpse, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.kernel*self.kernel, self.v_shape])
+        write_k = tf.ragged.boolean_mask(k_crop, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.kernel*self.kernel, self.k_shape])
+        write_v = tf.ragged.boolean_mask(v_crop, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.kernel*self.kernel, self.v_shape])
         write_rkn_score = tf.ragged.boolean_mask(rkn_score_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
 
         self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones + write_rkn_score # (bs, m)
