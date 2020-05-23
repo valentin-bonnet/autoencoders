@@ -57,7 +57,7 @@ class KAST(tf.keras.Model):
             #km_k = tf.concat([tf.reshape(k[:, i], [-1, h*w, ck]), m_k], 1)  # (bs, h*w + m, ck)
             #vm_v = tf.concat([tf.reshape(previous_v, [-1, h*w, cv]), m_v], 1)  # (bs, h*w + m, cv)
             with tf.name_scope('Similarity_matrix'):
-                output_v_i = self._get_output_patch(m_k, tf.reshape(k[:, i+1], [-1, h*w, ck]), m_v, tf.reshape(previous_v, [-1, h*w, cv]))  # (bs, nb_patch, h*w+m)
+                output_v_i = self._get_output_patch(m_k, tf.reshape(k[:, i+1], [-1, h*w, ck]), m_v)  # (bs, nb_patch, h*w+m)
             #with tf.name_scope('Similarity_K'):
             #    similarity_k = self._get_affinity_matrix(tf.reshape(k[:, i], [-1, h*w, ck]), tf.reshape(k[:, i+1], [-1, h*w, ck])) # (bs, h*w, h*w)
             #with tf.name_scope('Similarity_M'):
