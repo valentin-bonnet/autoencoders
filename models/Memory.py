@@ -9,7 +9,7 @@ class Memory(tf.keras.layers.Layer):
         self.kernel = kernel
         self.threshold = threshold*((kernel*kernel)/100.0)
         self.hw_shape = 64*64
-        self.batch_shape = 4
+        self.batch_shape = 8
         #self.lstm = tf.keras.Sequential()
         #self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
         #self.lstm.add(tf.keras.layers.LSTM(self.m+self.top_a, stateful=True))
