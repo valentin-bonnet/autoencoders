@@ -156,7 +156,7 @@ class Memory(tf.keras.layers.Layer):
         k_crop = tf.image.crop_and_resize(tf.reshape(k, [self.batch_shape, 64, 64, 256]), idx, box_idx, [self.kernel, self.kernel], method='nearest', extrapolation_value=0, name=None)
         v_crop = tf.image.crop_and_resize(tf.reshape(v, [self.batch_shape, 64, 64, 3]), idx, box_idx, [self.kernel, self.kernel], method='nearest', extrapolation_value=0, name=None)
         k_crop = tf.reshape(k_crop, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
-        v_crop = tf.reshape(v_crop, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
+        v_crop = tf.reshape(v_crop, [self.batch_shape, self.m, self.kernel**2, self.v_shape])
 
         rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
 
