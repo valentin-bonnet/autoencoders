@@ -205,16 +205,28 @@ class KAST(tf.keras.Model):
         inner_product = k_next @ ref_transpose
         print("inner_product.shape: ", inner_product.shape)
         max_patch = tf.argmax(inner_product, -1)
-        print("max_patch.shape: ", max_patch.shape)
-        m_k_one_patch = tf.gather(m_k, max_patch, batch_dims=1, axis=1)  # (bs, hw, kernel**2, 256)
-        print("m_k_one_patch.shape: ", m_k_one_patch.shape)
-        m_v_one_patch = tf.gather(m_v, max_patch, batch_dims=1, axis=1)
-        print("m_v_one_patch.shape: ", m_v_one_patch.shape)
-        inner_product = tf.expand_dims(k_next, -2) @ tf.transpose(m_k_one_patch, [0, 1, 3, 2]) # (bs, hw, 1, 256) @ (bs, hw, 256, kernel**2)  = (bs, hw, 1, kernel**2)
-        print("inner_product.shape: ", inner_product.shape)
-        similarity = tf.nn.softmax(inner_product, -1)
-        print("similarity.shape: ", similarity.shape)
-        output_i = similarity @ m_v_one_patch  # (bs, hw, 1, kernel**2) @ (bs, hw, kernel**2, 3)
+        out_arr = []
+        k_next = tf.unstack(tf.expand_dims(k_next, -1), num=4096, axis=1)
+        max_patch = tf.unstack(tf.expand_dims(max_patch, -1), num=4096, axis=1)
+        for i in range(4096):
+            m_k_one_patch = tf.gather(m_k, max_patch[i], batch_dims=1, axis=1)
+            m_v_one_patch = tf.gather(m_v, max_patch[i], batch_dims=1, axis=1)
+            sim = tf.nn.softmax(k_next[i] @ m_k_one_patch)  # (bs, 1, 225)
+            out_v = sim @ m_v_one_patch
+            out_arr.append(out_v)
+
+        output_i = tf.stack(out_arr, axis=1)
+
+        #print("max_patch.shape: ", max_patch.shape)
+        #m_k_one_patch = tf.gather(m_k, max_patch, batch_dims=1, axis=1)  # (bs, hw, kernel**2, 256)
+        #print("m_k_one_patch.shape: ", m_k_one_patch.shape)
+        #m_v_one_patch = tf.gather(m_v, max_patch, batch_dims=1, axis=1)
+        #print("m_v_one_patch.shape: ", m_v_one_patch.shape)
+        #inner_product = tf.expand_dims(k_next, -2) @ tf.transpose(m_k_one_patch, [0, 1, 3, 2]) # (bs, hw, 1, 256) @ (bs, hw, 256, kernel**2)  = (bs, hw, 1, kernel**2)
+        #print("inner_product.shape: ", inner_product.shape)
+        #similarity = tf.nn.softmax(inner_product, -1)
+        #print("similarity.shape: ", similarity.shape)
+        #output_i = similarity @ m_v_one_patch  # (bs, hw, 1, kernel**2) @ (bs, hw, kernel**2, 3)
         print("output_i.shape: ", output_i.shape)
         return output_i  # (bs, h*w, h*w+m)
 
