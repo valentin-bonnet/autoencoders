@@ -140,7 +140,10 @@ class Memory(tf.keras.layers.Layer):
         all_ones = tf.ones_like(max_s_hw)
 
         #idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
-        _, idx = tf.math.top_k(tf.reshape(max_s_hw, [self.batch_shape, 64, 64]), k=self.m)
+        _, idx = tf.math.top_k(max_s_hw, k=self.m)
+        idx_x = tf.expand_dims(idx // 64, -1)
+        idx_y = tf.expand_dims(idx % 64, -1)
+        idx = tf.concat([idx_x, idx_y], -1)
         idx = tf.reshape(idx, [self.batch_shape*self.m, 64, 64])
         k_glimpse = tf.image.extract_glimpse(tf.reshape(k, [self.batch_shape, 64, 64, 256]), (self.kernel, self.kernel), offsets=idx)
         v_glimpse = tf.image.extract_glimpse(tf.reshape(v, [self.batch_shape, 64, 64, 3]), (self.kernel, self.kernel), offsets=idx)
