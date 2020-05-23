@@ -1,13 +1,13 @@
 import tensorflow as tf
 
 class Memory(tf.keras.layers.Layer):
-    def __init__(self, unit=100, decay=0.8, threshold=0.1,  k=256, c=3, kernel=15, **kwargs):
+    def __init__(self, unit=100, decay=0.8, threshold=0.1*1000,  k=256, c=3, kernel=15, **kwargs):
         self.m = unit
         self.decay = decay
         self.k_shape = k
         self.v_shape = c
         self.kernel = kernel
-        self.threshold = threshold*(float(unit)/100.0)*(kernel*kernel)
+        self.threshold = threshold*((kernel*kernel)/100.0)
         self.hw_shape = 64*64
         self.batch_shape = 4
         #self.lstm = tf.keras.Sequential()
@@ -45,10 +45,14 @@ class Memory(tf.keras.layers.Layer):
         m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
         m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
-        k_patch = tf.image.extract_patches(images=tf.reshape(k, [-1, 64, 64, 256]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
-        v_patch = tf.image.extract_patches(images=tf.reshape(v, [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
-        k_patch = tf.reshape(k_patch, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel*self.kernel*256])
-        v_patch = tf.reshape(v_patch, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel*self.kernel*3])
+        #k_patch = tf.image.extract_patches(images=tf.reshape(k, [-1, 64, 64, 256]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
+        #v_patch = tf.image.extract_patches(images=tf.reshape(v, [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
+        #k_patch = tf.reshape(k_patch, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel*self.kernel*256])
+        #v_patch = tf.reshape(v_patch, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel*self.kernel*3])
+        k_patch = tf.image.extract_patches(images=tf.reshape(k, [-1, 64, 64, 256]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
+        v_patch = tf.image.extract_patches(images=tf.reshape(v, [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
+        k_patch = tf.reshape(k_patch, [self.batch_shape, self.hw_shape, self.kernel*self.kernel*256])
+        v_patch = tf.reshape(v_patch, [self.batch_shape, self.hw_shape, self.kernel*self.kernel*3])
         s = tf.nn.softmax(k_patch@ tf.transpose(tf.reshape(self.m_k, [self.batch_shape, self.m, self.kernel*self.kernel*256]), [0, 2, 1])) # (bs, nb_patch, size_patch*256) @ (bs, m, size_patch*256) = (bs, nb_patch, m)
         max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, nb_patch)
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
@@ -58,8 +62,10 @@ class Memory(tf.keras.layers.Layer):
         idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
         k_sorted = tf.gather(k_patch, idx, batch_dims=1, axis=1)
         v_sorted = tf.gather(v_patch, idx, batch_dims=1, axis=1)
-        k_sorted = tf.reshape(k_sorted, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel**2, self.k_shape])
-        v_sorted = tf.reshape(v_sorted, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel**2, self.v_shape])
+        #k_sorted = tf.reshape(k_sorted, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel**2, self.k_shape])
+        #v_sorted = tf.reshape(v_sorted, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel**2, self.v_shape])
+        k_sorted = tf.reshape(k_sorted, [self.batch_shape, self.hw_shape, self.kernel**2, self.k_shape])
+        v_sorted = tf.reshape(v_sorted, [self.batch_shape, self.hw_shape, self.kernel**2, self.v_shape])
         rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
 
 
@@ -89,10 +95,18 @@ class Memory(tf.keras.layers.Layer):
         m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
         m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
-        k_patch = tf.image.extract_patches(images=tf.reshape(k, [-1, 64, 64, 256]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
-        v_patch = tf.image.extract_patches(images=tf.reshape(v, [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
-        k_patch = tf.reshape(k_patch, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel*self.kernel*256])
-        v_patch = tf.reshape(v_patch, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel*self.kernel*3])
+        # k_patch = tf.image.extract_patches(images=tf.reshape(k, [-1, 64, 64, 256]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
+        # v_patch = tf.image.extract_patches(images=tf.reshape(v, [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, self.kernel, self.kernel, 1], rates=[1, 1, 1, 1], padding="VALID")
+        # k_patch = tf.reshape(k_patch, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel*self.kernel*256])
+        # v_patch = tf.reshape(v_patch, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel*self.kernel*3])
+        k_patch = tf.image.extract_patches(images=tf.reshape(k, [-1, 64, 64, 256]),
+                                           sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1],
+                                           rates=[1, 1, 1, 1], padding="SAME")
+        v_patch = tf.image.extract_patches(images=tf.reshape(v, [-1, 64, 64, 3]),
+                                           sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1],
+                                           rates=[1, 1, 1, 1], padding="SAME")
+        k_patch = tf.reshape(k_patch, [self.batch_shape, self.hw_shape, self.kernel * self.kernel * 256])
+        v_patch = tf.reshape(v_patch, [self.batch_shape, self.hw_shape, self.kernel * self.kernel * 3])
         s = tf.nn.softmax(k_patch@ tf.transpose(tf.reshape(self.m_k, [self.batch_shape, self.m, self.kernel*self.kernel*256]), [0, 2, 1])) # (bs, nb_patch, size_patch*256) @ (bs, m, size_patch*256) = (bs, nb_patch, m)
         max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, nb_patch)
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
@@ -102,8 +116,10 @@ class Memory(tf.keras.layers.Layer):
         idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
         k_sorted = tf.gather(k_patch, idx, batch_dims=1, axis=1)
         v_sorted = tf.gather(v_patch, idx, batch_dims=1, axis=1)
-        k_sorted = tf.reshape(k_sorted, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel**2, self.k_shape])
-        v_sorted = tf.reshape(v_sorted, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel**2, self.v_shape])
+        # k_sorted = tf.reshape(k_sorted, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel**2, self.k_shape])
+        # v_sorted = tf.reshape(v_sorted, [self.batch_shape, (64//self.kernel)*(64//self.kernel), self.kernel**2, self.v_shape])
+        k_sorted = tf.reshape(k_sorted, [self.batch_shape, self.hw_shape, self.kernel ** 2, self.k_shape])
+        v_sorted = tf.reshape(v_sorted, [self.batch_shape, self.hw_shape, self.kernel ** 2, self.v_shape])
         rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
 
 
