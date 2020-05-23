@@ -83,7 +83,6 @@ class Memory(tf.keras.layers.Layer):
         return [self.m_k, self.m_v]"""
 
     def call(self, inputs, **kwargs):
-
         k, v, rkn_score = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
 
         idx = tf.argsort(self.m_u, axis=-1, direction='ASCENDING', name=None)
@@ -91,35 +90,55 @@ class Memory(tf.keras.layers.Layer):
         m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
         m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
-
-        s = tf.nn.softmax(k @ tf.transpose(tf.reshape(self.m_k, [self.batch_shape, self.m, self.kernel*self.kernel, 256])[:, :, ((self.kernel**2)//2)+1, :], [0, 2, 1])) # (bs, hw, 256) @ (bs, size_patch*256, m) = (bs, nb_patch, m)
+        s = tf.nn.softmax(k @ tf.transpose(
+            tf.reshape(self.m_k, [self.batch_shape, self.m, self.kernel * self.kernel, 256])[:, :,
+            ((self.kernel ** 2) // 2) + 1, :],
+            [0, 2, 1]))  # (bs, hw, 256) @ (bs, size_patch*256, m) = (bs, nb_patch, m)
         max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
-        wv_bool = tf.where(max_s_hw < self.threshold, True, False)  # (bs, top)
-        all_ones = tf.ones_like(max_s_hw)
 
-        #idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
-        _, idx = tf.math.top_k(tf.reshape(max_s_hw, [self.batch_shape, 64, 64]), k=self.m)
-        idx = tf.reshape(idx, [self.batch_shape*self.m, 64, 64])
-        k_glimpse = tf.image.extract_glimpse(tf.reshape(k, [self.batch_shape, 64, 64, 256]), (self.kernel, self.kernel), offsets=idx, centered=False, normalized=False, noise='zero')
-        v_glimpse = tf.image.extract_glimpse(tf.reshape(v, [self.batch_shape, 64, 64, 3]), (self.kernel, self.kernel), offsets=idx, centered=False, normalized=False, noise='zero')
-        k_glimpse = tf.reshape(k_glimpse, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
-        v_glimpse = tf.reshape(v_glimpse, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
-
+        # idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
+        top_max_s_hw, idx = tf.math.top_k(-max_s_hw, k=self.m)
+        top_max_s_hw = -top_max_s_hw
+        wv_bool = tf.where(top_max_s_hw < 100., True, False)  # (bs, top)
+        all_ones = tf.ones_like(top_max_s_hw)
         rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
+        idx_x = tf.expand_dims(idx // 64, -1)
+        idx_y = tf.expand_dims(idx % 64, -1)
+        idx_y1 = idx_y - self.kernel // 2
+        idx_x1 = idx_x - self.kernel // 2
+        idx_y2 = idx_y + self.kernel // 2
+        idx_x2 = idx_x + self.kernel // 2
+        idx = tf.concat([idx_y1, idx_x1, idx_y2, idx_x2], -1)
+        idx = tf.reshape(idx, [self.batch_shape * self.m, 4])
+        idx = tf.cast(idx, tf.float32) / 64.
+        box_idx = tf.expand_dims(tf.range(self.batch_shape), -1)
+        box_idx = tf.tile(box_idx, [1, self.m])
+        box_idx = tf.reshape(box_idx, [self.batch_shape * self.m])
+        k_crop = tf.image.crop_and_resize(tf.reshape(k, [self.batch_shape, 64, 64, 256]), idx, box_idx,
+                                          [self.kernel, self.kernel], method='nearest', extrapolation_value=0,
+                                          name=None)
+        v_crop = tf.image.crop_and_resize(tf.reshape(v, [self.batch_shape, 64, 64, 3]), idx, box_idx,
+                                          [self.kernel, self.kernel], method='nearest', extrapolation_value=0,
+                                          name=None)
+        k_crop = tf.reshape(k_crop, [self.batch_shape, self.m, self.kernel ** 2, self.k_shape])
+        v_crop = tf.reshape(v_crop, [self.batch_shape, self.m, self.kernel ** 2, self.v_shape])
 
+        write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0.,
+                                                                         shape=[self.batch_shape, self.m])
+        write_k = tf.ragged.boolean_mask(k_crop, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m,
+                                                                                             self.kernel * self.kernel,
+                                                                                             self.k_shape])
+        write_v = tf.ragged.boolean_mask(v_crop, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m,
+                                                                                             self.kernel * self.kernel,
+                                                                                             self.v_shape])
+        write_rkn_score = tf.ragged.boolean_mask(rkn_score_sorted, wv_bool).to_tensor(default_value=0.,
+                                                                                      shape=[self.batch_shape, self.m])
 
-        write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
-        write_k = tf.ragged.boolean_mask(k_glimpse, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.kernel*self.kernel, self.k_shape])
-        write_v = tf.ragged.boolean_mask(v_glimpse, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.kernel*self.kernel, self.v_shape])
-        write_rkn_score = tf.ragged.boolean_mask(rkn_score_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
-
-        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones + write_rkn_score # (bs, m)
+        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones + write_rkn_score  # (bs, m)
         write_ones = tf.expand_dims(tf.expand_dims(write_ones, -1), -1)
-        self.m_k = m_k_sorted*(1. - write_ones) + write_k # (bs, m, kernel**2, k)
-        self.m_v = m_v_sorted*(1. - write_ones) + write_v # (bs, m, kernel**2, v)
-
-
+        self.m_k = m_k_sorted * (1. - write_ones) + write_k  # (bs, m, kernel**2, k)
+        self.m_v = m_v_sorted * (1. - write_ones) + write_v  # (bs, m, kernel**2, v)
 
         return [self.m_k, self.m_v]
 
