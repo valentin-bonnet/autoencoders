@@ -152,6 +152,7 @@ class Memory(tf.keras.layers.Layer):
         idx = tf.cast(idx, tf.float32)/64.
         box_idx = tf.expand_dims(tf.range(self.batch_shape), -1)
         box_idx = tf.tile(box_idx, [1, self.m])
+        box_idx = tf.reshape(box_idx, [self.batch_shape*self.m])
         k_crop = tf.image.crop_and_resize(tf.reshape(k, [self.batch_shape, 64, 64, 256]), idx, box_idx, [self.kernel, self.kernel], method='nearest', extrapolation_value=0, name=None)
         v_crop = tf.image.crop_and_resize(tf.reshape(v, [self.batch_shape, 64, 64, 3]), idx, box_idx, [self.kernel, self.kernel], method='nearest', extrapolation_value=0, name=None)
         k_crop = tf.reshape(k_crop, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
