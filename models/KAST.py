@@ -206,7 +206,7 @@ class KAST(tf.keras.Model):
         print("inner_product.shape: ", inner_product.shape)
         max_patch = tf.argmax(inner_product, -1)
         out_arr = []
-        k_next = tf.unstack(tf.expand_dims(k_next, -1), num=4096, axis=1)
+        k_next = tf.unstack(tf.expand_dims(k_next, -2), num=4096, axis=1)
         max_patch = tf.unstack(max_patch, num=4096, axis=1)
         for i in range(4096):
             m_k_one_patch = tf.gather(m_k, max_patch[i], batch_dims=1, axis=1)
