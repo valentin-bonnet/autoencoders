@@ -136,11 +136,13 @@ class Memory(tf.keras.layers.Layer):
         s = tf.nn.softmax(k @ tf.transpose(tf.reshape(self.m_k, [self.batch_shape, self.m, self.kernel*self.kernel, 256])[:, :, ((self.kernel**2)//2)+1, :], [0, 2, 1])) # (bs, hw, 256) @ (bs, size_patch*256, m) = (bs, nb_patch, m)
         max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
-        wv_bool = tf.where(max_s_hw < 100., True, False)  # (bs, top)
-        all_ones = tf.ones_like(max_s_hw)
+
 
         #idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
-        _, idx = tf.math.top_k(max_s_hw, k=self.m)
+        top_max_s_hw, idx = tf.math.top_k(-max_s_hw, k=self.m)
+        top_max_s_hw = -top_max_s_hw
+        wv_bool = tf.where(top_max_s_hw < 100., True, False)  # (bs, top)
+        all_ones = tf.ones_like(top_max_s_hw)
         rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
         idx_x = tf.expand_dims(idx // 64, -1)
         idx_y = tf.expand_dims(idx % 64, -1)
