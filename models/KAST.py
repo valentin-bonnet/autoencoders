@@ -209,8 +209,8 @@ class KAST(tf.keras.Model):
         k_next = tf.unstack(tf.expand_dims(k_next, -1), num=4096, axis=1)
         max_patch = tf.unstack(max_patch, num=4096, axis=1)
         for i in range(4096):
-            m_k_one_patch = tf.gather(m_k, max_patch[i], batch_dims=0, axis=1)
-            m_v_one_patch = tf.gather(m_v, max_patch[i], batch_dims=0, axis=1)
+            m_k_one_patch = tf.gather(m_k, max_patch[i], batch_dims=1, axis=1)
+            m_v_one_patch = tf.gather(m_v, max_patch[i], batch_dims=1, axis=1)
             sim = tf.nn.softmax(k_next[i] @ m_k_one_patch)  # (bs, 1, 225)
             out_v = sim @ m_v_one_patch
             out_arr.append(out_v)
