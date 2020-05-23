@@ -9,7 +9,7 @@ class Memory(tf.keras.layers.Layer):
         self.kernel = kernel
         self.threshold = threshold*((kernel*kernel)/100.0)
         self.hw_shape = 64*64
-        self.batch_shape = 2
+        self.batch_shape = 4
         #self.lstm = tf.keras.Sequential()
         #self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
         #self.lstm.add(tf.keras.layers.LSTM(self.m+self.top_a, stateful=True))
@@ -144,7 +144,7 @@ class Memory(tf.keras.layers.Layer):
         idx_x = tf.expand_dims(idx // 64, -1)
         idx_y = tf.expand_dims(idx % 64, -1)
         idx = tf.concat([idx_x, idx_y], -1)
-        idx = tf.reshape(idx, [self.batch_shape*self.m, 64, 64])
+        idx = tf.reshape(idx, [self.batch_shape*self.m, 2])
         k_glimpse = tf.image.extract_glimpse(tf.reshape(k, [self.batch_shape, 64, 64, 256]), (self.kernel, self.kernel), offsets=idx)
         v_glimpse = tf.image.extract_glimpse(tf.reshape(v, [self.batch_shape, 64, 64, 3]), (self.kernel, self.kernel), offsets=idx)
         k_glimpse = tf.reshape(k_glimpse, [self.batch_shape, self.m, self.kernel**2, self.k_shape])
