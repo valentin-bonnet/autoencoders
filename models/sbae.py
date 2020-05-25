@@ -9,7 +9,7 @@ tfd = tfp.distributions
 
 
 class SBAE(tf.keras.Model):
-    def __init__(self, layers=[128, 256, 512], latent_dim=512, input_shape=32, use_bn=False, classification=False):
+    def __init__(self, layers=[128, 256, 512], latent_dim=512, input_shape=32, use_bn=False, classification=True):
         super(SBAE, self).__init__()
         self.latent_dim = latent_dim
         self.inp_shape = input_shape
@@ -19,10 +19,11 @@ class SBAE(tf.keras.Model):
         self.wgts = tf.convert_to_tensor(np.load('../utils/prior_probs.npy'))
         self.architecture = layers.copy()
         self.is_cl = classification
-        str_arch = '_'.join(str(x) for x in self.architecture)
-        str_bn = 'BN' if use_bn else ''
-        str_class = 'class' if classification else ''
-        self.description = '_'.join(filter(None, ['SBAE', str_arch, 'lat' + str(self.latent_dim), str_bn, str_class]))
+        self.description = "SBAE"
+        #str_arch = '_'.join(str(x) for x in self.architecture)
+        #str_bn = 'BN' if use_bn else ''
+        #str_class = 'class' if classification else ''
+        #self.description = '_'.join(filter(None, ['SBAE', str_arch, 'lat' + str(self.latent_dim), str_bn, str_class]))
 
         ## ENCODER L2AB
         self.L2ab = tf.keras.Sequential()
