@@ -49,9 +49,9 @@ class SBAE(tf.keras.Model):
         self.ab2L.add(tf.keras.layers.Input(shape=(input_shape, input_shape, 2)))
         for l in layers:
             if l[2] > 0:
-                self.L2ab.add(tf.keras.layers.Conv2D(filters=l[0], kernel_size=l[1], strides=l[2], padding='same'))
+                self.ab2L.add(tf.keras.layers.Conv2D(filters=l[0], kernel_size=l[1], strides=l[2], padding='same'))
             else:
-                self.L2ab.add(
+                self.ab2L.add(
                     tf.keras.layers.Conv2DTranspose(filters=l[0], kernel_size=l[1], strides=-l[2], padding='same'))
             if use_bn:
                 self.ab2L.add(tf.keras.layers.BatchNormalization())
@@ -237,8 +237,6 @@ class SBAE(tf.keras.Model):
 
             #print(tf.nn.softmax(tf.reshape(ab_logit, [128*32*32, 313]))[0])
             #print(tf.reshape(ab_hot, [128*32*32, 313])[0])
-            print(ab_hot.shape)
-            print(ab_logit.shape)
             cross_entropy_l = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(l_hot, l_logit))
             cross_entropy_ab = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(ab_hot, ab_logit))
             #print("LOSS")
