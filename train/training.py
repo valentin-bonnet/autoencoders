@@ -19,11 +19,11 @@ class Training():
     def __init__(self, dataset, batch_size, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch, is_seq=True):
         self.batch_size = batch_size
         #self.train_ds = dataset.train_ds.shuffle(buffer_size=100).batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
-        self.train_ds = dataset.train_ds.shuffle(buffer_size=1000).batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
+        self.train_ds = dataset.train_ds.batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
         self.train_size = dataset.train_size//batch_size
-        self.val_ds = dataset.val_ds.shuffle(buffer_size=1000).batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
+        self.val_ds = dataset.val_ds.batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
         self.val_size = dataset.val_size//batch_size
-        #self.test_ds = dataset.test_ds.batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
+        self.test_ds = dataset.test_ds.batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
         self.model = model
         #self.model_view = model_view
         self.optimizer = optimizer
@@ -72,19 +72,19 @@ class Training():
         self.current_epoch = tf.Variable(0)
         self.current_step = tf.Variable(0)
         if self.step_is_epoch:
-            self.ckpt = tf.train.Checkpoint(epoch=self.current_epoch, optimizer=self.optimizer, net=self.model)
+            self.ckpt = tf.train.Checkpoint(epoch=self.current_epoch, optimizer=self.optimizer)
         else:
             self.ckpt = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch)
 
-        #self.ckpt_resnet = tf.train.Checkpoint(resnet=self.model.resnet)
-        #self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_resnet, self.ckpt_resnet_path, max_to_keep=2)
-        #self.ckpt_rkn_encoder = tf.train.Checkpoint(inference=self.model.rkn.inference_net, rkn=self.model.rkn.rkn_layer)
-        #self.ckpt_rkn_encoder_manager = tf.train.CheckpointManager(self.ckpt_rkn_encoder, self.ckpt_rkn_encoder_path, max_to_keep=2)
-        #self.ckpt_rkn_score = tf.train.Checkpoint(score=self.model.rkn.score_net)
-        #self.ckpt_rkn_score_manager = tf.train.CheckpointManager(self.ckpt_rkn_score, self.ckpt_rkn_score_path, max_to_keep=2)
+        self.ckpt_resnet = tf.train.Checkpoint(resnet=self.model.resnet)
+        self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_resnet, self.ckpt_resnet_path, max_to_keep=2)
+        self.ckpt_rkn_encoder = tf.train.Checkpoint(inference=self.model.rkn.inference_net, rkn=self.model.rkn.rkn_layer)
+        self.ckpt_rkn_encoder_manager = tf.train.CheckpointManager(self.ckpt_rkn_encoder, self.ckpt_rkn_encoder_path, max_to_keep=2)
+        self.ckpt_rkn_score = tf.train.Checkpoint(score=self.model.rkn.score_net)
+        self.ckpt_rkn_score_manager = tf.train.CheckpointManager(self.ckpt_rkn_score, self.ckpt_rkn_score_path, max_to_keep=2)
         self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=2)
         #self.load_pretrained(self.ckpt_resnet, self.ckpt_resnet_manager)
-        self.load_redo()
+        self.load()
 
     def forward_percent(self):
         print("forward percent")
