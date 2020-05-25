@@ -37,7 +37,7 @@ class SBAE(tf.keras.Model):
             if use_bn:
                 self.L2ab.add(tf.keras.layers.BatchNormalization())
             self.L2ab.add(tf.keras.layers.ReLU())
-        self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=313, kernel_size=3, strides=1, padding='same'))
+        self.L2ab.add(tf.keras.layers.Conv2DTranspose(filters=313, kernel_size=1, strides=1, padding='same'))
 
 
 
@@ -56,7 +56,7 @@ class SBAE(tf.keras.Model):
             if use_bn:
                 self.ab2L.add(tf.keras.layers.BatchNormalization())
             self.ab2L.add(tf.keras.layers.ReLU())
-        self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=50, kernel_size=3, strides=1, padding='same'))
+        self.ab2L.add(tf.keras.layers.Conv2DTranspose(filters=50, kernel_size=1, strides=1, padding='same'))
 
 
         #self.ab2L.add(tf.keras.layers.Flatten())
