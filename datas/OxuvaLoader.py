@@ -89,11 +89,13 @@ def _preprocess_once(parsed_data):
     img = tf.image.random_saturation(img, 0.9, 1.1)
     img = tf.cast(img, tf.float32) / 255.0
     # img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
-    img_lab = tf_rgb2lab(img)
-    img_lab = tf.cast(img_lab, tf.float32)
-    img_normalized = img_lab + [0., 128.0, 128.0]
-    img_normalized = (img_normalized / [50.0, 127.5, 127.5]) - 1.0
-    img_normalized = tf.reshape(img_normalized, [sequence_size, 256, 256, 3])
+    #img_lab = tf_rgb2lab(img)
+    #img_lab = tf.cast(img_lab, tf.float32)
+    img_lab = tf.cast(img, tf.float32)
+    img_normalized = (img_lab / 127.5)- 1.
+    #img_normalized = img_lab + [0., 128.0, 128.0]
+    #img_normalized = (img_normalized / [50.0, 127.5, 127.5]) - 1.0
+    #img_normalized = tf.reshape(img_normalized, [sequence_size, 256, 256, 3])
     return img_normalized
 
 
