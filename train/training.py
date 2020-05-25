@@ -125,6 +125,7 @@ class Training():
             #for element in train_enum.as_numpy_iterator():
             #print("train_ds: ", self.train_ds)
             for i, train_x in enumerate(self.train_ds, starting_step):
+                print(i)
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
                 if i > (epoch_percent_train*1000):
