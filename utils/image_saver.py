@@ -268,12 +268,12 @@ def generate_and_save_images_compare_seq_lab(model, test_inputs, file_name_head=
 
         for j in range(nb_imgs):
             #plt.subplot(6, nb_imgs, nb_imgs*3*i + j + 1)
-            plt.subplot(4, nb_imgs, nb_imgs*2*i + j + 1)
+            plt.subplot(2, nb_imgs, nb_imgs*2*i + j + 1)
             plt.imshow(test_inputs_seq[j])
             plt.axis('off')
         for j in range(nb_imgs):
             #plt.subplot(6, nb_imgs, nb_imgs*(3*i+1) + j + 1)
-            plt.subplot(4, nb_imgs, nb_imgs*(2*i+1) + j + 1)
+            plt.subplot(2, nb_imgs, nb_imgs*(2*i+1) + j + 1)
             plt.imshow(x_logits_seq[j])
             plt.axis('off')
         """
