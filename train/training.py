@@ -16,7 +16,7 @@ import construct_model
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 class Training():
-    def __init__(self, dataset, batch_size, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch, is_seq=False):
+    def __init__(self, dataset, batch_size, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch, is_seq=True):
         self.redone = False
         self.batch_size = batch_size
         if self.redone:
