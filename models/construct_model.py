@@ -13,7 +13,7 @@ import RKN
 from KAST import KAST
 
 
-def get_model(model_type, layers=[32, 64], latent_dim=256, input_shape=64, use_bn=False, std=0.05):
+def get_model(model_type, layers=[32, 64], latent_dim=256, input_shape=32, use_bn=False, std=0.05):
 
     if model_type == 'AE':
         model = ae.AE(layers, latent_dim, input_shape, use_bn)
