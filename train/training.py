@@ -72,19 +72,19 @@ class Training():
         self.current_epoch = tf.Variable(0)
         self.current_step = tf.Variable(0)
         if self.step_is_epoch:
-            self.ckpt = tf.train.Checkpoint(epoch=self.current_epoch, optimizer=self.optimizer)
+            self.ckpt = tf.train.Checkpoint(epoch=self.current_epoch, optimizer=self.optimizer, net=self.model)
         else:
             self.ckpt = tf.train.Checkpoint(step=self.current_step, epoch=self.current_epoch)
 
-        self.ckpt_resnet = tf.train.Checkpoint(resnet=self.model.resnet)
-        self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_resnet, self.ckpt_resnet_path, max_to_keep=2)
-        self.ckpt_rkn_encoder = tf.train.Checkpoint(inference=self.model.rkn.inference_net, rkn=self.model.rkn.rkn_layer)
-        self.ckpt_rkn_encoder_manager = tf.train.CheckpointManager(self.ckpt_rkn_encoder, self.ckpt_rkn_encoder_path, max_to_keep=2)
-        self.ckpt_rkn_score = tf.train.Checkpoint(score=self.model.rkn.score_net)
-        self.ckpt_rkn_score_manager = tf.train.CheckpointManager(self.ckpt_rkn_score, self.ckpt_rkn_score_path, max_to_keep=2)
+        #self.ckpt_resnet = tf.train.Checkpoint(resnet=self.model.resnet)
+        #self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_resnet, self.ckpt_resnet_path, max_to_keep=2)
+        #self.ckpt_rkn_encoder = tf.train.Checkpoint(inference=self.model.rkn.inference_net, rkn=self.model.rkn.rkn_layer)
+        #self.ckpt_rkn_encoder_manager = tf.train.CheckpointManager(self.ckpt_rkn_encoder, self.ckpt_rkn_encoder_path, max_to_keep=2)
+        #self.ckpt_rkn_score = tf.train.Checkpoint(score=self.model.rkn.score_net)
+        #self.ckpt_rkn_score_manager = tf.train.CheckpointManager(self.ckpt_rkn_score, self.ckpt_rkn_score_path, max_to_keep=2)
         self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=2)
         #self.load_pretrained(self.ckpt_resnet, self.ckpt_resnet_manager)
-        self.load()
+        self.load_redo()
 
     def forward_percent(self):
         print("forward percent")
@@ -273,7 +273,7 @@ class Training():
             v_loss_mean.reset_states()
             v_acc_mean.reset_states()
             if epoch % self.save_steps == 0 or epoch == self.epoch_max:
-                self.save()
+                self.save_redo()
             self.ckpt.epoch.assign_add(1)
 
     def forward(self):
@@ -357,6 +357,22 @@ class Training():
                 v_loss_mean(self.model.compute_loss(val_x))
                 v_acc_mean(self.model.compute_accuracy(val_x))"""
 
+    def save_redo(self):
+        # Save info about loss and acuracy of training and validation dataset
+        t_loss_path = os.path.join(self.train_path, 'loss.npy')
+        t_acc_path = os.path.join(self.train_path, 'accuracy.npy')
+        v_loss_path = os.path.join(self.val_path, 'loss.npy')
+        v_acc_path = os.path.join(self.val_path, 'accuracy.npy')
+
+        save_path = self.ckpt_manager.save()
+
+        np.save(t_loss_path, np.asarray(self.t_loss))
+        np.save(t_acc_path, np.asarray(self.t_acc))
+        np.save(v_loss_path, np.asarray(self.v_loss))
+        np.save(v_acc_path, np.asarray(self.v_acc))
+
+        print("Saved checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path))
+
     def save(self):
         #Save info about loss and acuracy of training and validation dataset
         t_loss_path = os.path.join(self.train_path, 'loss.npy')
@@ -389,6 +405,22 @@ class Training():
             #print("Saved RKN score checkpoint for step {}: {}".format(int(self.ckpt.step), save_path_rkn_score))
 
 
+    def load_redo(self):
+        self.ckpt.restore(self.ckpt_manager.latest_checkpoint).expect_partial()
+        if self.ckpt_manager.latest_checkpoint:
+            print("Restored from {}".format(self.ckpt_manager.latest_checkpoint))
+        else:
+            print("Initializing from scratch.")
+
+        t_loss_path = os.path.join(self.train_path, 'loss.npy')
+        t_acc_path = os.path.join(self.train_path, 'accuracy.npy')
+        v_loss_path = os.path.join(self.val_path, 'loss.npy')
+        v_acc_path = os.path.join(self.val_path, 'accuracy.npy')
+
+        self.t_loss = np.load(t_loss_path).tolist() if os.path.isfile(t_loss_path) else []
+        self.t_acc = np.load(t_acc_path).tolist() if os.path.isfile(t_acc_path) else []
+        self.v_loss = np.load(v_loss_path).tolist() if os.path.isfile(v_loss_path) else []
+        self.v_acc = np.load(v_acc_path).tolist() if os.path.isfile(v_acc_path) else []
 
     def load_pretrained(self, ckpt, ckpt_manager):
         ckpt.restore(ckpt_manager.latest_checkpoint).expect_partial()
