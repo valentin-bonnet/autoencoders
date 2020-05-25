@@ -234,7 +234,7 @@ def generate_and_save_images_compare_seq_lab(model, test_inputs, file_name_head=
     #print("\n\n#######\n output:\n", x_logits[0, 5, :, :])
     #print("max: ", tf.reduce_max(x_logits[0, 5, :, :]))
     nb_imgs = 5
-    fig = plt.figure(figsize=(nb_imgs, 4))
+    fig = plt.figure(figsize=(nb_imgs, 2))
     for i in range(2):
         test_input_0 = cv2.cvtColor(np.float32(test_input[i, 0]), cv2.COLOR_Lab2RGB)
         test_input_5 = cv2.cvtColor(np.float32(test_input[i, seq_size//4]), cv2.COLOR_Lab2RGB)
