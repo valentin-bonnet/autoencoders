@@ -184,7 +184,7 @@ class Training():
                     image_saver.curves([self.t_acc, self.v_acc], ['Training', 'Validation'],
                                        'training_validation_accuracy', self.img_path, 'Steps', 'Accuracy', x_axis)
                     self.ckpt.step.assign(i+1)
-                    #self.save()
+                    self.save()
 
                     t_loss_mean.reset_states()
                     t_acc_mean.reset_states()
@@ -203,7 +203,7 @@ class Training():
 
             self.ckpt.epoch.assign_add(1)
         self.ckpt.step.assign(0)
-        #self.save()
+        self.save()
 
     def forward_epoch(self):
         print("forward epoch")
