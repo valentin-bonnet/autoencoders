@@ -274,7 +274,7 @@ filename = 'batch_normalization'
 #ckpt_epoch = [10]
 #filename = 'ae_sbae'
 
-
+"""
 datasets = Dataset.Dataset('oxuva')
 
 model1 = construct_model.get_model('KAST')
@@ -302,7 +302,7 @@ multi.forward()
 """
 datasets = Dataset.Dataset('imagenetresized32')
 
-model1 = construct_model.get_model('SBAE', layers=[[64, 3, 1], [64, 3, 2], [128, 3, 1], [128, 3, 2], [256, 3, 1], [512, 3, 1], [256, 3, -2], [256, 3, -1], [256, 3, -2], [256, 3, -1]])
+model1 = construct_model.get_model('SBAE', layers=[[64, 7, 1], [64, 3, 1], [128, 3, 1], [128, 3, 2], [256, 3, 1], [256, 3, 1], [256, 3, -2], [256, 3, 1]])
 
 
 models = [model1]
@@ -319,7 +319,7 @@ epochs_max = [20]
 saves_epochs = [100]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'SBAE'
+path_to_directory = directory_path+'SBAE_sm'
 step_is_epoch = False
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 print("Multitraining Done")
