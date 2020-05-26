@@ -274,56 +274,58 @@ filename = 'batch_normalization'
 #ckpt_epoch = [10]
 #filename = 'ae_sbae'
 
-"""
-datasets = Dataset.Dataset('oxuva')
+KAST = True
+if KAST:
+    datasets = Dataset.Dataset('oxuva')
 
-model1 = construct_model.get_model('KAST')
-
-
-models = [model1]
-lrs = [3e-4]
-optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
-def lr_fn(lr, step):
-    if step == 4 or step == 6 or step == 8 or step == 10 or step == 12 or step == 14 or step == 16 or step == 18:
-        return lr*0.5
-    else:
-        return lr
-lrs_fn = [lr_fn]
-batch_size = 4
-epochs_max = [20]
-saves_epochs = [100]
-#directory_path = './content/drive/My Drive/Colab Data/AE/'
-directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'KAST_Full_Patch_OneStride_RGB_NEW'
-step_is_epoch = False
-multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
-print("Multitraining Done")
-multi.forward()
-"""
-datasets = Dataset.Dataset('imagenetresized32')
-
-model1 = construct_model.get_model('SBAE', layers=[[64, 7, 1], [64, 3, 1], [128, 3, 1], [128, 3, 2], [256, 3, 1], [256, 3, 1], [256, 3, -2], [256, 3, 1]])
+    model1 = construct_model.get_model('KAST')
 
 
-models = [model1]
-lrs = [3e-4]
-optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
-def lr_fn(lr, step):
-    if step == 20 or step == 40:
-        return lr*0.1
-    else:
-        return lr
-lrs_fn = [lr_fn]
-batch_size = 512+256
-epochs_max = [20]
-saves_epochs = [100]
-#directory_path = './content/drive/My Drive/Colab Data/AE/'
-directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'SBAE_smaller'
-step_is_epoch = False
-multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
-print("Multitraining Done")
-multi.forward()
+    models = [model1]
+    lrs = [3e-4]
+    optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
+    def lr_fn(lr, step):
+        if step == 4 or step == 6 or step == 8 or step == 10 or step == 12 or step == 14 or step == 16 or step == 18:
+            return lr*0.5
+        else:
+            return lr
+    lrs_fn = [lr_fn]
+    batch_size = 4
+    epochs_max = [20]
+    saves_epochs = [100]
+    #directory_path = './content/drive/My Drive/Colab Data/AE/'
+    directory_path = '/content/drive/My Drive/Colab Data/AE/'
+    path_to_directory = directory_path+'KAST_Full_Patch_OneStride_RGB_NEW'
+    step_is_epoch = False
+    multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
+    print("Multitraining Done")
+    multi.forward()
+
+else:
+    datasets = Dataset.Dataset('imagenetresized32')
+
+    model1 = construct_model.get_model('SBAE', layers=[[64, 7, 1], [64, 3, 1], [128, 3, 1], [128, 3, 2], [256, 3, 1], [256, 3, 1], [256, 3, -2], [256, 3, 1]])
+
+
+    models = [model1]
+    lrs = [3e-4]
+    optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
+    def lr_fn(lr, step):
+        if step == 20 or step == 40:
+            return lr*0.1
+        else:
+            return lr
+    lrs_fn = [lr_fn]
+    batch_size = 512+256
+    epochs_max = [20]
+    saves_epochs = [100]
+    #directory_path = './content/drive/My Drive/Colab Data/AE/'
+    directory_path = '/content/drive/My Drive/Colab Data/AE/'
+    path_to_directory = directory_path+'SBAE_smaller'
+    step_is_epoch = False
+    multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
+    print("Multitraining Done")
+    multi.forward()
 """
 #multitraining(datasets, models_type, models_arch, models_latent_space, models_use_bn, lr, epochs, batch_size, ckpt_path, ckpt_epoch, filename, my_drive_path)
 
