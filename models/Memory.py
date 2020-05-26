@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 class Memory(tf.keras.layers.Layer):
-    def __init__(self, unit=100, decay=0.8, threshold=0.1*1000,  k=256, c=3, kernel=15, **kwargs):
+    def __init__(self, unit=100, decay=0.99, threshold=0.1*1000,  k=256, c=3, kernel=15, **kwargs):
         self.m = unit
         self.decay = decay
         self.k_shape = k
@@ -100,7 +100,8 @@ class Memory(tf.keras.layers.Layer):
         # idx = tf.argsort(max_s_hw, axis=-1, direction='ASCENDING', name=None)
         top_max_s_hw, idx = tf.math.top_k(-max_s_hw, k=self.m)
         top_max_s_hw = -top_max_s_hw
-        wv_bool = tf.where(top_max_s_hw < 100., True, False)  # (bs, top)
+        print(tf.reduce_max(top_max_s_hw))
+        wv_bool = tf.where(top_max_s_hw < self.threshold, True, False)  # (bs, top)
         all_ones = tf.ones_like(top_max_s_hw)
         rkn_score_sorted = tf.gather(rkn_score, idx, batch_dims=1, axis=1)
         idx_x = tf.expand_dims(idx // 64, -1)
@@ -135,7 +136,7 @@ class Memory(tf.keras.layers.Layer):
         write_rkn_score = tf.ragged.boolean_mask(rkn_score_sorted, wv_bool).to_tensor(default_value=0.,
                                                                                       shape=[self.batch_shape, self.m])
 
-        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones + write_rkn_score  # (bs, m)
+        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones# + write_rkn_score  # (bs, m)
         write_ones = tf.expand_dims(tf.expand_dims(write_ones, -1), -1)
         self.m_k = m_k_sorted * (1. - write_ones) + write_k  # (bs, m, kernel**2, k)
         self.m_v = m_v_sorted * (1. - write_ones) + write_v  # (bs, m, kernel**2, v)
@@ -188,7 +189,8 @@ class Memory(tf.keras.layers.Layer):
         write_v = tf.ragged.boolean_mask(v_crop, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.kernel*self.kernel, self.v_shape])
         write_rkn_score = tf.ragged.boolean_mask(rkn_score_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
 
-        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones + write_rkn_score # (bs, m)
+
+        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones# + write_rkn_score # (bs, m)
         write_ones = tf.expand_dims(tf.expand_dims(write_ones, -1), -1)
         self.m_k = m_k_sorted*(1. - write_ones) + write_k # (bs, m, kernel**2, k)
         self.m_v = m_v_sorted*(1. - write_ones) + write_v # (bs, m, kernel**2, v)
