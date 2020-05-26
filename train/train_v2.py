@@ -314,12 +314,12 @@ def lr_fn(lr, step):
     else:
         return lr
 lrs_fn = [lr_fn]
-batch_size = 1024
+batch_size = 512+256
 epochs_max = [20]
 saves_epochs = [100]
 #directory_path = './content/drive/My Drive/Colab Data/AE/'
 directory_path = '/content/drive/My Drive/Colab Data/AE/'
-path_to_directory = directory_path+'SBAE_sm'
+path_to_directory = directory_path+'SBAE_smaller'
 step_is_epoch = False
 multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
 print("Multitraining Done")

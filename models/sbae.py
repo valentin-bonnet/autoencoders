@@ -9,7 +9,7 @@ tfd = tfp.distributions
 
 
 class SBAE(tf.keras.Model):
-    def __init__(self, layers=[128, 256, 512], latent_dim=512, input_shape=32, use_bn=False, classification=True):
+    def __init__(self, layers=[128, 256, 512], latent_dim=512, input_shape=32, use_bn=True, classification=True):
         super(SBAE, self).__init__()
         self.latent_dim = latent_dim
         self.inp_shape = input_shape
