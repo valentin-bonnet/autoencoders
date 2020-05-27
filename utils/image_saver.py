@@ -94,8 +94,8 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         #raw[i] = cv2.cvtColor(np.float32((raw[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
 
     #RGB to RGB
-    output_v = np.uint8((output_v+1.)*127.5)
-    v_j = np.uint8((v_j+1.)*127.5)
+    #output_v = np.uint8((output_v+1.)*127.5)
+    #v_j = np.uint8((v_j+1.)*127.5)
     #raw = np.uint8((raw+1.)*127.5)
 
     if not os.path.isdir(path):
@@ -136,8 +136,7 @@ def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', pa
 
 
     # LAB to RGB
-    output_v = cv2.cvtColor(np.float32((output_v + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]),
-                               cv2.COLOR_Lab2RGB)
+    output_v = cv2.cvtColor(np.float32((output_v + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
     v_j = cv2.cvtColor(np.float32((v_j + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
 
     if not os.path.isdir(path):
@@ -173,9 +172,9 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
         image_drop_out[i] = cv2.cvtColor(np.float32((image_drop_out[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
 
     # RGB to RGB
-    ground_truth = np.uint8((ground_truth + 1.) * 127.5)
-    output = np.uint8((output + 1.) * 127.5)
-    image_drop_out = np.uint8((image_drop_out + 1.) * 127.5)
+    #ground_truth = np.uint8((ground_truth + 1.) * 127.5)
+    #output = np.uint8((output + 1.) * 127.5)
+    #image_drop_out = np.uint8((image_drop_out + 1.) * 127.5)
 
 
     # Input with input / drop_out / output
