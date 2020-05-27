@@ -191,7 +191,7 @@ class Training():
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
                     if not self.redone:
                         for test in self.test_ds.take(1):
-                            image_saver.KAST_test(self.model, test, self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
+                            image_saver.KAST_test_ResNet(self.model, test, self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
 
                     print('i :', i)
                     print('epoch percent train: ', epoch_percent_train)
