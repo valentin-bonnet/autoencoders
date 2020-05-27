@@ -80,39 +80,39 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
 
 
 def KAST_test(kast, davis, file_name_head='image', path='./'):
-    output_v, v_j, i_drop = kast.call(davis, training=False)
-    #output_v, v_j= kast.call_ResNet(davis, training=False)
-    raw = tf.image.resize(i_drop[0][1:], [64, 64]).numpy()
+    #output_v, v_j, i_drop = kast.call(davis, training=False)
+    output_v, v_j = kast.call_ResNet_Local(davis, training=False)
+    #raw = tf.image.resize(i_drop[0][1:], [64, 64]).numpy()
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
     seq_size = output_v.shape[0]
 
     #LAB to RGB
-    #for i in range(seq_size):
-    #    output_v[i] = cv2.cvtColor(np.float32((output_v[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
-    #    v_j[i] = cv2.cvtColor(np.float32((v_j[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
-    #    raw[i] = cv2.cvtColor(np.float32((raw[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+    for i in range(seq_size):
+        output_v[i] = cv2.cvtColor(np.float32((output_v[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+        v_j[i] = cv2.cvtColor(np.float32((v_j[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+        #raw[i] = cv2.cvtColor(np.float32((raw[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
 
     #RGB to RGB
     output_v = np.uint8((output_v+1.)*127.5)
     v_j = np.uint8((v_j+1.)*127.5)
-    raw = np.uint8((raw+1.)*127.5)
+    #raw = np.uint8((raw+1.)*127.5)
 
     if not os.path.isdir(path):
         os.makedirs(path)
 
     #IMAGES
-    fig = plt.figure(figsize=(seq_size, 3))
+    fig = plt.figure(figsize=(seq_size, 2))
     for i in range(seq_size):
-        plt.subplot(3, seq_size, 1+i)
+        plt.subplot(2, seq_size, 1+i)
         plt.imshow(output_v[i])
         plt.axis('off')
-        plt.subplot(3, seq_size, 1+i+seq_size)
+        plt.subplot(2, seq_size, 1+i+seq_size)
         plt.imshow(v_j[i])
         plt.axis('off')
-        plt.subplot(3, seq_size, i+1+(seq_size*2))
-        plt.imshow(raw[i])
-        plt.axis('off')
+        #plt.subplot(3, seq_size, i+1+(seq_size*2))
+        #plt.imshow(raw[i])
+        #plt.axis('off')
 
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '_DAVIS.png')
@@ -167,10 +167,10 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
     # Input / output / drop_out to LAB
     all_white = np.ones([1, 64, 64, 3]) * [1.0, 0., 0.]
     output = np.concatenate([all_white, output], axis=0)
-    #for i in range(seq_size):
-    #    ground_truth[i] = cv2.cvtColor(np.float32((ground_truth[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
-    #    output[i] = cv2.cvtColor(np.float32((output[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
-    #    image_drop_out[i] = cv2.cvtColor(np.float32((image_drop_out[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+    for i in range(seq_size):
+        ground_truth[i] = cv2.cvtColor(np.float32((ground_truth[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+        output[i] = cv2.cvtColor(np.float32((output[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+        image_drop_out[i] = cv2.cvtColor(np.float32((image_drop_out[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
 
     # RGB to RGB
     ground_truth = np.uint8((ground_truth + 1.) * 127.5)
@@ -200,13 +200,13 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
     plt.close(fig)
 
     # Gif with input / drop_out / output
-    images = tf.concat([ground_truth, image_drop_out, output], axis=2).numpy()
-    im = []
-    for image in images:
-        im.append(Image.fromarray(np.uint8(image)))
+    #images = tf.concat([ground_truth, image_drop_out, output], axis=2).numpy()
+    #im = []
+    #for image in images:
+    #    im.append(Image.fromarray(np.uint8(image)))
 
-    file_path = os.path.join(path, file_name_head)
-    im[0].save(file_path + '.gif', save_all=True, append_images=im[1:], duration=150)
+    #file_path = os.path.join(path, file_name_head)
+    #im[0].save(file_path + '.gif', save_all=True, append_images=im[1:], duration=150)
 
 
 

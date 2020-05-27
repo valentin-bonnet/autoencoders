@@ -7,7 +7,7 @@ class Memory(tf.keras.layers.Layer):
         self.k_shape = k
         self.v_shape = c
         self.kernel = kernel
-        self.threshold = threshold*((kernel*kernel)/100.0)
+        self.threshold = 0.35 #threshold*((kernel*kernel)/100.0)
         self.hw_shape = 16*16
         self.batch_shape = 2
         #self.lstm = tf.keras.Sequential()
@@ -96,7 +96,6 @@ class Memory(tf.keras.layers.Layer):
 
         #top_max_s_hw, idx = tf.math.top_k(max_s_hw, k=self.m)
         idx = tf.argsort(max_s_hw, axis=-1, direction='DESCENDING')
-        print(tf.reduce_max(max_s_hw))
         wv_bool = tf.where(max_s_hw < self.threshold, True, False)  # (bs, top)
         idx = tf.ragged.boolean_mask(idx, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
 
