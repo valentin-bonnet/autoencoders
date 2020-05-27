@@ -302,7 +302,7 @@ if KAST:
     multi.forward()
 
 else:
-    datasets = Dataset.Dataset('imagenetresized64')
+    datasets = Dataset.Dataset('imagenetresized32')
 
     model1 = construct_model.get_model('SBAE', layers=[[64, 7, 1], [64, 3, 1], [128, 3, 1], [128, 3, 2], [256, 3, 1], [256, 3, 1], [256, 3, -2], [256, 3, 1]])
 
