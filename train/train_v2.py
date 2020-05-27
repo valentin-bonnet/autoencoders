@@ -274,7 +274,7 @@ filename = 'batch_normalization'
 #ckpt_epoch = [10]
 #filename = 'ae_sbae'
 
-KAST = True
+KAST = False
 if KAST:
     datasets = Dataset.Dataset('oxuva')
 
@@ -292,7 +292,7 @@ if KAST:
     lrs_fn = [lr_fn]
     batch_size = 38
     epochs_max = [20]
-    saves_epochs = [100]
+    saves_epochs = [10]
     #directory_path = './content/drive/My Drive/Colab Data/AE/'
     directory_path = '/content/drive/My Drive/Colab Data/AE/'
     path_to_directory = directory_path+'KAST_ResNet_Local'
@@ -302,7 +302,7 @@ if KAST:
     multi.forward()
 
 else:
-    datasets = Dataset.Dataset('imagenetresized32')
+    datasets = Dataset.Dataset('imagenetresized64')
 
     model1 = construct_model.get_model('SBAE', layers=[[64, 7, 1], [64, 3, 1], [128, 3, 1], [128, 3, 2], [256, 3, 1], [256, 3, 1], [256, 3, -2], [256, 3, 1]])
 
@@ -316,8 +316,8 @@ else:
         else:
             return lr
     lrs_fn = [lr_fn]
-    batch_size = 512+256
-    epochs_max = [20]
+    batch_size = 128
+    epochs_max = [40]
     saves_epochs = [100]
     #directory_path = './content/drive/My Drive/Colab Data/AE/'
     directory_path = '/content/drive/My Drive/Colab Data/AE/'
