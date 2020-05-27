@@ -16,7 +16,7 @@ import construct_model
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 class Training():
-    def __init__(self, dataset, batch_size, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch, is_seq=True):
+    def __init__(self, dataset, batch_size, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch, is_seq=False):
         self.redone = False
         self.batch_size = batch_size
         if self.redone:
@@ -65,11 +65,11 @@ class Training():
             if not os.path.isdir(self.ckpt_resnet_path):
                 os.makedirs(self.ckpt_resnet_path)
 
-            if not os.path.isdir(self.ckpt_rkn_encoder_path):
-                os.makedirs(self.ckpt_rkn_encoder_path)
+            #if not os.path.isdir(self.ckpt_rkn_encoder_path):
+            #    os.makedirs(self.ckpt_rkn_encoder_path)
 
-            if not os.path.isdir(self.ckpt_rkn_score_path):
-                os.makedirs(self.ckpt_rkn_score_path)
+            #if not os.path.isdir(self.ckpt_rkn_score_path):
+            #    os.makedirs(self.ckpt_rkn_score_path)
 
         if not os.path.isdir(self.train_path):
             os.makedirs(self.train_path)
@@ -92,10 +92,10 @@ class Training():
 
             self.ckpt_resnet = tf.train.Checkpoint(resnet=self.model.resnet)
             self.ckpt_resnet_manager = tf.train.CheckpointManager(self.ckpt_resnet, self.ckpt_resnet_path, max_to_keep=2)
-            self.ckpt_rkn_encoder = tf.train.Checkpoint(inference=self.model.rkn.inference_net, rkn=self.model.rkn.rkn_layer)
-            self.ckpt_rkn_encoder_manager = tf.train.CheckpointManager(self.ckpt_rkn_encoder, self.ckpt_rkn_encoder_path, max_to_keep=2)
-            self.ckpt_rkn_score = tf.train.Checkpoint(score=self.model.rkn.score_net)
-            self.ckpt_rkn_score_manager = tf.train.CheckpointManager(self.ckpt_rkn_score, self.ckpt_rkn_score_path, max_to_keep=2)
+            #self.ckpt_rkn_encoder = tf.train.Checkpoint(inference=self.model.rkn.inference_net, rkn=self.model.rkn.rkn_layer)
+            #self.ckpt_rkn_encoder_manager = tf.train.CheckpointManager(self.ckpt_rkn_encoder, self.ckpt_rkn_encoder_path, max_to_keep=2)
+            #self.ckpt_rkn_score = tf.train.Checkpoint(score=self.model.rkn.score_net)
+            #self.ckpt_rkn_score_manager = tf.train.CheckpointManager(self.ckpt_rkn_score, self.ckpt_rkn_score_path, max_to_keep=2)
         self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, self.ckpt_path, max_to_keep=2)
         #self.load_pretrained(self.ckpt_resnet, self.ckpt_resnet_manager)
         if self.redone:
@@ -170,7 +170,7 @@ class Training():
 
                     for val_x in self.val_ds.take(1):
                         if self.is_seq:
-                            image_saver.KAST_View(self.model, val_x, False,
+                            image_saver.KAST_View_Resnet(self.model, val_x, False,
                                                                              self.name + '_epoch_{:03d}_step_{:03d}_test'.format(
                                                                                  epoch, i // epoch_percent_train),
                                                                              self.img_path)
@@ -182,7 +182,7 @@ class Training():
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_test'.format(epoch, i//epoch_percent_train), self.img_path)
                     for train_x in self.train_ds.take(1):
                         if self.is_seq:
-                            image_saver.KAST_View(self.model, train_x, True,
+                            image_saver.KAST_View_Resnet(self.model, train_x, True,
                                                                              self.name + '_epoch_{:03d}_step_{:03d}_train'.format(
                                                                                  epoch, i // epoch_percent_train),
                                                                              self.img_path)
@@ -475,18 +475,18 @@ class Training():
             print("Initializing Resnet from scratch.")
 
         ## RKN ENCODER
-        self.ckpt_rkn_encoder.restore(self.ckpt_rkn_encoder_manager.latest_checkpoint).expect_partial()
-        if self.ckpt_rkn_encoder_manager.latest_checkpoint:
-            print("Restored RKN encoder from {}".format(self.ckpt_rkn_encoder_manager.latest_checkpoint))
-        else:
-            print("Initializing RKN encoder from scratch.")
+        #self.ckpt_rkn_encoder.restore(self.ckpt_rkn_encoder_manager.latest_checkpoint).expect_partial()
+        #if self.ckpt_rkn_encoder_manager.latest_checkpoint:
+        #    print("Restored RKN encoder from {}".format(self.ckpt_rkn_encoder_manager.latest_checkpoint))
+        #else:
+        #    print("Initializing RKN encoder from scratch.")
 
         ## RKN SCORE
-        self.ckpt_rkn_score.restore(self.ckpt_rkn_score_manager.latest_checkpoint).expect_partial()
-        if self.ckpt_rkn_score_manager.latest_checkpoint:
-            print("Restored RKN score from {}".format(self.ckpt_rkn_score_manager.latest_checkpoint))
-        else:
-            print("Initializing RKN score from scratch.")
+        #self.ckpt_rkn_score.restore(self.ckpt_rkn_score_manager.latest_checkpoint).expect_partial()
+        #if self.ckpt_rkn_score_manager.latest_checkpoint:
+        #    print("Restored RKN score from {}".format(self.ckpt_rkn_score_manager.latest_checkpoint))
+        #else:
+        #    print("Initializing RKN score from scratch.")
 
 
         ## TRAINING

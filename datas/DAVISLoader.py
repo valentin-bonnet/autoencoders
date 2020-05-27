@@ -2,7 +2,7 @@ import tensorflow as tf
 import glob
 
 frames_delta = 4
-sequence_size = 8
+sequence_size = 2
 
 
 def check_image(image):
@@ -65,23 +65,18 @@ def _preprocess_once(parsed_data):
     anno= parsed_data['annotation'][::frames_delta]
     jpeg = tf.map_fn(tf.image.decode_jpeg, jpeg, dtype=tf.uint8)
     anno = tf.map_fn(tf.image.decode_png, anno, dtype=tf.uint8)
-    jpeg = (tf.cast(jpeg, tf.float32) / 127.5)-1.0
-    anno = (tf.cast(anno, tf.float32) / 127.5)-1.0
-    #jpeg = tf.cast(jpeg, tf.float32) / 255.0
-    #anno = tf.cast(anno, tf.float32) / 255.0
-    # img_lab = tf.py_function(func=_rgb2lab, inp=[img], Tout=tf.float32)
-    #jpeg_lab = tf_rgb2lab(jpeg)
-    #anno_lab = tf_rgb2lab(anno)
-    #jpeg_lab = tf.cast(jpeg_lab, tf.float32)
-    #anno_lab = tf.cast(anno_lab, tf.float32)
-    #jpeg_lab = jpeg_lab + [0., 128.0, 128.0]
-    #jpeg_lab = (jpeg_lab / [50.0, 127.5, 127.5]) - 1.0
-    #jpeg_lab = tf.reshape(jpeg_lab, [sequence_size, 256, 256, 3])
-    #anno_lab = anno_lab + [0., 128.0, 128.0]
-    #anno_lab = (anno_lab / [50.0, 127.5, 127.5]) - 1.0
-    #anno_lab = tf.reshape(anno_lab, [sequence_size, 64, 64, 3])
-    jpeg_lab = tf.reshape(jpeg, [sequence_size, 256, 256, 3])
-    anno_lab = tf.reshape(anno, [sequence_size, 64, 64, 3])
+    jpeg = tf.cast(jpeg, tf.float32) / 255.0
+    anno = tf.cast(anno, tf.float32) / 255.0
+    jpeg_lab = tf_rgb2lab(jpeg)
+    anno_lab = tf_rgb2lab(anno)
+    jpeg_lab = tf.cast(jpeg_lab, tf.float32)
+    anno_lab = tf.cast(anno_lab, tf.float32)
+    jpeg_lab = jpeg_lab + [0., 128.0, 128.0]
+    jpeg_lab = (jpeg_lab / [50.0, 127.5, 127.5]) - 1.0
+    anno_lab = anno_lab + [0., 128.0, 128.0]
+    anno_lab = (anno_lab / [50.0, 127.5, 127.5]) - 1.0
+    jpeg_lab = tf.reshape(jpeg_lab, [sequence_size, 256, 256, 3])
+    anno_lab = tf.reshape(anno_lab, [sequence_size, 64, 64, 3])
     return jpeg_lab, anno_lab
 
 
@@ -101,7 +96,6 @@ def _files_to_ds(f):
     return ds
 
 def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS/', seq_size=8):
-    sequence_size = seq_size
     files = glob.glob(path+'*.tfrecords')
     ds_files = tf.data.Dataset.from_tensor_slices(files).shuffle(90, seed=1)
     davis_ds = ds_files.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)

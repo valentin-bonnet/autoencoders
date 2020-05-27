@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorflow_addons as tfa
 import numpy as np
 from ResNet import ResNet
 from RKNModel import RKNModel
@@ -8,12 +9,13 @@ from Transformation import Transformation
 class KAST(tf.keras.Model):
     def __init__(self, coef_memory=0.1, dropout_seq=0.9):
         super(KAST, self).__init__()
-        self.kernel = 7
+        self.kernel = 13
         self.dropout_seq = dropout_seq
         self.transformation = Transformation(trainable=False)
         self.resnet = ResNet()
         self.rkn = RKNModel()
-        self.memory = Memory(unit=200, kernel=self.kernel)
+        self.memory_long = Memory(unit=100, kernel=self.kernel)
+        self.memory_long = Memory(unit=100, kernel=self.kernel)
         #self.memory = tf.keras.Sequential()
         #self.memory.add(tf.keras.layers.Input(input_shape=((None, None, 256)), batch_input_shape=[4]))
         #self.memory.add(tf.keras.layers.RNN(self.memory_cell, stateful=True))
@@ -21,6 +23,81 @@ class KAST(tf.keras.Model):
         self.description = 'KAST'
 
     def call(self, inputs, **kwargs):
+        # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
+        bs = inputs[1].shape[0]
+        seq_size = inputs[1].shape[1]
+        H = inputs[0].shape[2]
+        W = inputs[0].shape[3]
+        C = inputs[0].shape[4]
+        h = inputs[1].shape[2]
+        w = inputs[1].shape[3]
+        cv = inputs[1].shape[4]
+        output_v = []
+        ground_truth = []
+        i_raw, v = tf.nest.flatten(inputs)
+        #print("i.shape: ", i.shape)
+        #print("v.shape: ", v.shape)
+
+        with tf.name_scope('Transformation'):
+            i_drop, seq_mask = self.transformation(i_raw, **kwargs)
+        with tf.name_scope('ResNet'):
+            k = tf.reshape(self.resnet(tf.reshape(i_drop, [-1, H, W, C])), [bs, seq_size, h, w, 256]) # (bs, T, h, w, 256)
+
+
+        ck = k.shape[4]
+
+        #with tf.name_scope('Rkn'):
+        #    score = self.rkn((k, tf.reshape(seq_mask, [bs, seq_size, 1])))
+
+        previous_v = v[:, 0]
+        self.memory_short.get_init_state(bs)
+        self.memory_long.get_init_state(bs)
+        self.memory_short.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv])))
+        self.memory_long.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv])))
+        all_m_kv = []
+        all_previous_v = []
+        all_previous_v.append(previous_v)
+        for i in range(1, seq_size):
+            with tf.name_scope('Memory'):
+                m_kv = self.memory.call((tf.reshape(k[:, i-1], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv])))
+                all_m_kv.append(m_kv)
+
+            m_k, m_v = tf.nest.flatten(all_m_kv[i-1])
+
+            if i > 2:
+                m_k = 2
+
+            if i > 4:
+                k_5 = tf.image.extract_patches(tf.reshape(k[:, i - 5], [bs, h, w, ck]), sizes=[1, 15, 15, 1],
+                                               strides=[1, 1, 1, 1], rates=[1, 3, 3, 1], padding="SAME")
+                v_5 = tf.image.extract_patches(tf.reshape(previous_v[i - 5], [bs, h, w, cv]), sizes=[1, 15, 15, 1],
+                                               strides=[1, 1, 1, 1], rates=[1, 3, 3, 1], padding="SAME")
+
+            if i > 6:
+                mk_0 = all_m_kv[0]
+
+            if i > 7:
+                m_k_5 = all_m_kv[5]
+
+            previous_v = tf.where(tf.reshape(seq_mask[:, i+1], [bs, 1, 1, 1]), v[:, i], tf.reshape(output_v_i, [-1, h, w, cv]))
+            all_previous_v.append(previous_v)
+            output_v_i = tf.reshape(output_v_i, [-1, 1, h, w, cv])
+            output_v.append(output_v_i)
+            ground_truth_i = tf.reshape(v[:, i+1], [-1, 1, h, w, cv])
+            ground_truth.append(ground_truth_i)
+
+
+        #print("output_v len: ", len(output_v))
+        #print("output_v[0].shape: ", output_v[0].shape)
+        #print("ground_truth len: ", len(ground_truth))
+        #print("ground_truth[0].shape: ", ground_truth[0].shape)
+
+
+        #self.memory.get_initial_state()
+
+        return tf.concat(output_v, 1), tf.concat(ground_truth, 1), i_drop
+
+    def call_Patch_Memory(self, inputs, **kwargs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
         bs = inputs[1].shape[0]
         seq_size = inputs[1].shape[1]
@@ -116,6 +193,32 @@ class KAST(tf.keras.Model):
         reconstruction_k = tf.reshape(similarity_k @ tf.reshape(v[:, 0], [-1, h * w, cv]), [-1, h, w, cv]) # (bs, h*w, v)
         ground_truth = v[:, 1]
         return reconstruction_k, ground_truth
+
+    def call_ResNet_Local(self, inputs, **kwargs):
+        # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
+        bs = inputs[1].shape[0]
+        seq_size = inputs[1].shape[1]
+        H = inputs[0].shape[2]
+        W = inputs[0].shape[3]
+        C = inputs[0].shape[4]
+        h = inputs[1].shape[2]
+        w = inputs[1].shape[3]
+        cv = inputs[1].shape[4]
+        i_raw, v = tf.nest.flatten(inputs)
+
+        with tf.name_scope('Transformation'):
+            i_drop = self.transformation(i_raw, **kwargs)
+        with tf.name_scope('ResNet'):
+            k = tf.reshape(self.resnet(tf.reshape(i_drop, [-1, H, W, C])),
+                           [bs, seq_size, h, w, 256])  # (bs, T, h, w, 256)
+
+        corr_cost = tfa.layers.CorrelationCost(kernel_size=1, max_displacement=self.kernel//2, stride_1=1, stride_2=1, pad=self.kernel//2, data_format="channels_last")
+        similarity_k = corr_cost([k[:, 1], k[:, 0]]) # (bs, hw, patch)
+        similarity_k = tf.reshape(similarity_k, [bs, h*w, self.kernel*self.kernel])
+        similarity_k = tf.nn.softmax(similarity_k, axis=-1)
+        reconstruction_v = tf.reshape(similarity_k @ tf.reshape(v[:, 0], [-1, h * w, cv]), [-1, h, w, cv]) # (bs, h*w, v)
+        ground_truth = v[:, 1]
+        return reconstruction_v, ground_truth
 
     def call_RKN(self, inputs, **kwargs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
@@ -246,8 +349,8 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j, _ = self.call((inputs, v), training=True)
-        #output_v, v_j = self.call_ResNet((inputs, v), training=True)
+        #output_v, v_j, _ = self.call((inputs, v), training=True)
+        output_v, v_j = self.call_ResNet_Local((inputs, v), training=True)
         #rkn_k, k = self.call_RKN((inputs, v), training=True)
         #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=True)
         abs = tf.math.abs(output_v - v_j)
@@ -266,8 +369,8 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j, _ = self.call((inputs, v), training=False)
-        #output_v, v_j = self.call_ResNet((inputs, v), training=False)
+        #output_v, v_j, _ = self.call((inputs, v), training=False)
+        output_v, v_j = self.call_ResNet_Local((inputs, v), training=False)
         #rkn_k, k = self.call_RKN((inputs, v), training=False)
         #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=False)
         return tf.reduce_mean(tf.square(output_v - v_j))
@@ -291,7 +394,7 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j = self.call_ResNet((inputs, v), training=training)
+        output_v, v_j = self.call_ResNet_Local((inputs, v), training=training)
         return output_v, v_j
 
     def reconstruct(self, inputs, training=True):

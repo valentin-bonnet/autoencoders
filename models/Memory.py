@@ -8,13 +8,11 @@ class Memory(tf.keras.layers.Layer):
         self.v_shape = c
         self.kernel = kernel
         self.threshold = threshold*((kernel*kernel)/100.0)
-        self.hw_shape = 64*64
-        self.batch_shape = 4
+        self.hw_shape = 16*16
+        self.batch_shape = 2
         #self.lstm = tf.keras.Sequential()
         #self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
         #self.lstm.add(tf.keras.layers.LSTM(self.m+self.top_a, stateful=True))
-        self.state_size = [tf.TensorShape([self.m, self.k_shape]), tf.TensorShape([self.m, self.v_shape]), tf.TensorShape([self.m])]
-        self.output_size = [tf.TensorShape([self.m, self.k_shape]), tf.TensorShape([self.m, self.v_shape])]
 
         super(Memory, self).__init__(**kwargs)
 
@@ -83,6 +81,106 @@ class Memory(tf.keras.layers.Layer):
         return [self.m_k, self.m_v]"""
 
     def call(self, inputs, **kwargs):
+        k, v = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
+
+        idx = tf.argsort(self.m_u, axis=-1, direction='ASCENDING', name=None)
+        m_u_sorted = tf.gather(self.m_u, idx, batch_dims=1, axis=1)
+        m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
+        m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
+
+        s = tf.nn.softmax(k @ tf.transpose(
+            tf.reshape(self.m_k, [self.batch_shape, self.m, self.kernel * self.kernel, 256])[:, :, ((self.kernel ** 2) // 2) + 1, :], [0, 2, 1]))  # (bs, hw, 256) @ (bs, size_patch*256, m) = (bs, nb_patch, m)
+        max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
+        max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
+
+
+        #top_max_s_hw, idx = tf.math.top_k(max_s_hw, k=self.m)
+        idx = tf.argsort(max_s_hw, axis=-1, direction='DESCENDING')
+        print(tf.reduce_max(max_s_hw))
+        wv_bool = tf.where(max_s_hw < self.threshold, True, False)  # (bs, top)
+        idx = tf.ragged.boolean_mask(idx, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
+
+        all_ones = tf.ones_like(idx)
+        idx_x = tf.expand_dims(idx // 64, -1)
+        idx_y = tf.expand_dims(idx % 64, -1)
+        idx_y1 = idx_y - self.kernel // 2
+        idx_x1 = idx_x - self.kernel // 2
+        idx_y2 = idx_y + self.kernel // 2
+        idx_x2 = idx_x + self.kernel // 2
+        idx = tf.concat([idx_y1, idx_x1, idx_y2, idx_x2], -1)
+        idx = tf.reshape(idx, [self.batch_shape * self.m, 4])
+        idx = tf.cast(idx, tf.float32) / 64.
+        box_idx = tf.expand_dims(tf.range(self.batch_shape), -1)
+        box_idx = tf.tile(box_idx, [1, self.m])
+        box_idx = tf.reshape(box_idx, [self.batch_shape * self.m])
+        k_crop = tf.image.crop_and_resize(tf.reshape(k, [self.batch_shape, 64, 64, 256]), idx, box_idx, [self.kernel, self.kernel], method='nearest', extrapolation_value=0, name=None)
+        v_crop = tf.image.crop_and_resize(tf.reshape(v, [self.batch_shape, 64, 64, 3]), idx, box_idx, [self.kernel, self.kernel], method='nearest', extrapolation_value=0, name=None)
+        k_crop = tf.reshape(k_crop, [self.batch_shape, self.m, self.kernel ** 2, self.k_shape])
+        v_crop = tf.reshape(v_crop, [self.batch_shape, self.m, self.kernel ** 2, self.v_shape])
+
+        write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
+        write_k = tf.ragged.boolean_mask(k_crop, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.kernel * self.kernel, self.k_shape])
+        write_v = tf.ragged.boolean_mask(v_crop, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.kernel * self.kernel, self.v_shape])
+
+        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones
+        write_ones = tf.expand_dims(tf.expand_dims(write_ones, -1), -1)
+        self.m_k = m_k_sorted * (1. - write_ones) + write_k  # (bs, m, kernel**2, k)
+        self.m_v = m_v_sorted * (1. - write_ones) + write_v  # (bs, m, kernel**2, v)
+
+        return [self.m_k, self.m_v]
+
+    def call_init(self, inputs):
+        k, v = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
+
+        idx = tf.argsort(self.m_u, axis=-1, direction='ASCENDING', name=None)
+        m_u_sorted = tf.gather(self.m_u, idx, batch_dims=1, axis=1)
+        m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
+        m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
+
+        s = tf.nn.softmax(k @ tf.transpose(k, [0, 2, 1]), -1)  # (bs, hw, 256) @ (bs, 256, hw) = (bs, hw, hw)
+
+        max_s_m, top_idx_s = tf.math.top_k(s, k=self.m)
+
+        wv_bool = tf.ones_like(max_s_m)
+        idx = tf.ragged.boolean_mask(idx, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
+
+        all_ones = tf.ones_like(idx)
+        idx_x = tf.expand_dims(idx // 64, -1)
+        idx_y = tf.expand_dims(idx % 64, -1)
+        idx_y1 = idx_y - self.kernel // 2
+        idx_x1 = idx_x - self.kernel // 2
+        idx_y2 = idx_y + self.kernel // 2
+        idx_x2 = idx_x + self.kernel // 2
+        idx = tf.concat([idx_y1, idx_x1, idx_y2, idx_x2], -1)
+        idx = tf.reshape(idx, [self.batch_shape * self.m, 4])
+        idx = tf.cast(idx, tf.float32) / 64.
+        box_idx = tf.expand_dims(tf.range(self.batch_shape), -1)
+        box_idx = tf.tile(box_idx, [1, self.m])
+        box_idx = tf.reshape(box_idx, [self.batch_shape * self.m])
+        k_crop = tf.image.crop_and_resize(tf.reshape(k, [self.batch_shape, 64, 64, 256]), idx, box_idx,
+                                          [self.kernel, self.kernel], method='nearest', extrapolation_value=0,
+                                          name=None)
+        v_crop = tf.image.crop_and_resize(tf.reshape(v, [self.batch_shape, 64, 64, 3]), idx, box_idx,
+                                          [self.kernel, self.kernel], method='nearest', extrapolation_value=0,
+                                          name=None)
+        k_crop = tf.reshape(k_crop, [self.batch_shape, self.m, self.kernel ** 2, self.k_shape])
+        v_crop = tf.reshape(v_crop, [self.batch_shape, self.m, self.kernel ** 2, self.v_shape])
+
+        write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0.,
+                                                                         shape=[self.batch_shape, self.m])
+        write_k = tf.ragged.boolean_mask(k_crop, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m,
+                                                                                             self.kernel * self.kernel,
+                                                                                             self.k_shape])
+        write_v = tf.ragged.boolean_mask(v_crop, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m,
+                                                                                             self.kernel * self.kernel,
+                                                                                             self.v_shape])
+
+        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones
+        write_ones = tf.expand_dims(tf.expand_dims(write_ones, -1), -1)
+        self.m_k = m_k_sorted * (1. - write_ones) + write_k  # (bs, m, kernel**2, k)
+        self.m_v = m_v_sorted * (1. - write_ones) + write_v  # (bs, m, kernel**2, v)
+
+    def call_patch_before(self, inputs, **kwargs):
         k, v, rkn_score = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
 
         idx = tf.argsort(self.m_u, axis=-1, direction='ASCENDING', name=None)
@@ -143,7 +241,7 @@ class Memory(tf.keras.layers.Layer):
 
         return [self.m_k, self.m_v]
 
-    def call_init(self, inputs, bs):
+    def call_init_patch_before(self, inputs, bs):
 
         k, v, rkn_score = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
 
