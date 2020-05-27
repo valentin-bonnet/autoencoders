@@ -87,6 +87,7 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     v_j = v_j[0].numpy()
     seq_size = output_v.shape[0]
     print(output_v.dtype)
+    print(output_v.shape)
     #LAB to RGB
     for i in range(seq_size):
         output_v[i] = cv2.cvtColor(np.float32((output_v[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
