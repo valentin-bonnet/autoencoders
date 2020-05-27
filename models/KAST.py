@@ -218,7 +218,7 @@ class KAST(tf.keras.Model):
         similarity_k = tf.nn.softmax(similarity_k, axis=-1)
         similarity_k = tf.reshape(similarity_k, [bs, h*w, 1, self.kernel*self.kernel])
         v_patch = tf.image.extract_patches(tf.reshape(v[:, 0], [bs, h, w, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
-        reconstruction_v = tf.reshape(similarity_k @ tf.reshape(v_patch, [bs, h*w, self.kernel*self.kernel, cv])) # (bs, h*w, v)
+        reconstruction_v = similarity_k @ tf.reshape(v_patch, [bs, h*w, self.kernel*self.kernel, cv]) # (bs, h*w, v)
         reconstruction_v = tf.reshape(reconstruction_v, [bs, h, w, cv])
         ground_truth = v[:, 1]
         return reconstruction_v, ground_truth
