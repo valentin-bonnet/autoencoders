@@ -290,7 +290,7 @@ if KAST:
         else:
             return lr
     lrs_fn = [lr_fn]
-    batch_size = 32
+    batch_size = 28
     epochs_max = [20]
     saves_epochs = [100]
     #directory_path = './content/drive/My Drive/Colab Data/AE/'
