@@ -207,7 +207,7 @@ class KAST(tf.keras.Model):
         i_raw, v = tf.nest.flatten(inputs)
 
         with tf.name_scope('Transformation'):
-            i_drop = self.transformation(i_raw, **kwargs)
+            i_drop, _ = self.transformation(i_raw, **kwargs)
         with tf.name_scope('ResNet'):
             k = tf.reshape(self.resnet(tf.reshape(i_drop, [-1, H, W, C])),
                            [bs, seq_size, h, w, 256])  # (bs, T, h, w, 256)
