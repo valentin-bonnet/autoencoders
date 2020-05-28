@@ -306,12 +306,12 @@ else:
     datasets = Dataset.Dataset('cifar10')
 
     #model1 = construct_model.get_model('SBAE', layers=[[64, 7, 2], [64, 3, 1], [128, 3, 1], [128, 3, 2], [256, 3, 1], [256, 3, 1], [256, 3, -2], [256, 3, 1]])
-    model128 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[128])
-    model256 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[256])
-    model512 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[512])
-    model1024 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[1024])
-    model2048 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[2048])
-    model4096 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[4096])
+    model128 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=128)
+    model256 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=256)
+    model512 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=512)
+    model1024 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=1024)
+    model2048 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=2048)
+    model4096 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=4096)
 
     models = [model128, model256, model512, model1024, model1024, model2048, model4096]
     lrs = [3e-4]
