@@ -465,14 +465,13 @@ def compare_images(imgs_ground_truth, imgs_reconstruct, filename, path):
 
     else:
         nb_imgs = len(imgs_ground_truth)
-        plt.figure(figsize=(nb_imgs, 2))
-        for i in range(nb_imgs):
-            plt.subplot(nb_imgs, 2, (2*i))
-            plt.imshow(imgs_ground_truth[i])
-            plt.axis('off')
-            plt.subplot(nb_imgs, 2, (2*i))
-            plt.imshow(imgs_reconstruct[i])
-            plt.axis('off')
+        plt.figure(figsize=(1, 2))
+        plt.subplot(2, 1, 1)
+        plt.imshow(imgs_ground_truth)
+        plt.axis('off')
+        plt.subplot(2, 1, 2)
+        plt.imshow(imgs_reconstruct)
+        plt.axis('off')
 
         if not os.path.isdir(path):
             os.makedirs(path)
