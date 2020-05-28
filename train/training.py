@@ -290,7 +290,7 @@ class Training():
                                                                          epoch),
                                                                      self.img_path)
                 else:
-                    image_saver.compare_images(train_x[0], self.model.reconstruct(train_x[0]), img_name, self.img_path)
+                    image_saver.compare_images(train_x[0], self.model.reconstruct(train_x)[0], img_name, self.img_path)
 
             t_loss_mean.reset_states()
             t_acc_mean.reset_states()
