@@ -221,7 +221,7 @@ class KAST(tf.keras.Model):
         reconstruction_v = similarity_k @ tf.reshape(v_patch, [bs, h*w, self.kernel*self.kernel, cv]) # (bs, h*w, v)
         reconstruction_v = tf.reshape(reconstruction_v, [bs, h, w, cv])
         ground_truth = v[:, 1]
-        return reconstruction_v, ground_truth
+        return reconstruction_v, ground_truth, v[: 0]
 
     def call_RKN(self, inputs, **kwargs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
@@ -353,7 +353,7 @@ class KAST(tf.keras.Model):
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=True)
-        output_v, v_j = self.call_ResNet_Local((inputs, v), training=True)
+        output_v, v_j, _ = self.call_ResNet_Local((inputs, v), training=True)
         #rkn_k, k = self.call_RKN((inputs, v), training=True)
         #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=True)
         abs = tf.math.abs(output_v - v_j)
@@ -373,7 +373,7 @@ class KAST(tf.keras.Model):
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=False)
-        output_v, v_j = self.call_ResNet_Local((inputs, v), training=False)
+        output_v, v_j, _ = self.call_ResNet_Local((inputs, v), training=False)
         #rkn_k, k = self.call_RKN((inputs, v), training=False)
         #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=False)
         return tf.reduce_mean(tf.square(output_v - v_j))
@@ -397,8 +397,8 @@ class KAST(tf.keras.Model):
         v = tf.reshape(inputs, [-1, H, W, cv])
         v = tf.image.resize(v, [h, w])
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j = self.call_ResNet_Local((inputs, v), training=training)
-        return output_v, v_j
+        output_v, v_j, v_0 = self.call_ResNet_Local((inputs, v), training=training)
+        return output_v, v_j, v_0
 
     def reconstruct(self, inputs, training=True):
         seq_size = inputs.shape[1]

@@ -81,30 +81,38 @@ def extract_single_dim_from_LAB_convert_to_RGB(image, idim):
 
 def KAST_test_ResNet(kast, davis, file_name_head='image', path='./'):
     #output_v, v_j, i_drop = kast.call(davis, training=False)
-    output_v, v_j = kast.call_ResNet_Local(davis, training=False)
+    output_v, v_j, v_0 = kast.call_ResNet_Local(davis, training=False)
     #raw = tf.image.resize(i_drop[0][1:], [64, 64]).numpy()
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
+    v_0 = v_0[0].numpy()
+    all_white = np.ones([64, 64, 3]) * [1.0, 0., 0.]
+
 
     #LAB to RGB
     output_v = cv2.cvtColor(np.float32((output_v + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
     v_j = cv2.cvtColor(np.float32((v_j + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+    v_0 = cv2.cvtColor(np.float32((v_0 + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+    all_white = cv2.cvtColor(np.float32((all_white + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
 
 
     if not os.path.isdir(path):
         os.makedirs(path)
 
     #IMAGES
-    fig = plt.figure(figsize=(1, 2))
-    plt.subplot(2, 1, 1)
-    plt.imshow(output_v)
+    fig = plt.figure(figsize=(2, 2))
+    plt.subplot(2, 2, 1)
+    plt.imshow(v_0)
     plt.axis('off')
-    plt.subplot(2, 1, 2)
+    plt.subplot(2, 2, 2)
     plt.imshow(v_j)
     plt.axis('off')
-    #plt.subplot(3, seq_size, i+1+(seq_size*2))
-    #plt.imshow(raw[i])
-    #plt.axis('off')
+    plt.subplot(2, 2, 3)
+    plt.imshow(all_white)
+    plt.axis('off')
+    plt.subplot(2, 2, 4)
+    plt.imshow(output_v)
+    plt.axis('off')
 
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '_DAVIS.png')
@@ -167,26 +175,35 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     #im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=150)
 
 def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', path='./'):
-    output_v, v_j = kast.reconstruct_ResNet(input_data, training=training)
+    output_v, v_j, v_0 = kast.reconstruct_ResNet(input_data, training=training)
 
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
-
+    v_0 = v_0[0].numpy()
+    all_white = np.ones([64, 64, 3]) * [1.0, 0., 0.]
 
 
     # LAB to RGB
     output_v = cv2.cvtColor(np.float32((output_v + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
     v_j = cv2.cvtColor(np.float32((v_j + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+    v_0 = cv2.cvtColor(np.float32((v_0 + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+    all_white = cv2.cvtColor(np.float32((all_white + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
 
     if not os.path.isdir(path):
         os.makedirs(path)
 
     # IMAGES
-    fig = plt.figure(figsize=(2, 1))
-    plt.subplot(1, 2, 1)
+    fig = plt.figure(figsize=(2, 2))
+    plt.subplot(2, 2, 1)
+    plt.imshow(v_0)
+    plt.axis('off')
+    plt.subplot(2, 2, 2)
     plt.imshow(v_j)
     plt.axis('off')
-    plt.subplot(1, 2, 2)
+    plt.subplot(2, 2, 3)
+    plt.imshow(all_white)
+    plt.axis('off')
+    plt.subplot(2, 2, 4)
     plt.imshow(output_v)
     plt.axis('off')
 
