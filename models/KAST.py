@@ -221,7 +221,7 @@ class KAST(tf.keras.Model):
         reconstruction_v = similarity_k @ tf.reshape(v_patch, [bs, h*w, self.kernel*self.kernel, cv]) # (bs, h*w, v)
         reconstruction_v = tf.reshape(reconstruction_v, [bs, h, w, cv])
         ground_truth = v[:, 1]
-        return reconstruction_v, ground_truth, v[: 0]
+        return reconstruction_v, ground_truth, v[:, 0]
 
     def call_RKN(self, inputs, **kwargs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
