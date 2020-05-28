@@ -306,25 +306,25 @@ else:
     datasets = Dataset.Dataset('cifar10')
 
     #model1 = construct_model.get_model('SBAE', layers=[[64, 7, 2], [64, 3, 1], [128, 3, 1], [128, 3, 2], [256, 3, 1], [256, 3, 1], [256, 3, -2], [256, 3, 1]])
-    model128 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=128)
-    model256 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=256)
-    model512 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=512)
+    #model128 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=128)
+    #model256 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=256)
+    #model512 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=512)
     model1024 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=1024)
-    model2048 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=2048)
-    model4096 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=4096)
+    #model2048 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=2048)
+    #model4096 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=4096)
 
-    models = [model128, model256, model512, model1024, model1024, model2048, model4096]
-    lrs = [3e-4 for model in models]
+    models = [model1024]
+    lrs = [3e-4]
     optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
     def lr_fn(lr, step):
         if step == 40 or step == 50:
             return lr*0.1
         else:
             return lr
-    lrs_fn = [lr_fn for _ in models]
+    lrs_fn = [lr_fn]
     batch_size = 1024
-    epochs_max = [60 for _ in models]
-    saves_epochs = [10 for _ in models]
+    epochs_max = [60]
+    saves_epochs = [10]
     #directory_path = './content/drive/My Drive/Colab Data/AE/'
     directory_path = '/content/drive/My Drive/Colab Data/AE/'
     path_to_directory = directory_path+'AE_redo'
