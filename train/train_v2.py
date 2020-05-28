@@ -274,7 +274,7 @@ filename = 'batch_normalization'
 #ckpt_epoch = [10]
 #filename = 'ae_sbae'
 
-KAST = False
+KAST = True
 if KAST:
     datasets = Dataset.Dataset('oxuva')
 
