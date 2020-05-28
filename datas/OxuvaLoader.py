@@ -125,7 +125,7 @@ def _get_size(f, size):
 def oxuva_loader_v2(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', seq_size=8):
     sequence_size = seq_size
     files = glob.glob(path+'*.tfrecords')
-    ds_files = tf.data.Dataset.from_tensor_slices(files).shuffle(337, seed=1)
+    ds_files = tf.data.Dataset.from_tensor_slices(files).shuffle(337)
     true_seq_size = sequence_size*frames_delta
     np_size = np.array(_imgs_per_folder)
     nb_batch = np_size // true_seq_size
@@ -151,7 +151,6 @@ def oxuva_loader(path='/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', 
     datasets = oxuvaTFRecord.tfrecord_to_dataset(path)
     i = 0
     true_seq_size = seq_size*frames_delta
-    np.random.seed(1)
     random_i = np.random.choice(len(_imgs_per_folder), len(_imgs_per_folder)//10, replace=False)
     np_size = np.array(_imgs_per_folder)
     nb_batch = np_size // true_seq_size

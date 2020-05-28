@@ -16,7 +16,7 @@ AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 
 class Dataset():
-    def __init__(self, dataset_name, batch_size=128, buffer_size=10000, use_Lab=True):
+    def __init__(self, dataset_name, batch_size=128, buffer_size=10000, use_Lab=False):
         self.train_ds = None
         self.val_ds = None
         self.test_ds = None

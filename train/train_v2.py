@@ -274,7 +274,7 @@ filename = 'batch_normalization'
 #ckpt_epoch = [10]
 #filename = 'ae_sbae'
 
-KAST = True
+KAST = False
 if KAST:
     datasets = Dataset.Dataset('oxuva')
 
@@ -302,27 +302,34 @@ if KAST:
     multi.forward()
 
 else:
-    datasets = Dataset.Dataset('imagenetresized64')
+    #datasets = Dataset.Dataset('imagenetresized64')
+    datasets = Dataset.Dataset('cifar10')
 
-    model1 = construct_model.get_model('SBAE', layers=[[64, 7, 2], [64, 3, 1], [128, 3, 1], [128, 3, 2], [256, 3, 1], [256, 3, 1], [256, 3, -2], [256, 3, 1]])
+    #model1 = construct_model.get_model('SBAE', layers=[[64, 7, 2], [64, 3, 1], [128, 3, 1], [128, 3, 2], [256, 3, 1], [256, 3, 1], [256, 3, -2], [256, 3, 1]])
+    model128 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[128])
+    model256 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[256])
+    model512 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[512])
+    model1024 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[1024])
+    model2048 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[2048])
+    model4096 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=[4096])
 
-
-    models = [model1]
+    models = [model128, model256, model512, model1024, model1024, model2048, model4096]
     lrs = [3e-4]
     optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
     def lr_fn(lr, step):
-        if step == 20 or step == 40:
+        if step == 40 or step == 50:
             return lr*0.1
         else:
             return lr
     lrs_fn = [lr_fn]
-    batch_size = 128
-    epochs_max = [40]
-    saves_epochs = [100]
+    batch_size = 1024
+    epochs_max = [60]
+    saves_epochs = [10]
     #directory_path = './content/drive/My Drive/Colab Data/AE/'
     directory_path = '/content/drive/My Drive/Colab Data/AE/'
-    path_to_directory = directory_path+'SBAE_smaller'
-    step_is_epoch = False
+    path_to_directory = directory_path+'AE_redo'
+    #step_is_epoch = False
+    step_is_epoch = True
     multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
     print("Multitraining Done")
     multi.forward()

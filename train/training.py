@@ -16,8 +16,8 @@ import construct_model
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 class Training():
-    def __init__(self, dataset, batch_size, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch, is_seq=True):
-        self.redone = False
+    def __init__(self, dataset, batch_size, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch, is_seq=False):
+        self.redone = True
         self.batch_size = batch_size
         if self.redone:
             self.train_ds = dataset.train_ds.shuffle(buffer_size=1000).batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
@@ -281,7 +281,7 @@ class Training():
                                                     self.name + '_epoch_{:03d}_test_gif'.format(epoch),
                                                     self.img_path)
                 else:
-                    image_saver.compare_images(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
+                    image_saver.compare_images(val_x[0], self.model.reconstruct(val_x)[0], img_name, self.img_path)
             for train_x in self.train_ds.take(1):
                 if self.is_seq:
                     #image_saver.compare_images_seq(val_x, self.model.reconstruct(val_x), img_name, self.img_path)
@@ -290,7 +290,7 @@ class Training():
                                                                          epoch),
                                                                      self.img_path)
                 else:
-                    image_saver.compare_images(train_x, self.model.reconstruct(train_x), img_name, self.img_path)
+                    image_saver.compare_images(train_x[0], self.model.reconstruct(train_x[0]), img_name, self.img_path)
 
             t_loss_mean.reset_states()
             t_acc_mean.reset_states()

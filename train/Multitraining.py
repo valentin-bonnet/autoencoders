@@ -53,6 +53,9 @@ class Multitraining():
             self.v_loss.append(train.v_loss)
             self.v_acc.append(train.v_acc)
 
+        image_saver.curves([self.t_acc[0], self.t_acc[1], self.t_acc[2], self.t_acc[3], self.t_acc[4], self.t_acc[5]], ['128', '256', '512', '1024', '2048', '4096'],
+                           'training_validation_accuracy', self.path_to_directory, 'Epochs', 'Accuracy (L2)')
+
 
 
 
