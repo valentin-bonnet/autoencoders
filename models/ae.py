@@ -9,7 +9,7 @@ class AE(tf.keras.Model):
     def __init__(self, layers=[64, 128, 512], latent_dim=512, input_shape=32, use_bn=False):
         super(AE, self).__init__()
         self.latent_dim = latent_dim
-        self.description = 'AE_'+latent_dim
+        self.description = 'AE_'+str(latent_dim)
 
         ## ENCODER
         self.ae = tf.keras.Sequential()
