@@ -46,7 +46,7 @@ class Memory(tf.keras.layers.Layer):
         # top_max_s_hw, idx = tf.math.top_k(max_s_hw, k=self.m)
         idx = tf.argsort(max_s_hw, axis=-1, direction='DESCENDING')
         wv_bool = tf.where(max_s_hw < self.threshold, True, False)  # (bs, top)
-        all_ones = tf.ones_like(idx)
+        all_ones = tf.ones_like(max_s_m)
         k_sorted = tf.gather(k, idx, batch_dims=1, axis=1)
         v_sorted = tf.gather(v, idx, batch_dims=1, axis=1)
         k_sorted = tf.reshape(k_sorted, [self.batch_shape, self.m, self.k_shape])
@@ -83,7 +83,7 @@ class Memory(tf.keras.layers.Layer):
         print("wv_bool.dtype: ", wv_bool.dtype)
         #idx = tf.ragged.boolean_mask(idx, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
 
-        all_ones = tf.ones_like(idx)
+        all_ones = tf.ones_like(max_s_m)
         print("all_ones.shape: ", all_ones.shape)
         print("all_ones.dtype: ", all_ones.dtype)
         k_sorted = tf.gather(k, idx, batch_dims=1, axis=1)
