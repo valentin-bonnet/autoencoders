@@ -121,11 +121,21 @@ class KAST(tf.keras.Model):
             # corr_prev: (bs, hw, nb_patches * kernel**2)
             # patch_v: (bs, hw, nb_patches * kernel**2, v)
 
+            print("top_mk.shape: ", top_mk.shape)
+            print("top_mv.shape: ", top_mv.shape)
+            print("corr_prev.shape: ", corr_prev.shape)
+            print("patch_v.shape: ", patch_v.shape)
+
             ref_transpose = tf.transpose(top_mk, [0, 1, 3, 2])  # (bs, hw, k, nb_memory)
+            print("ref_transpose.shape: ", ref_transpose.shape)
             corr_memory = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, hw, l, nb_memory) = (bs, hw, nb_memory)
+            print("corr_memory.shape: ", corr_memory.shape)
             all_corr = tf.concat([corr_prev, corr_memory], axis=-1)  # (bs, hw, nb_memory+nb_patches*kernel**2)
             all_v = tf.concat([patch_v, top_mv], axis=-1)  # (bs, hw, nb_memory+nb_patches*kernel**2, v)
             all_sim = tf.expand_dims(tf.nn.softmax(all_corr, axis=-1), axis=-2)  # (bs, hw, 1, nb_memory+nb_patches*kernel**2)
+            print("all_corr.shape: ", all_corr.shape)
+            print("all_v.shape: ", all_v.shape)
+            print("all_sim.shape: ", all_sim.shape)
             output_v_i = all_sim @ all_v  # (bs, hw, 1, nb_memory+nb_patches*kernel**2) @ (bs, hw, nb_memory+nb_patches*kernel**2, v) = (bs, hw, 1, v)
 
             previous_v = tf.where(tf.reshape(seq_mask[:, i+1], [bs, 1, 1, 1]), v[:, i], tf.reshape(output_v_i, [-1, h, w, cv]))
