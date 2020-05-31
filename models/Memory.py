@@ -84,6 +84,8 @@ class Memory(tf.keras.layers.Layer):
         #idx = tf.ragged.boolean_mask(idx, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
 
         all_ones = tf.ones_like(idx)
+        print("all_ones.shape: ", all_ones.shape)
+        print("all_ones.dtype: ", all_ones.dtype)
         k_sorted = tf.gather(k, idx, batch_dims=1, axis=1)
         v_sorted = tf.gather(v, idx, batch_dims=1, axis=1)
         print("k_sorted.shape: ", k_sorted.shape)
