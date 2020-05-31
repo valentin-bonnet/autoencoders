@@ -53,12 +53,12 @@ class Multitraining():
             self.v_loss.append(train.v_loss)
             self.v_acc.append(train.v_acc)
 
-        for val_x in self.dataset.val_ds.batch(self.batch_size, drop_remainder=True).take(1):
-            for train in self.trainings:
-                image_saver.compare_images(val_x[0], train.model.reconstruct(val_x)[0], 'result_'+train.name, self.path_to_directory)
+        #for val_x in self.dataset.val_ds.batch(self.batch_size, drop_remainder=True).take(1):
+        #    for train in self.trainings:
+        #        image_saver.compare_images(val_x[0], train.model.reconstruct(val_x)[0], 'result_'+train.name, self.path_to_directory)
 
-        image_saver.curves([self.t_acc[0], self.t_acc[1], self.t_acc[2], self.t_acc[3], self.t_acc[4], self.t_acc[5]], ['128', '256', '512', '1024', '2048', '4096'],
-                           'training_validation_accuracy', self.path_to_directory, 'Epochs', 'Accuracy (L2)')
+        #image_saver.curves([self.t_acc[0], self.t_acc[1], self.t_acc[2], self.t_acc[3], self.t_acc[4], self.t_acc[5]], ['128', '256', '512', '1024', '2048', '4096'],
+        #                   'training_validation_accuracy', self.path_to_directory, 'Epochs', 'Accuracy (L2)')
 
 
 

@@ -16,8 +16,8 @@ import construct_model
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 class Training():
-    def __init__(self, dataset, batch_size, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch, is_seq=False):
-        self.redone = True
+    def __init__(self, dataset, batch_size, model, optimizer, lr, lr_fn, epoch_max, path_to_directory, save_steps, step_is_epoch, is_seq=True):
+        self.redone = False
         self.batch_size = batch_size
         if self.redone:
             self.train_ds = dataset.train_ds.shuffle(buffer_size=1000).batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
@@ -170,7 +170,7 @@ class Training():
 
                     for val_x in self.val_ds.take(1):
                         if self.is_seq:
-                            image_saver.KAST_View_Resnet(self.model, val_x, False,
+                            image_saver.KAST_View(self.model, val_x, False,
                                                                              self.name + '_epoch_{:03d}_step_{:03d}_test'.format(
                                                                                  epoch, i // epoch_percent_train),
                                                                              self.img_path)
@@ -182,7 +182,7 @@ class Training():
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_test'.format(epoch, i//epoch_percent_train), self.img_path)
                     for train_x in self.train_ds.take(1):
                         if self.is_seq:
-                            image_saver.KAST_View_Resnet(self.model, train_x, True,
+                            image_saver.KAST_View(self.model, train_x, True,
                                                                              self.name + '_epoch_{:03d}_step_{:03d}_train'.format(
                                                                                  epoch, i // epoch_percent_train),
                                                                              self.img_path)
@@ -191,7 +191,7 @@ class Training():
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
                     if not self.redone:
                         for test in self.test_ds.take(1):
-                            image_saver.KAST_test_ResNet(self.model, test, self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
+                            image_saver.KAST_test(self.model, test, self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
 
                     print('i :', i)
                     print('epoch percent train: ', epoch_percent_train)

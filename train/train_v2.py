@@ -274,7 +274,7 @@ filename = 'batch_normalization'
 #ckpt_epoch = [10]
 #filename = 'ae_sbae'
 
-KAST = False
+KAST = True
 if KAST:
     datasets = Dataset.Dataset('oxuva')
 
@@ -295,29 +295,29 @@ if KAST:
     saves_epochs = [100]
     #directory_path = './content/drive/My Drive/Colab Data/AE/'
     directory_path = '/content/drive/My Drive/Colab Data/AE/'
-    path_to_directory = directory_path+'KAST_ResNet_Local'
+    path_to_directory = directory_path+'KAST_Local_Memory'
     step_is_epoch = False
     multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
     print("Multitraining Done")
     multi.forward()
 
 else:
-    #datasets = Dataset.Dataset('imagenetresized64')
-    datasets = Dataset.Dataset('cifar10')
+    datasets = Dataset.Dataset('imagenetresized64')
+    #datasets = Dataset.Dataset('cifar10')
 
-    #model1 = construct_model.get_model('SBAE', layers=[[64, 7, 2], [64, 3, 1], [128, 3, 1], [128, 3, 2], [256, 3, 1], [256, 3, 1], [256, 3, -2], [256, 3, 1]])
+    model1 = construct_model.get_model('SBAE', layers=[[64, 7, 2], [64, 3, 1], [128, 3, 1], [128, 3, 2], [256, 3, 1], [256, 3, 1], [256, 3, -2], [256, 3, 1]])
     #model128 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=128)
     #model256 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=256)
     #model512 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=512)
-    model1024 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=1024)
+    #model1024 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=1024)
     #model2048 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=2048)
     #model4096 = construct_model.get_model('AE', layers=[128, 256, 512], latent_dim=4096)
 
-    models = [model1024]
+    models = [model1]
     lrs = [3e-4]
     optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
     def lr_fn(lr, step):
-        if step == 40 or step == 50:
+        if step == 10 or step == 15:
             return lr*0.1
         else:
             return lr

@@ -7,7 +7,7 @@ class Memory(tf.keras.layers.Layer):
         self.k_shape = k
         self.v_shape = c
         self.kernel = kernel
-        self.threshold = 0.35 #threshold*((kernel*kernel)/100.0)
+        self.threshold = (0.35 * 100)/unit
         self.hw_shape = 16*16
         self.batch_shape = 2
         #self.lstm = tf.keras.Sequential()
@@ -30,6 +30,65 @@ class Memory(tf.keras.layers.Layer):
         #self.bf = self.add_weight(shape=(self.m, ), initializer='zeros', trainable=True, name='bf')
 
         #self.wi = self.add_weight(shape=(self.m, self.hw_shape), initializer='random_normal', trainable=True, name='wi')
+
+    def call(self, inputs, **kwargs):
+        k, v = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
+
+        idx = tf.argsort(self.m_u, axis=-1, direction='ASCENDING', name=None)
+        m_u_sorted = tf.gather(self.m_u, idx, batch_dims=1, axis=1)
+        m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
+        m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
+
+        s = tf.nn.softmax(k @ tf.transpose(tf.reshape(self.m_k, [self.batch_shape, self.m, 256]), [0, 2, 1]))  # (bs, hw, 256) @ (bs, size_patch*256, m) = (bs, nb_patch, m)
+        max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
+        max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
+
+        # top_max_s_hw, idx = tf.math.top_k(max_s_hw, k=self.m)
+        idx = tf.argsort(max_s_hw, axis=-1, direction='DESCENDING')
+        wv_bool = tf.where(max_s_hw < self.threshold, True, False)  # (bs, top)
+        all_ones = tf.ones_like(idx)
+        k_sorted = tf.reshape(k, [self.batch_shape, self.m, self.k_shape])
+        v_sorted = tf.reshape(v, [self.batch_shape, self.m, self.v_shape])
+
+        write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
+        write_k = tf.ragged.boolean_mask(k_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.k_shape])
+        write_v = tf.ragged.boolean_mask(v_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.v_shape])
+
+        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones
+        write_ones = tf.expand_dims(write_ones, -1)
+        self.m_k = m_k_sorted * (1. - write_ones) + write_k  # (bs, m, kernel**2, k)
+        self.m_v = m_v_sorted * (1. - write_ones) + write_v  # (bs, m, kernel**2, v)
+
+        return [self.m_k, self.m_v]
+
+
+
+    def call_init(self, inputs):
+        k, v = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
+
+        idx = tf.argsort(self.m_u, axis=-1, direction='ASCENDING', name=None)
+        m_u_sorted = tf.gather(self.m_u, idx, batch_dims=1, axis=1)
+        m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
+        m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
+
+        s = tf.nn.softmax(k @ tf.transpose(k, [0, 2, 1]), -1)  # (bs, hw, 256) @ (bs, 256, hw) = (bs, hw, hw)
+
+        max_s_m, _ = tf.math.top_k(s, k=self.m)
+        wv_bool = tf.ones_like(max_s_m)
+        idx = tf.ragged.boolean_mask(idx, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
+
+        all_ones = tf.ones_like(idx)
+        k_sorted = tf.reshape(k, [self.batch_shape, self.m, self.k_shape])
+        v_sorted = tf.reshape(v, [self.batch_shape, self.m, self.v_shape])
+
+        write_ones = tf.ragged.boolean_mask(all_ones, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
+        write_k = tf.ragged.boolean_mask(k_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.k_shape])
+        write_v = tf.ragged.boolean_mask(v_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.v_shape])
+
+        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones
+        write_ones = tf.expand_dims(tf.expand_dims(write_ones, -1), -1)
+        self.m_k = m_k_sorted * (1. - write_ones) + write_k  # (bs, m, kernel**2, k)
+        self.m_v = m_v_sorted * (1. - write_ones) + write_v  # (bs, m, kernel**2, v)
 
     """
     def call(self, inputs, **kwargs):
@@ -80,6 +139,7 @@ class Memory(tf.keras.layers.Layer):
 
         return [self.m_k, self.m_v]"""
 
+    """
     def call(self, inputs, **kwargs):
         k, v = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]
 
@@ -292,7 +352,7 @@ class Memory(tf.keras.layers.Layer):
         self.m_k = m_k_sorted*(1. - write_ones) + write_k # (bs, m, kernel**2, k)
         self.m_v = m_v_sorted*(1. - write_ones) + write_v # (bs, m, kernel**2, v)
 
-    """
+    
     def call_init(self, inputs, bs):
 
         k, v, rkn_score = tf.nest.flatten(inputs)  # [(bs, HW, K), (bs, HW, V), (bs, HW, 1)]

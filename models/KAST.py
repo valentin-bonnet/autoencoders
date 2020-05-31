@@ -14,8 +14,9 @@ class KAST(tf.keras.Model):
         self.transformation = Transformation(trainable=False)
         self.resnet = ResNet()
         self.rkn = RKNModel()
-        self.memory_long = Memory(unit=100, kernel=self.kernel)
-        self.memory_long = Memory(unit=100, kernel=self.kernel)
+        self.memory = Memory(unit=500, kernel=self.kernel)
+        self.corr_cost = tfa.layers.CorrelationCost(kernel_size=1, max_displacement=self.kernel // 2, stride_1=1, stride_2=1, pad=self.kernel // 2, data_format="channels_last")
+        self.corr_cost_stride = tfa.layers.CorrelationCost(kernel_size=1, max_displacement=(self.kernel // 2)*2, stride_1=1, stride_2=2, pad=(self.kernel // 2)*2, data_format="channels_last")
         #self.memory = tf.keras.Sequential()
         #self.memory.add(tf.keras.layers.Input(input_shape=((None, None, 256)), batch_input_shape=[4]))
         #self.memory.add(tf.keras.layers.RNN(self.memory_cell, stateful=True))
@@ -50,34 +51,82 @@ class KAST(tf.keras.Model):
         #    score = self.rkn((k, tf.reshape(seq_mask, [bs, seq_size, 1])))
 
         previous_v = v[:, 0]
-        self.memory_short.get_init_state(bs)
-        self.memory_long.get_init_state(bs)
-        self.memory_short.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv])))
-        self.memory_long.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv])))
+        self.memory.get_init_state(bs)
+        self.memory.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv])))
         all_m_kv = []
-        all_previous_v = []
-        all_previous_v.append(previous_v)
-        for i in range(1, seq_size):
+        all_previous_v = [previous_v]
+        for i in range(1, seq_size+1):
             with tf.name_scope('Memory'):
                 m_kv = self.memory.call((tf.reshape(k[:, i-1], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv])))
                 all_m_kv.append(m_kv)
 
-            m_k, m_v = tf.nest.flatten(all_m_kv[i-1])
+            corr_prev_one = self.corr_cost([k[:, i], k[:, i-1]])  # (bs, hw, patch)
+            corr_prev = tf.reshape(corr_prev_one, [bs, h*w, self.kernel**2])
+            patch_v1 = tf.image.extract_patches(images=tf.reshape(v[:, i-1], [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
+            patch_v = tf.reshape(patch_v1, [bs, h*w, self.kernel**2, cv])
 
-            if i > 2:
-                m_k = 2
+            m_k0, m_v0 = tf.nest.flatten(all_m_kv[0])
+            print("m_k0.shape: ", m_k0.shape)
+            print("m_v0.shape: ", m_v0.shape)
+            ref_transpose = tf.transpose(m_k0, [0, 2, 1])  # (bs, k, m)
+            inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
 
-            if i > 4:
-                k_5 = tf.image.extract_patches(tf.reshape(k[:, i - 5], [bs, h, w, ck]), sizes=[1, 15, 15, 1],
-                                               strides=[1, 1, 1, 1], rates=[1, 3, 3, 1], padding="SAME")
-                v_5 = tf.image.extract_patches(tf.reshape(previous_v[i - 5], [bs, h, w, cv]), sizes=[1, 15, 15, 1],
-                                               strides=[1, 1, 1, 1], rates=[1, 3, 3, 1], padding="SAME")
+            idx_top0 = tf.argmax(inner_product)
+            top_k0 = tf.gather(m_k0, idx_top0)  # (bs, hw, k)
+            top_v0 = tf.gather(m_v0, idx_top0)  # (bs, hw, v)
+            print("top_k0.shape: ", top_k0.shape)
+            print("top_v0.shape: ", top_v0.shape)
 
-            if i > 6:
-                mk_0 = all_m_kv[0]
+            top_mk = tf.reshape(top_k0, [bs, h*w, 1, ck])
+            top_mv = tf.reshape(top_v0, [bs, h*w, 1, cv])
 
-            if i > 7:
-                m_k_5 = all_m_kv[5]
+            if i >= 3:
+                corr_prev_three = self.corr_cost_stride([k[:, i], k[:, i-3]])  # (bs, hw, kernel**2)
+                print("corr_prev_three.shape: ", corr_prev_three.shape)
+                corr_prev_three = tf.reshape(corr_prev_three, [bs, h*w, self.kernel ** 2])
+                corr_prev = tf.concat([corr_prev, corr_prev_three], axis=-1)
+                patch_v3 = tf.image.extract_patches(images=tf.reshape(v[:, i-3], [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 2, 2, 1], padding="SAME")
+                patch_v3 = tf.reshape(patch_v3, [bs, h * w, self.kernel ** 2, cv])
+                patch_v = tf.concat([patch_v, patch_v3], axis=-2)
+
+                if i >= 5:
+                    corr_prev_five = self.corr_cost_stride([k[:, i], k[:, i-5]])  # (bs, hw, kernel**2)
+                    print("corr_prev_five.shape: ", corr_prev_five.shape)
+                    corr_prev_five = tf.reshape(corr_prev_five, [bs, h*w, self.kernel ** 2])
+                    corr_prev = tf.concat([corr_prev, corr_prev_five], axis=-1)
+                    patch_v5 = tf.image.extract_patches(images=tf.reshape(v[:, i-5], [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 2, 2, 1], padding="SAME")
+                    patch_v5 = tf.reshape(patch_v5, [bs, h * w, self.kernel ** 2, cv])
+                    patch_v = tf.concat([patch_v, patch_v5], axis=-2)
+                    if i >= 6:
+                        m_k5, m_v5 = tf.nest.flatten(all_m_kv[5])
+                        print("m_k5.shape: ", m_k5.shape)
+                        print("m_v5.shape: ", m_v5.shape)
+                        ref_transpose = tf.transpose(m_k5, [0, 2, 1])  # (bs, k, m)
+                        inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
+
+                        idx_top5 = tf.argmax(inner_product)
+                        top_k5 = tf.gather(m_k5, idx_top5)  # (bs, hw, 1, k)
+                        top_v5 = tf.gather(m_v5, idx_top5)  # (bs, hw, 1, v)
+                        print("top_k0.shape: ", top_k0.shape)
+                        print("top_v0.shape: ", top_v0.shape)
+
+                        top_mk5 = tf.reshape(top_k5, [bs, h * w, 1, ck])
+                        top_mv5 = tf.reshape(top_v5, [bs, h * w, 1, cv])
+
+                        top_mk = tf.concat([top_mk, top_mk5], axis=-2)
+                        top_mv = tf.concat([top_mv, top_mv5], axis=-2)
+
+            # top_mk: (bs, hw, nb_memory, k)
+            # top_mv: (bs, hw, nb_memory, v)
+            # corr_prev: (bs, hw, nb_patches * kernel**2)
+            # patch_v: (bs, hw, nb_patches * kernel**2, v)
+
+            ref_transpose = tf.transpose(top_mk, [0, 1, 3, 2])  # (bs, hw, k, nb_memory)
+            corr_memory = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, hw, l, nb_memory) = (bs, hw, nb_memory)
+            all_corr = tf.concat([corr_prev, corr_memory], axis=-1)  # (bs, hw, nb_memory+nb_patches*kernel**2)
+            all_v = tf.concat([patch_v, top_mv], axis=-1)  # (bs, hw, nb_memory+nb_patches*kernel**2, v)
+            all_sim = tf.expand_dims(tf.nn.softmax(all_corr, axis=-1), axis=-2)  # (bs, hw, 1, nb_memory+nb_patches*kernel**2)
+            output_v_i = all_sim @ all_v  # (bs, hw, 1, nb_memory+nb_patches*kernel**2) @ (bs, hw, nb_memory+nb_patches*kernel**2, v) = (bs, hw, 1, v)
 
             previous_v = tf.where(tf.reshape(seq_mask[:, i+1], [bs, 1, 1, 1]), v[:, i], tf.reshape(output_v_i, [-1, h, w, cv]))
             all_previous_v.append(previous_v)
@@ -86,14 +135,12 @@ class KAST(tf.keras.Model):
             ground_truth_i = tf.reshape(v[:, i+1], [-1, 1, h, w, cv])
             ground_truth.append(ground_truth_i)
 
+        # print("output_v len: ", len(output_v))
+        # print("output_v[0].shape: ", output_v[0].shape)
+        # print("ground_truth len: ", len(ground_truth))
+        # print("ground_truth[0].shape: ", ground_truth[0].shape)
 
-        #print("output_v len: ", len(output_v))
-        #print("output_v[0].shape: ", output_v[0].shape)
-        #print("ground_truth len: ", len(ground_truth))
-        #print("ground_truth[0].shape: ", ground_truth[0].shape)
-
-
-        #self.memory.get_initial_state()
+        # self.memory.get_initial_state()
 
         return tf.concat(output_v, 1), tf.concat(ground_truth, 1), i_drop
 
