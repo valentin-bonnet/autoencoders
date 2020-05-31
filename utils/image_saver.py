@@ -129,8 +129,8 @@ def KAST_test_ResNet(kast, davis, file_name_head='image', path='./'):
 
 def KAST_test(kast, davis, file_name_head='image', path='./'):
     #output_v, v_j, i_drop = kast.call(davis, training=False)
-    output_v, v_j = kast.call_ResNet_Local(davis, training=False)
-    #raw = tf.image.resize(i_drop[0][1:], [64, 64]).numpy()
+    output_v, v_j, i_drop = kast.call(davis, training=False)
+    raw = tf.image.resize(i_drop[0][1:], [64, 64]).numpy()
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
     seq_size = output_v.shape[0]
@@ -138,7 +138,7 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     for i in range(seq_size):
         output_v[i] = cv2.cvtColor(np.float32((output_v[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
         v_j[i] = cv2.cvtColor(np.float32((v_j[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
-        #raw[i] = cv2.cvtColor(np.float32((raw[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+        raw[i] = cv2.cvtColor(np.float32((raw[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
 
     #RGB to RGB
     #output_v = np.uint8((output_v+1.)*127.5)
@@ -149,17 +149,17 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         os.makedirs(path)
 
     #IMAGES
-    fig = plt.figure(figsize=(seq_size, 2))
+    fig = plt.figure(figsize=(seq_size, 3))
     for i in range(seq_size):
-        plt.subplot(2, seq_size, 1+i)
+        plt.subplot(3, seq_size, 1+i)
         plt.imshow(output_v[i])
         plt.axis('off')
-        plt.subplot(2, seq_size, 1+i+seq_size)
+        plt.subplot(3, seq_size, 1+i+seq_size)
         plt.imshow(v_j[i])
         plt.axis('off')
-        #plt.subplot(3, seq_size, i+1+(seq_size*2))
-        #plt.imshow(raw[i])
-        #plt.axis('off')
+        plt.subplot(3, seq_size, i+1+(seq_size*2))
+        plt.imshow(raw[i])
+        plt.axis('off')
 
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '_DAVIS.png')
