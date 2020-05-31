@@ -74,7 +74,7 @@ class Memory(tf.keras.layers.Layer):
         s = tf.nn.softmax(k @ tf.transpose(k, [0, 2, 1]), -1)  # (bs, hw, 256) @ (bs, 256, hw) = (bs, hw, hw)
 
         max_s_m, _ = tf.math.top_k(s, k=self.m)
-        wv_bool = tf.ones_like(max_s_m)
+        wv_bool = tf.cast(tf.ones_like(max_s_m, dtype=tf.int32), dtype=tf.bool)
         idx = tf.ragged.boolean_mask(idx, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
 
         all_ones = tf.ones_like(idx)
