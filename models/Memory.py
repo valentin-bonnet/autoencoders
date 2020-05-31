@@ -99,8 +99,8 @@ class Memory(tf.keras.layers.Layer):
 
         self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones
         write_ones = tf.expand_dims(tf.expand_dims(write_ones, -1), -1)
-        self.m_k = m_k_sorted * (1. - write_ones) + write_k  # (bs, m, kernel**2, k)
-        self.m_v = m_v_sorted * (1. - write_ones) + write_v  # (bs, m, kernel**2, v)
+        self.m_k = m_k_sorted * (1. - write_ones) + write_k  # (bs, m, k)
+        self.m_v = m_v_sorted * (1. - write_ones) + write_v  # (bs, m, v)
 
     """
     def call(self, inputs, **kwargs):
@@ -470,10 +470,9 @@ class Memory(tf.keras.layers.Layer):
     """
 
     def get_init_state(self, bs):
-        self.m_k = tf.zeros([bs, self.m, self.kernel**2, self.k_shape])
-        self.m_v = tf.zeros([bs, self.m, self.kernel**2, self.v_shape])
+        self.m_k = tf.zeros([bs, self.m, self.k_shape])
+        self.m_v = tf.zeros([bs, self.m, self.v_shape])
         self.m_u = tf.ones([bs, self.m])
-        self.threshold = 100.
 
     def get_config(self):
         return {'units': self.m}
