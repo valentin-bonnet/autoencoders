@@ -55,7 +55,7 @@ class KAST(tf.keras.Model):
         self.memory.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv])))
         all_m_kv = []
         all_previous_v = [previous_v]
-        for i in range(1, seq_size+1):
+        for i in range(1, seq_size):
             with tf.name_scope('Memory'):
                 m_kv = self.memory.call((tf.reshape(k[:, i-1], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv])))
                 all_m_kv.append(m_kv)
