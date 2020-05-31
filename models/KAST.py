@@ -62,7 +62,7 @@ class KAST(tf.keras.Model):
 
             corr_prev_one = self.corr_cost([k[:, i], k[:, i-1]])  # (bs, hw, patch)
             corr_prev = tf.reshape(corr_prev_one, [bs, h*w, self.kernel**2])
-            patch_v1 = tf.image.extract_patches(images=tf.reshape(v[:, i-1], [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
+            patch_v1 = tf.image.extract_patches(images=tf.reshape(all_previous_v[i-1], [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
             patch_v = tf.reshape(patch_v1, [bs, h*w, self.kernel**2, cv])
 
             m_k0, m_v0 = tf.nest.flatten(all_m_kv[0])
@@ -80,7 +80,7 @@ class KAST(tf.keras.Model):
                 corr_prev_three = self.corr_cost_stride([k[:, i], k[:, i-3]])  # (bs, hw, kernel**2)
                 corr_prev_three = tf.reshape(corr_prev_three, [bs, h*w, self.kernel ** 2])
                 corr_prev = tf.concat([corr_prev, corr_prev_three], axis=-1)
-                patch_v3 = tf.image.extract_patches(images=tf.reshape(v[:, i-3], [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 2, 2, 1], padding="SAME")
+                patch_v3 = tf.image.extract_patches(images=tf.reshape(all_previous_v[i-3], [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 2, 2, 1], padding="SAME")
                 patch_v3 = tf.reshape(patch_v3, [bs, h * w, self.kernel ** 2, cv])
                 patch_v = tf.concat([patch_v, patch_v3], axis=-2)
 
@@ -88,7 +88,7 @@ class KAST(tf.keras.Model):
                     corr_prev_five = self.corr_cost_stride([k[:, i], k[:, i-5]])  # (bs, hw, kernel**2)
                     corr_prev_five = tf.reshape(corr_prev_five, [bs, h*w, self.kernel ** 2])
                     corr_prev = tf.concat([corr_prev, corr_prev_five], axis=-1)
-                    patch_v5 = tf.image.extract_patches(images=tf.reshape(v[:, i-5], [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 2, 2, 1], padding="SAME")
+                    patch_v5 = tf.image.extract_patches(images=tf.reshape(all_previous_v[i-5], [-1, 64, 64, 3]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 2, 2, 1], padding="SAME")
                     patch_v5 = tf.reshape(patch_v5, [bs, h * w, self.kernel ** 2, cv])
                     patch_v = tf.concat([patch_v, patch_v5], axis=-2)
                     if i >= 6:
@@ -119,11 +119,11 @@ class KAST(tf.keras.Model):
             all_sim = tf.expand_dims(tf.nn.softmax(all_corr, axis=-1), axis=-2)  # (bs, hw, 1, nb_memory+nb_patches*kernel**2)
             output_v_i = all_sim @ all_v  # (bs, hw, 1, nb_memory+nb_patches*kernel**2) @ (bs, hw, nb_memory+nb_patches*kernel**2, v) = (bs, hw, 1, v)
 
-            previous_v = tf.where(tf.reshape(seq_mask[:, i+1], [bs, 1, 1, 1]), v[:, i], tf.reshape(output_v_i, [-1, h, w, cv]))
+            previous_v = tf.where(tf.reshape(seq_mask[:, i], [bs, 1, 1, 1]), v[:, i], tf.reshape(output_v_i, [-1, h, w, cv]))
             all_previous_v.append(previous_v)
             output_v_i = tf.reshape(output_v_i, [-1, 1, h, w, cv])
             output_v.append(output_v_i)
-            ground_truth_i = tf.reshape(v[:, i+1], [-1, 1, h, w, cv])
+            ground_truth_i = tf.reshape(v[:, i], [-1, 1, h, w, cv])
             ground_truth.append(ground_truth_i)
 
         # print("output_v len: ", len(output_v))
