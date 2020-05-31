@@ -2,7 +2,7 @@ import tensorflow as tf
 import glob
 
 frames_delta = 4
-sequence_size = 12
+sequence_size = 10
 
 
 def check_image(image):
