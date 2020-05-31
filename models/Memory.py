@@ -71,8 +71,10 @@ class Memory(tf.keras.layers.Layer):
         m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
         m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
-        s = tf.nn.softmax(k @ tf.transpose(k, [0, 2, 1]), -1)  # (bs, hw, 256) @ (bs, 256, hw) = (bs, hw, hw)
+        s = k @ tf.transpose(k, [0, 2, 1])  # (bs, hw, 256) @ (bs, 256, hw) = (bs, hw, hw)
         print("s.shape: ", s.shape)
+        s = tf.nn.softmax(s, -1)
+        print("s_softmax.shape: ", s.shape)
         max_s_m, _ = tf.math.top_k(s, k=self.m)
         print("max_s_m.shape: ", max_s_m.shape)
         wv_bool = tf.cast(tf.ones_like(max_s_m, dtype=tf.int32), dtype=tf.bool)
