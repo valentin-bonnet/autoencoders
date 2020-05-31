@@ -119,7 +119,7 @@ class KAST(tf.keras.Model):
             ###all_sim = tf.expand_dims(tf.nn.softmax(all_corr, axis=-1), axis=-2)  # (bs, hw, 1, nb_memory+nb_patches*kernel**2)
             ###output_v_i = all_sim @ all_v  # (bs, hw, 1, nb_memory+nb_patches*kernel**2) @ (bs, hw, nb_memory+nb_patches*kernel**2, v) = (bs, hw, 1, v)
 
-            corr_sim = tf.nn.softmax(corr_prev, -1)
+            corr_sim = tf.expand_dims(tf.nn.softmax(corr_prev, -1), -2)
             output_v_i = corr_sim @ patch_v
 
 
