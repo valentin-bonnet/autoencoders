@@ -94,7 +94,7 @@ class KAST(tf.keras.Model):
                     if i >= 6:
                         m_k5, m_v5 = tf.nest.flatten(all_m_kv[5])
                         ref_transpose = tf.transpose(m_k5, [0, 2, 1])  # (bs, k, m)
-                        inner_product = tf.reshape(k[:, i], [bs, h*w, 1, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
+                        inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
 
                         idx_top5 = tf.argmax(inner_product, axis=-1)
                         top_k5 = tf.gather(m_k5, idx_top5, batch_dims=1, axis=1)  # (bs, hw, 1, k)
