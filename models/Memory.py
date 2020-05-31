@@ -80,6 +80,7 @@ class Memory(tf.keras.layers.Layer):
         print("max_s_m.shape: ", max_s_m.shape)
         wv_bool = tf.cast(tf.ones_like(idx), dtype=tf.bool)
         print("wv_bool.shape: ", wv_bool.shape)
+        print("wv_bool.dtype: ", wv_bool.dtype)
         #idx = tf.ragged.boolean_mask(idx, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
 
         all_ones = tf.ones_like(idx)
