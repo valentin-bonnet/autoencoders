@@ -39,7 +39,7 @@ class Memory(tf.keras.layers.Layer):
         m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
         m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
-        s = tf.nn.softmax(k @ tf.transpose(tf.reshape(self.m_k, [self.batch_shape, self.m, 256]), [0, 2, 1]))  # (bs, hw, 256) @ (bs, size_patch*256, m) = (bs, nb_patch, m)
+        s = tf.nn.softmax(k @ tf.transpose(tf.reshape(self.m_k, [self.batch_shape, self.m, 256]), [0, 2, 1]))  # (bs, hw, 256) @ (bs, size_patch*256, m) = (bs, hw, m)
         max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
 
@@ -81,8 +81,8 @@ class Memory(tf.keras.layers.Layer):
         #idx = tf.ragged.boolean_mask(idx, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
 
         all_ones = tf.ones_like(idx)
-        k_sorted = tf.gather(k, idx)
-        v_sorted = tf.gather(v, idx)
+        k_sorted = tf.gather(k, idx, batch_dims=1, axis=1)
+        v_sorted = tf.gather(v, idx, batch_dims=1, axis=1)
         k_sorted = tf.reshape(k_sorted, [self.batch_shape, self.m, self.k_shape])
         v_sorted = tf.reshape(v_sorted, [self.batch_shape, self.m, self.v_shape])
 
