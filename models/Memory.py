@@ -85,6 +85,8 @@ class Memory(tf.keras.layers.Layer):
         all_ones = tf.ones_like(idx)
         k_sorted = tf.gather(k, idx, batch_dims=1, axis=1)
         v_sorted = tf.gather(v, idx, batch_dims=1, axis=1)
+        print("k_sorted.shape: ", k_sorted.shape)
+        print("v_sorted.shape: ", v_sorted.shape)
         k_sorted = tf.reshape(k_sorted, [self.batch_shape, self.m, self.k_shape])
         v_sorted = tf.reshape(v_sorted, [self.batch_shape, self.m, self.v_shape])
 
