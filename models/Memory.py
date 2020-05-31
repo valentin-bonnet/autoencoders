@@ -74,22 +74,13 @@ class Memory(tf.keras.layers.Layer):
         m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
         s = tf.reduce_sum(k @ tf.transpose(k, [0, 2, 1]), -1)  # (bs, hw, 256) @ (bs, 256, hw) = (bs, hw, hw)
-        print("s.shape: ", s.shape)
-        print("s_softmax.shape: ", s.shape)
         max_s_m, idx = tf.math.top_k(s, k=self.m)
-        print("max_s_m.shape: ", max_s_m.shape)
         wv_bool = tf.cast(tf.ones_like(idx), dtype=tf.bool)
-        print("wv_bool.shape: ", wv_bool.shape)
-        print("wv_bool.dtype: ", wv_bool.dtype)
         #idx = tf.ragged.boolean_mask(idx, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
 
         all_ones = tf.ones_like(max_s_m)
-        print("all_ones.shape: ", all_ones.shape)
-        print("all_ones.dtype: ", all_ones.dtype)
         k_sorted = tf.gather(k, idx, batch_dims=1, axis=1)
         v_sorted = tf.gather(v, idx, batch_dims=1, axis=1)
-        print("k_sorted.shape: ", k_sorted.shape)
-        print("v_sorted.shape: ", v_sorted.shape)
         k_sorted = tf.reshape(k_sorted, [self.batch_shape, self.m, self.k_shape])
         v_sorted = tf.reshape(v_sorted, [self.batch_shape, self.m, self.v_shape])
 

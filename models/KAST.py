@@ -72,8 +72,8 @@ class KAST(tf.keras.Model):
             inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
 
             idx_top0 = tf.argmax(inner_product)
-            top_k0 = tf.gather(m_k0, idx_top0)  # (bs, hw, k)
-            top_v0 = tf.gather(m_v0, idx_top0)  # (bs, hw, v)
+            top_k0 = tf.gather(m_k0, idx_top0, batch_dims=1, axis=1)  # (bs, hw, k)
+            top_v0 = tf.gather(m_v0, idx_top0, batch_dims=1, axis=1)  # (bs, hw, v)
             print("top_k0.shape: ", top_k0.shape)
             print("top_v0.shape: ", top_v0.shape)
 
@@ -105,8 +105,8 @@ class KAST(tf.keras.Model):
                         inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
 
                         idx_top5 = tf.argmax(inner_product)
-                        top_k5 = tf.gather(m_k5, idx_top5)  # (bs, hw, 1, k)
-                        top_v5 = tf.gather(m_v5, idx_top5)  # (bs, hw, 1, v)
+                        top_k5 = tf.gather(m_k5, idx_top5, batch_dims=1, axis=1)  # (bs, hw, 1, k)
+                        top_v5 = tf.gather(m_v5, idx_top5, batch_dims=1, axis=1)  # (bs, hw, 1, v)
                         print("top_k0.shape: ", top_k0.shape)
                         print("top_v0.shape: ", top_v0.shape)
 
