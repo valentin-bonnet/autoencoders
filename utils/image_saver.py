@@ -147,6 +147,8 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     print(v_j[0])
     print("\n\n")
 
+
+
     #RGB to RGB
     #output_v = np.uint8((output_v+1.)*127.5)
     #v_j = np.uint8((v_j+1.)*127.5)
@@ -168,9 +170,14 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         plt.imshow(raw[i])
         plt.axis('off')
 
+
+
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '_DAVIS.png')
     plt.close(fig)
+
+    np.save(file_path + '_DAVIS_output.npy', output_v[0])
+    np.save(file_path + '_DAVIS_gt.npy', v_j[0])
 
     # GIF
     #images = tf.concat([output_v, v_j], axis=2).numpy()
