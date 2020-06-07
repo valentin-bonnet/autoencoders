@@ -8,7 +8,7 @@ class Memory(tf.keras.layers.Layer):
         self.v_shape = c
         self.kernel = kernel
         self.threshold = (0.35 * 100)/unit
-        self.hw_shape = 16*16
+        self.hw_shape = 64*64
         self.batch_shape = 4
         #self.lstm = tf.keras.Sequential()
         #self.lstm.add(tf.keras.layers.Input(shape=(top_a+unit, k),batch_size=4))
@@ -20,6 +20,7 @@ class Memory(tf.keras.layers.Layer):
         # input : [(batch size, HW, K), (batch size, HW, V), (batch size, HW, 1)]
         self.batch_shape = input_shape[0][0]
         self.hw_shape = input_shape[0][1]
+        self.v_shape = input_shape[1][2]
         #self.a_shape = input_shape[0][3]
         self.m_k = self.add_weight(shape=(self.batch_shape, self.m, self.kernel**2, self.k_shape), initializer='zeros', trainable=False, name='mk')
         self.m_v = self.add_weight(shape=(self.batch_shape, self.m, self.kernel**2, self.v_shape), initializer='zeros', trainable=False, name='mv')
@@ -460,7 +461,8 @@ class Memory(tf.keras.layers.Layer):
         return [self.m_k, self.m_v, self.m_u]
     """
 
-    def get_init_state(self, bs):
+    def get_init_state(self, bs, v_shape):
+        self.v_shape = v_shape
         self.m_k = tf.zeros([bs, self.m, self.k_shape])
         self.m_v = tf.zeros([bs, self.m, self.v_shape])
         self.m_u = tf.ones([bs, self.m])

@@ -5,6 +5,8 @@ import os
 import cv2
 from PIL import Image
 
+palette_DAVIS = tf.constant([[0, 0, 0], [128, 0, 0], [0, 128, 0], [128, 128, 0], [0, 0, 128], [128, 0, 128], [0, 128, 128], [128, 128, 128], [64, 0, 0]])
+
 
 def generate_and_save_images(model, epoch, test_input):
     predictions = model.sample(test_input)
@@ -131,15 +133,23 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     #output_v, v_j, i_drop = kast.call(davis, training=False)
     output_v, v_j, i_drop = kast.call(davis, training=False)
     raw = tf.image.resize(i_drop[0][1:], [64, 64]).numpy()
-    output_v = output_v[0].numpy()
-    v_j = v_j[0].numpy()
+    #output_v = output_v[0].numpy()
+    output_v = output_v[0]
+    max_output = tf.argmax(output_v, -1)
+    output_v = tf.gather(palette_DAVIS, max_output).numpy()
+    #v_j = v_j[0].numpy()
+    v_j = v_j[0]
+    max_output = tf.argmax(v_j, -1)
+    v_j = tf.gather(palette_DAVIS, max_output).numpy()
     seq_size = output_v.shape[0]
 
     #LAB to RGB
     for i in range(seq_size):
-        output_v[i] = cv2.cvtColor(np.float32((output_v[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
-        v_j[i] = cv2.cvtColor(np.float32((v_j[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+        #output_v[i] = cv2.cvtColor(np.float32((output_v[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+        #v_j[i] = cv2.cvtColor(np.float32((v_j[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
         raw[i] = cv2.cvtColor(np.float32((raw[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+
+
 
     print("############## \n OUTPUT \n ##############")
     print(output_v[0])
