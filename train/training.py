@@ -168,7 +168,8 @@ class Training():
                         j_mean(j)
                         f_mean(f)
 
-                    self.js.append()
+                    self.js.append(j_mean.result().numpy())
+                    self.fs.append(f_mean.result().numpy())
                     self.t_loss.append(t_loss_mean.result().numpy())
                     self.t_acc.append(t_acc_mean.result().numpy())
                     self.v_loss.append(v_loss_mean.result().numpy())
