@@ -45,6 +45,7 @@ class Training():
         self.train_path = os.path.join(self.path, 'training')
         self.val_path = os.path.join(self.path, 'validation')
         self.img_path = os.path.join(self.path, 'imgs')
+        self.metrics_path = os.path.join(self.path, 'metrics')
         self.save_steps = save_steps
         self.step_is_epoch = step_is_epoch
         self.is_seq = is_seq
@@ -53,6 +54,8 @@ class Training():
         self.t_acc = None
         self.v_loss = None
         self.v_acc = None
+        self.js = None
+        self.fs = None
 
         if not self.step_is_epoch and self.save_steps > 1000:
             self.save_steps = self.save_steps % 1000
@@ -76,6 +79,9 @@ class Training():
 
         if not os.path.isdir(self.val_path):
             os.makedirs(self.val_path)
+
+        if not os.path.isdir(self.metrics_path):
+            os.makedirs(self.metrics_path)
 
         self.current_epoch = tf.Variable(0)
         self.current_step = tf.Variable(0)
@@ -109,6 +115,8 @@ class Training():
         t_acc_mean = tf.keras.metrics.Mean(name='t_acc')
         v_loss_mean = tf.keras.metrics.Mean(name='v_loss')
         v_acc_mean = tf.keras.metrics.Mean(name='v_acc')
+        j_mean = tf.keras.metrics.Mean(name='j_mean')
+        f_mean = tf.keras.metrics.Mean(name='f_mean')
 
 
         starting_epoch = int(self.ckpt.epoch)
@@ -155,7 +163,12 @@ class Training():
                         v_loss_mean(self.model.compute_loss(val_x))
                         v_acc_mean(self.model.compute_accuracy(val_x))
 
+                    for test in self.test_ds.take(1):
+                        j, f = image_saver.KAST_JF(self.model, test)
+                        j_mean(j)
+                        f_mean(f)
 
+                    self.js.append()
                     self.t_loss.append(t_loss_mean.result().numpy())
                     self.t_acc.append(t_acc_mean.result().numpy())
                     self.v_loss.append(v_loss_mean.result().numpy())
@@ -165,6 +178,8 @@ class Training():
                     t_acc_mean.reset_states()
                     v_loss_mean.reset_states()
                     v_acc_mean.reset_states()
+                    j_mean.reset_states()
+                    f_mean.reset_states()
 
                 if i != 0 and i % (epoch_percent_train*self.save_steps) == 0:
 
@@ -201,6 +216,8 @@ class Training():
                                        'training_validation_loss', self.img_path, 'Steps', 'Loss', x_axis)
                     image_saver.curves([self.t_acc, self.v_acc], ['Training', 'Validation'],
                                        'training_validation_accuracy', self.img_path, 'Steps', 'Accuracy', x_axis)
+                    image_saver.curves([self.js, self.fs], ['J', 'F'],
+                                       'j_f', self.img_path, 'Steps', 'Metrics', x_axis)
                     self.ckpt.step.assign(i+1)
                     if self.redone:
                         self.save_redone()
@@ -211,6 +228,8 @@ class Training():
                     t_acc_mean.reset_states()
                     v_loss_mean.reset_states()
                     v_acc_mean.reset_states()
+                    j_mean.reset_states()
+                    f_mean.reset_states()
 
             starting_step = 0
 
@@ -406,6 +425,8 @@ class Training():
         t_acc_path = os.path.join(self.train_path, 'accuracy.npy')
         v_loss_path = os.path.join(self.val_path, 'loss.npy')
         v_acc_path = os.path.join(self.val_path, 'accuracy.npy')
+        j_path = os.path.join(self.metrics_path, 'j.npy')
+        f_path = os.path.join(self.metrics_path, 'f.npy')
 
         #Save model with checkpoint
         print("self.ckpt.step", self.ckpt.step)
@@ -420,6 +441,8 @@ class Training():
         np.save(t_acc_path, np.asarray(self.t_acc))
         np.save(v_loss_path, np.asarray(self.v_loss))
         np.save(v_acc_path, np.asarray(self.v_acc))
+        np.save(j_path, np.asarray(self.js))
+        np.save(f_path, np.asarray(self.fs))
         if self.step_is_epoch:
             print("Saved checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path))
             print("Saved Resnet checkpoint for epoch {}: {}".format(int(self.ckpt.epoch), save_path_resnet))
@@ -460,11 +483,15 @@ class Training():
         t_acc_path = os.path.join(self.train_path, 'accuracy.npy')
         v_loss_path = os.path.join(self.val_path, 'loss.npy')
         v_acc_path = os.path.join(self.val_path, 'accuracy.npy')
+        j_path = os.path.join(self.metrics_path, 'j.npy')
+        f_path = os.path.join(self.metrics_path, 'f.npy')
 
         self.t_loss = np.load(t_loss_path).tolist() if os.path.isfile(t_loss_path) else []
         self.t_acc = np.load(t_acc_path).tolist() if os.path.isfile(t_acc_path) else []
         self.v_loss = np.load(v_loss_path).tolist() if os.path.isfile(v_loss_path) else []
         self.v_acc = np.load(v_acc_path).tolist() if os.path.isfile(v_acc_path) else []
+        self.js = np.load(j_path).tolist() if os.path.isfile(j_path) else []
+        self.fs = np.load(f_path).tolist() if os.path.isfile(f_path) else []
 
     def load(self):
         ## RESNET
@@ -500,12 +527,15 @@ class Training():
         t_acc_path = os.path.join(self.train_path, 'accuracy.npy')
         v_loss_path = os.path.join(self.val_path, 'loss.npy')
         v_acc_path = os.path.join(self.val_path, 'accuracy.npy')
+        j_path = os.path.join(self.metrics_path, 'j.npy')
+        f_path = os.path.join(self.metrics_path, 'f.npy')
 
         self.t_loss = np.load(t_loss_path).tolist() if os.path.isfile(t_loss_path) else []
         self.t_acc = np.load(t_acc_path).tolist() if os.path.isfile(t_acc_path) else []
         self.v_loss = np.load(v_loss_path).tolist() if os.path.isfile(v_loss_path) else []
         self.v_acc = np.load(v_acc_path).tolist() if os.path.isfile(v_acc_path) else []
-
+        self.js = np.load(j_path).tolist() if os.path.isfile(j_path) else []
+        self.fs = np.load(f_path).tolist() if os.path.isfile(f_path) else []
 
 
 

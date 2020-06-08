@@ -250,6 +250,49 @@ def KAST_test_ResNet(kast, davis, file_name_head='image', path='./'):
     #file_path = os.path.join(path, file_name_head)
     #im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=150)
 
+def KAST_JF(kast, davis):
+    output_v, v_j, i_drop = kast.call(davis, training=False)
+    output_v = output_v[0]
+    seq_size = output_v.shape[0]
+    max_value_output = tf.argmax(output_v, -1)
+    v_j = v_j[0]
+    max_value = tf.argmax(v_j, -1)
+
+    number_size = tf.reduce_max(max_value)
+
+    jss = []
+    fss = []
+    for i in range(seq_size):
+        js = []
+        fs = []
+        for class_id in range(1, number_size + 1):
+            gt = (max_value[i] == class_id)
+            segment = (max_value_output[i] == class_id)
+            j_and = gt & segment
+            # print(j_and)
+            j_and_float = np.float32(j_and)
+            # print(j_and_float)
+            j_and_sum = np.sum(j_and_float)
+            # print(j_and_sum)
+            j_or = gt | segment
+            # print(j_or)
+            j_or_float = np.float32(j_or)
+            # print(j_or_float)
+            j_or_sum = np.sum(j_or_float)
+            j = j_and_sum / j_or_sum
+            # j = tf.reduce_sum(gt & segment) / tf.reduce_sum(gt | segment)
+            js.append(j)
+            f = db_eval_boundary(np.float32(gt), np.float32(segment))
+            fs.append(f)
+
+        j_mean = np.mean(js)
+        f_mean = np.mean(fs)
+        jss.append(j_mean)
+        fss.append(f_mean)
+
+    return np.mean(jss), np.mean(fss)
+
+
 def KAST_test(kast, davis, file_name_head='image', path='./'):
     #output_v, v_j, i_drop = kast.call(davis, training=False)
     output_v, v_j, i_drop = kast.call(davis, training=False)
@@ -324,15 +367,10 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         jss.append(j_mean)
         fss.append(f_mean)
 
-    print("\nJs: ", np.mean(jss))
-    print("\nFs: ", np.mean(fss))
 
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '_DAVIS.png')
     plt.close(fig)
-
-    np.save(file_path + '_Js.npy', np.asarray(jss))
-    np.save(file_path + '_Fs.npy', np.asarray(fss))
 
     # GIF
     #images = tf.concat([output_v, v_j], axis=2).numpy()
