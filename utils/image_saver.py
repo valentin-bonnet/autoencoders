@@ -8,6 +8,127 @@ from PIL import Image
 palette_DAVIS = tf.constant([[0, 0, 0], [128, 0, 0], [0, 128, 0], [128, 128, 0], [0, 0, 128], [128, 0, 128], [0, 128, 128], [128, 128, 128], [64, 0, 0]])
 
 
+
+
+def db_eval_boundary(foreground_mask,gt_mask,bound_th=0.008):
+    """
+    Compute mean,recall and decay from per-frame evaluation.
+    Calculates precision/recall for boundaries between foreground_mask and
+    gt_mask using morphological operators to speed it up.
+
+    Arguments:
+        foreground_mask (ndarray): binary segmentation image.
+        gt_mask         (ndarray): binary annotated image.
+
+    Returns:
+        F (float): boundaries F-measure
+        P (float): boundaries precision
+        R (float): boundaries recall
+    """
+    assert np.atleast_3d(foreground_mask).shape[2] == 1
+
+    bound_pix = bound_th if bound_th >= 1 else \
+            np.ceil(bound_th*np.linalg.norm(foreground_mask.shape))
+
+    # Get the pixel boundaries of both masks
+    fg_boundary = seg2bmap(foreground_mask);
+    gt_boundary = seg2bmap(gt_mask);
+
+    from skimage.morphology import binary_dilation,disk
+    disk_fg = disk(bound_pix)
+    fg_dil = binary_dilation(fg_boundary,disk_fg)
+    gt_dil = binary_dilation(gt_boundary,disk(bound_pix))
+
+    # Get the intersection
+    gt_match = gt_boundary * fg_dil
+    fg_match = fg_boundary * gt_dil
+
+    # Area of the intersection
+    n_fg     = np.sum(fg_boundary)
+    n_gt     = np.sum(gt_boundary)
+
+    #% Compute precision and recall
+    if n_fg == 0 and  n_gt > 0:
+        precision = 1
+        recall = 0
+    elif n_fg > 0 and n_gt == 0:
+        precision = 0
+        recall = 1
+    elif n_fg == 0  and n_gt == 0:
+        precision = 1
+        recall = 1
+    else:
+        precision = np.sum(fg_match)/float(n_fg)
+        recall    = np.sum(gt_match)/float(n_gt)
+
+    # Compute F measure
+    if precision + recall == 0:
+        F = 0
+    else:
+        F = 2*precision*recall/(precision+recall);
+
+    return F
+
+def seg2bmap(seg,width=None,height=None):
+    """
+    From a segmentation, compute a binary boundary map with 1 pixel wide
+    boundaries.  The boundary pixels are offset by 1/2 pixel towards the
+    origin from the actual segment boundary.
+
+    Arguments:
+        seg     : Segments labeled from 1..k.
+        width	  :	Width of desired bmap  <= seg.shape[1]
+        height  :	Height of desired bmap <= seg.shape[0]
+
+    Returns:
+        bmap (ndarray):	Binary boundary map.
+
+     David Martin <dmartin@eecs.berkeley.edu>
+     January 2003
+ """
+
+    seg = seg.astype(np.bool)
+    seg[seg>0] = 1
+
+    assert np.atleast_3d(seg).shape[2] == 1
+
+    width  = seg.shape[1] if width  is None else width
+    height = seg.shape[0] if height is None else height
+
+    h,w = seg.shape[:2]
+
+    ar1 = float(width) / float(height)
+    ar2 = float(w) / float(h)
+
+    assert not (width>w | height>h | abs(ar1-ar2)>0.01),\
+            'Can''t convert %dx%d seg to %dx%d bmap.'%(w,h,width,height)
+
+    e  = np.zeros_like(seg)
+    s  = np.zeros_like(seg)
+    se = np.zeros_like(seg)
+
+    e[:,:-1]    = seg[:,1:]
+    s[:-1,:]    = seg[1:,:]
+    se[:-1,:-1] = seg[1:,1:]
+
+    b        = seg^e | seg^s | seg^se
+    b[-1,:]  = seg[-1,:]^e[-1,:]
+    b[:,-1]  = seg[:,-1]^s[:,-1]
+    b[-1,-1] = 0
+
+    if w == width and h == height:
+        bmap = b
+    else:
+        bmap = np.zeros((height,width))
+        for x in range(w):
+            for y in range(h):
+                if b[y,x]:
+                    j = 1+floor((y-1)+height / h)
+                    i = 1+floor((x-1)+width  / h)
+                    bmap[j,i] = 1;
+
+    return bmap
+
 def generate_and_save_images(model, epoch, test_input):
     predictions = model.sample(test_input)
     fig = plt.figure(figsize=(4, 4))
@@ -135,12 +256,12 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     raw = tf.image.resize(i_drop[0][1:], [64, 64]).numpy()
     #output_v = output_v[0].numpy()
     output_v = output_v[0]
-    max_output = tf.argmax(output_v, -1)
-    output_v = tf.gather(palette_DAVIS, max_output).numpy()
+    max_value_output = tf.argmax(output_v, -1)
+    output_v = tf.gather(palette_DAVIS, max_value_output).numpy()
     #v_j = v_j[0].numpy()
     v_j = v_j[0]
-    max_output = tf.argmax(v_j, -1)
-    v_j = tf.gather(palette_DAVIS, max_output).numpy()
+    max_value = tf.argmax(v_j, -1)
+    v_j = tf.gather(palette_DAVIS, max_value).numpy()
     seq_size = output_v.shape[0]
 
     #LAB to RGB
@@ -148,15 +269,6 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         #output_v[i] = cv2.cvtColor(np.float32((output_v[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
         #v_j[i] = cv2.cvtColor(np.float32((v_j[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
         raw[i] = cv2.cvtColor(np.float32((raw[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
-
-
-
-    print("############## \n OUTPUT \n ##############")
-    print(output_v[0])
-    print("\n\n ############## \n GROUND TRUTH \n ##############")
-    print(v_j[0])
-    print("\n\n")
-
 
 
     #RGB to RGB
@@ -180,14 +292,47 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         plt.imshow(raw[i])
         plt.axis('off')
 
+    number_size = tf.reduce_max(max_value)
 
+    jss = []
+    fss = []
+    for i in range(seq_size):
+        js = []
+        fs = []
+        for class_id in range(1, number_size + 1):
+            gt = (max_value == class_id)
+            segment = (max_value_output == class_id)
+            j_and = gt & segment
+            # print(j_and)
+            j_and_float = np.float32(j_and)
+            # print(j_and_float)
+            j_and_sum = np.sum(j_and_float)
+            # print(j_and_sum)
+            j_or = gt | segment
+            # print(j_or)
+            j_or_float = np.float32(j_or)
+            # print(j_or_float)
+            j_or_sum = np.sum(j_or_float)
+            j = j_and_sum / j_or_sum
+            # j = tf.reduce_sum(gt & segment) / tf.reduce_sum(gt | segment)
+            js.append(j)
+            f = db_eval_boundary(np.float32(gt), np.float32(segment))
+            fs.append(f)
+
+        j_mean = np.mean(js)
+        f_mean = np.mean(fs)
+        jss.append(j_mean)
+        fss.append(f_mean)
+
+    print("\nJs: ", np.mean(jss))
+    print("\nFs: ", np.mean(fss))
 
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '_DAVIS.png')
     plt.close(fig)
 
-    np.save(file_path + '_DAVIS_output.npy', output_v[0])
-    np.save(file_path + '_DAVIS_gt.npy', v_j[0])
+    np.save(file_path + '_Js.npy', np.asarray(jss))
+    np.save(file_path + '_Fs.npy', np.asarray(fss))
 
     # GIF
     #images = tf.concat([output_v, v_j], axis=2).numpy()
