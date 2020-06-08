@@ -300,8 +300,8 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         js = []
         fs = []
         for class_id in range(1, number_size + 1):
-            gt = (max_value == class_id)
-            segment = (max_value_output == class_id)
+            gt = (max_value[i] == class_id)
+            segment = (max_value_output[i] == class_id)
             j_and = gt & segment
             # print(j_and)
             j_and_float = np.float32(j_and)
