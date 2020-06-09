@@ -285,17 +285,17 @@ if KAST:
     lrs = [3e-4]
     optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
     def lr_fn(lr, step):
-        if step == 4 or step == 6 or step == 8 or step == 10 or step == 12 or step == 14 or step == 16 or step == 18:
+        if step == 1 or step == 3 or step == 8 or step == 10 or step == 12 or step == 14 or step == 16 or step == 18:
             return lr*0.5
         else:
             return lr
     lrs_fn = [lr_fn]
     batch_size = 4
-    epochs_max = [20]
+    epochs_max = [5]
     saves_epochs = [50]
     #directory_path = './content/drive/My Drive/Colab Data/AE/'
     directory_path = '/content/drive/My Drive/Colab Data/AE/'
-    path_to_directory = directory_path+'KAST_Local_Memory_500units_top1'
+    path_to_directory = directory_path+'KAST_Local_Memory_50units_top1'
     step_is_epoch = False
     multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
     print("Multitraining Done")
