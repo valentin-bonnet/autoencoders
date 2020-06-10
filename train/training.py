@@ -25,7 +25,7 @@ class Training():
         else:
             self.train_ds = dataset.train_ds.batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
             self.val_ds = dataset.val_ds.batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
-            self.test_ds = dataset.test_ds.batch(1, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
+            self.test_ds = dataset.test_ds.batch(1, drop_remainder=False).prefetch(buffer_size=AUTOTUNE)
         self.train_size = dataset.train_size//batch_size
 
         self.val_size = dataset.val_size//batch_size
@@ -169,6 +169,7 @@ class Training():
                         f_mean(f)
                     print("\nJ : ", j_mean.result().numpy())
                     print("\nF : ", f_mean.result().numpy())
+                    print(j[1000000])
                     self.js.append(j_mean.result().numpy())
                     self.fs.append(f_mean.result().numpy())
                     self.t_loss.append(t_loss_mean.result().numpy())
