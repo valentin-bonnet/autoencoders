@@ -26,6 +26,7 @@ class KAST(tf.keras.Model):
     def call(self, inputs, **kwargs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
         bs = inputs[1].shape[0]
+        self.memory.batch_shape = bs
         seq_size = inputs[1].shape[1]
         H = inputs[0].shape[2]
         W = inputs[0].shape[3]
