@@ -2,7 +2,7 @@ import tensorflow as tf
 import glob
 
 frames_delta = 4
-sequence_size = 10
+#sequence_size = 10
 palette = tf.constant([[0, 0, 0], [128, 0, 0], [0, 128, 0], [128, 128, 0], [0, 0, 128], [128, 0, 128], [0, 128, 128], [128, 128, 128], [64, 0, 0]])
 new_palette = tf.reduce_sum(palette * [1, 10, 100], -1)
 
@@ -64,8 +64,10 @@ def tf_rgb2lab(image):
 
 
 def _preprocess_once(parsed_data):
-    jpeg= parsed_data['image_jpeg'][::frames_delta]
-    anno= parsed_data['annotation'][::frames_delta]
+    #jpeg= parsed_data['image_jpeg'][::frames_delta]
+    jpeg= parsed_data['image_jpeg']
+    #anno= parsed_data['annotation'][::frames_delta]
+    anno= parsed_data['annotation']
     jpeg = tf.map_fn(tf.image.decode_jpeg, jpeg, dtype=tf.uint8)
     anno = tf.map_fn(tf.image.decode_png, anno, dtype=tf.uint8)
     anno = tf.cast(anno, tf.int32)
@@ -82,8 +84,8 @@ def _preprocess_once(parsed_data):
     jpeg_lab = (jpeg_lab / [50.0, 127.5, 127.5]) - 1.0
     #anno_lab = anno_lab + [0., 128.0, 128.0]
     #anno_lab = (anno_lab / [50.0, 127.5, 127.5]) - 1.0
-    jpeg_lab = tf.reshape(jpeg_lab, [sequence_size, 256, 256, 3])
-    anno_hot = tf.reshape(anno_hot, [sequence_size, 64, 64, 9])
+    jpeg_lab = tf.reshape(jpeg_lab, [-1, 256, 256, 3])
+    anno_hot = tf.reshape(anno_hot, [-1, 64, 64, 9])
     return jpeg_lab, anno_hot
 
 
@@ -98,7 +100,7 @@ def _parse_image_function(example_proto):
 
 def _files_to_ds(f):
     ds = tf.data.TFRecordDataset(f, compression_type="GZIP")
-    ds = ds.map(_parse_image_function, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(sequence_size*frames_delta, drop_remainder=True)
+    ds = ds.map(_parse_image_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)  # .batch(sequence_size*frames_delta, drop_remainder=True)
     ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     return ds
 

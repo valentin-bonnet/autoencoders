@@ -25,7 +25,7 @@ class Training():
         else:
             self.train_ds = dataset.train_ds.batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
             self.val_ds = dataset.val_ds.batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
-            self.test_ds = dataset.test_ds.batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
+            self.test_ds = dataset.test_ds.batch(1, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
         self.train_size = dataset.train_size//batch_size
 
         self.val_size = dataset.val_size//batch_size
@@ -163,11 +163,12 @@ class Training():
                         v_loss_mean(self.model.compute_loss(val_x))
                         v_acc_mean(self.model.compute_accuracy(val_x))
 
-                    for test in self.test_ds.take(1):
+                    for test in self.test_ds:
                         j, f = image_saver.KAST_JF(self.model, test)
                         j_mean(j)
                         f_mean(f)
-
+                    print("\nJ : ", j_mean.result().numpy())
+                    print("\nF : ", f_mean.result().numpy())
                     self.js.append(j_mean.result().numpy())
                     self.fs.append(f_mean.result().numpy())
                     self.t_loss.append(t_loss_mean.result().numpy())

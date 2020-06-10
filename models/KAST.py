@@ -42,7 +42,7 @@ class KAST(tf.keras.Model):
         with tf.name_scope('Transformation'):
             i_drop, seq_mask = self.transformation(i_raw, **kwargs)
         with tf.name_scope('ResNet'):
-            k = tf.reshape(self.resnet(tf.reshape(i_drop, [-1, H, W, C])), [bs, seq_size, h, w, 256]) # (bs, T, h, w, 256)
+            k = tf.reshape(self.resnet(tf.reshape(i_drop, [-1, H, W, C])), [bs, seq_size, h, w, 256])  # (bs, T, h, w, 256)
 
 
         ck = k.shape[4]
@@ -56,9 +56,10 @@ class KAST(tf.keras.Model):
         all_m_kv = []
         all_previous_v = [previous_v]
         for i in range(1, seq_size):
-            with tf.name_scope('Memory'):
-                m_kv = self.memory.call((tf.reshape(k[:, i-1], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv])))
-                all_m_kv.append(m_kv)
+            if i < 7:
+                with tf.name_scope('Memory'):
+                    m_kv = self.memory.call((tf.reshape(k[:, i-1], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv])))
+                    all_m_kv.append(m_kv)
 
             corr_prev_one = self.corr_cost([k[:, i], k[:, i-1]])*2.0  # (bs, hw, patch)
             corr_prev = tf.reshape(corr_prev_one, [bs, h*w, self.kernel**2])

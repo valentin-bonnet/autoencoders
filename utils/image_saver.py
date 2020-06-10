@@ -290,8 +290,7 @@ def KAST_JF(kast, davis):
         jss.append(j_mean)
         fss.append(f_mean)
 
-    print("\nJ : ", np.mean(jss))
-    print("\nF : ", np.mean(fss))
+
 
     return np.mean(jss), np.mean(fss)
 
