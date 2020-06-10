@@ -160,7 +160,7 @@ class Training():
 
                 print("\nJ : ", j_mean.result().numpy())
                 print("\nF : ", f_mean.result().numpy())
-                #print(j[1000000])
+                print(j[1000000])
 
             for i, train_x in enumerate(self.train_ds, starting_step):
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
