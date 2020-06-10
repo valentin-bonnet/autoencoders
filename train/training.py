@@ -187,7 +187,7 @@ class Training():
 
                     for val_x in self.val_ds.take(1):
                         if self.is_seq:
-                            image_saver.KAST_View(self.model, val_x, False,
+                            image_saver.KAST_View(self.model, val_x[:, :10], False,
                                                                              self.name + '_epoch_{:03d}_step_{:03d}_test'.format(
                                                                                  epoch, i // epoch_percent_train),
                                                                              self.img_path)
@@ -199,7 +199,7 @@ class Training():
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_test'.format(epoch, i//epoch_percent_train), self.img_path)
                     for train_x in self.train_ds.take(1):
                         if self.is_seq:
-                            image_saver.KAST_View(self.model, train_x, True,
+                            image_saver.KAST_View(self.model, train_x[:, :10], True,
                                                                              self.name + '_epoch_{:03d}_step_{:03d}_train'.format(
                                                                                  epoch, i // epoch_percent_train),
                                                                              self.img_path)
