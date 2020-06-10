@@ -151,13 +151,16 @@ class Training():
             #print("train_ds: ", self.train_ds)
 
             if True:
+                for test in self.test_ds.take(1):
+                    image_saver.KAST_test(self.model, test, self.name + 'TEST_DAVIS_'.format(epoch, 0 // epoch_percent_train), self.img_path)
                 for test in self.test_ds:
                     j, f = image_saver.KAST_JF(self.model, test)
                     j_mean(j)
                     f_mean(f)
+
                 print("\nJ : ", j_mean.result().numpy())
                 print("\nF : ", f_mean.result().numpy())
-                print(j[1000000])
+                #print(j[1000000])
 
             for i, train_x in enumerate(self.train_ds, starting_step):
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))

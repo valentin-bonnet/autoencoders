@@ -330,54 +330,39 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         os.makedirs(path)
 
     #IMAGES
-    fig = plt.figure(figsize=(seq_size, 3))
-    for i in range(seq_size):
+    fig = plt.figure(figsize=(4, 3))
+    for i in range(4):
         plt.subplot(3, seq_size, 1+i)
-        plt.imshow(output_v[i])
+        plt.imshow(output_v[i*5])
         plt.axis('off')
         plt.subplot(3, seq_size, 1+i+seq_size)
-        plt.imshow(v_j[i])
+        plt.imshow(v_j[i*5])
         plt.axis('off')
         plt.subplot(3, seq_size, i+1+(seq_size*2))
-        plt.imshow(raw[i])
+        plt.imshow(raw[i*5])
         plt.axis('off')
 
-    number_size = tf.reduce_max(max_value)
-
-    jss = []
-    fss = []
-    for i in range(seq_size):
-        js = []
-        fs = []
-        for class_id in range(1, number_size + 1):
-            gt = (max_value[i] == class_id)
-            segment = (max_value_output[i] == class_id)
-            j_and = gt & segment
-            # print(j_and)
-            j_and_float = np.float32(j_and)
-            # print(j_and_float)
-            j_and_sum = np.sum(j_and_float)
-            # print(j_and_sum)
-            j_or = gt | segment
-            # print(j_or)
-            j_or_float = np.float32(j_or)
-            # print(j_or_float)
-            j_or_sum = np.sum(j_or_float)
-            j = j_and_sum / j_or_sum
-            # j = tf.reduce_sum(gt & segment) / tf.reduce_sum(gt | segment)
-            js.append(j)
-            f = db_eval_boundary(np.float32(gt), np.float32(segment))
-            fs.append(f)
-
-        j_mean = np.mean(js)
-        f_mean = np.mean(fs)
-        jss.append(j_mean)
-        fss.append(f_mean)
 
 
     file_path = os.path.join(path, file_name_head)
     plt.savefig(file_path + '_DAVIS.png')
     plt.close(fig)
+
+    Image.fromarray(np.uint8(raw[0])).save(file_path+"_DAVIS_Raw_0.png")
+    Image.fromarray(np.uint8(v_j[0])).save(file_path+"_DAVIS_gt_0.png")
+    Image.fromarray(np.uint8(output_v[0])).save(file_path+"_DAVIS_out_0.png")
+    Image.fromarray(np.uint8(raw[5])).save(file_path + "_DAVIS_Raw_5.png")
+    Image.fromarray(np.uint8(v_j[5])).save(file_path + "_DAVIS_gt_5.png")
+    Image.fromarray(np.uint8(output_v[5])).save(file_path + "_DAVIS_out_5.png")
+    Image.fromarray(np.uint8(raw[10])).save(file_path + "_DAVIS_Raw_10.png")
+    Image.fromarray(np.uint8(v_j[10])).save(file_path + "_DAVIS_gt_10.png")
+    Image.fromarray(np.uint8(output_v[10])).save(file_path + "_DAVIS_out_10.png")
+    Image.fromarray(np.uint8(raw[15])).save(file_path + "_DAVIS_Raw_15.png")
+    Image.fromarray(np.uint8(v_j[15])).save(file_path + "_DAVIS_gt_15.png")
+    Image.fromarray(np.uint8(output_v[15])).save(file_path + "_DAVIS_out_15.png")
+    Image.fromarray(np.uint8(raw[20])).save(file_path + "_DAVIS_Raw_20.png")
+    Image.fromarray(np.uint8(v_j[20])).save(file_path + "_DAVIS_gt_20.png")
+    Image.fromarray(np.uint8(output_v[20])).save(file_path + "_DAVIS_out_20.png")
 
     # GIF
     #images = tf.concat([output_v, v_j], axis=2).numpy()
