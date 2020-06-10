@@ -295,7 +295,7 @@ if KAST:
     saves_epochs = [50]
     #directory_path = './content/drive/My Drive/Colab Data/AE/'
     directory_path = '/content/drive/My Drive/Colab Data/AE/'
-    path_to_directory = directory_path+'KAST_Local_Memory_50units_top1'
+    path_to_directory = directory_path+'KAST_Local_Memory_500units_top1'
     step_is_epoch = False
     multi = Multitraining.Multitraining(datasets, batch_size, models, optimizers, lrs, lrs_fn, epochs_max, saves_epochs, path_to_directory, step_is_epoch)
     print("Multitraining Done")

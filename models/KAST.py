@@ -14,7 +14,7 @@ class KAST(tf.keras.Model):
         self.transformation = Transformation(trainable=False)
         self.resnet = ResNet()
         self.rkn = RKNModel()
-        self.memory = Memory(unit=50, kernel=self.kernel)
+        self.memory = Memory(unit=500, kernel=self.kernel)
         self.corr_cost = tfa.layers.CorrelationCost(kernel_size=1, max_displacement=self.kernel // 2, stride_1=1, stride_2=1, pad=self.kernel // 2, data_format="channels_last")
         self.corr_cost_stride = tfa.layers.CorrelationCost(kernel_size=1, max_displacement=(self.kernel // 2)*2, stride_1=1, stride_2=2, pad=(self.kernel // 2)*2, data_format="channels_last")
         #self.memory = tf.keras.Sequential()
