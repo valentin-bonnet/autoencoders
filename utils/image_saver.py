@@ -252,9 +252,6 @@ def KAST_test_ResNet(kast, davis, file_name_head='image', path='./'):
 
 def KAST_JF(kast, davis):
     i_raw, v = tf.nest.flatten(davis)
-    print("YOYO")
-    print(i_raw.shape)
-    print(v.shape)
     output_v, v_j, i_drop = kast.call(davis, training=False)
     output_v = output_v[0]
     seq_size = output_v.shape[0]
