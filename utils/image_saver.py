@@ -267,20 +267,24 @@ def KAST_JF(kast, davis):
         js = []
         fs = []
         for class_id in range(1, number_size + 1):
+
             gt = (max_value[i] == class_id)
             segment = (max_value_output[i] == class_id)
-            j_and = gt & segment
-            # print(j_and)
-            j_and_float = np.float32(j_and)
-            # print(j_and_float)
-            j_and_sum = np.sum(j_and_float)
-            # print(j_and_sum)
-            j_or = gt | segment
-            # print(j_or)
-            j_or_float = np.float32(j_or)
-            # print(j_or_float)
-            j_or_sum = np.sum(j_or_float)
-            j = j_and_sum / j_or_sum
+            if np.isclose(np.sum(segment), 0) and np.isclose(np.sum(gt), 0):
+                j = 1.0
+            else:
+                j_and = gt & segment
+                # print(j_and)
+                j_and_float = np.float32(j_and)
+                # print(j_and_float)
+                j_and_sum = np.sum(j_and_float)
+                # print(j_and_sum)
+                j_or = gt | segment
+                # print(j_or)
+                j_or_float = np.float32(j_or)
+                # print(j_or_float)
+                j_or_sum = np.sum(j_or_float)
+                j = j_and_sum / j_or_sum
             # j = tf.reduce_sum(gt & segment) / tf.reduce_sum(gt | segment)
             js.append(j)
             f = db_eval_boundary(np.float32(gt), np.float32(segment))
