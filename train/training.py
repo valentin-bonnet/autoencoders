@@ -149,6 +149,16 @@ class Training():
             #train_enum = self.train_ds.enumerate()
             #for element in train_enum.as_numpy_iterator():
             #print("train_ds: ", self.train_ds)
+
+            if True:
+                for test in self.test_ds:
+                    j, f = image_saver.KAST_JF(self.model, test)
+                    j_mean(j)
+                    f_mean(f)
+                print("\nJ : ", j_mean.result().numpy())
+                print("\nF : ", f_mean.result().numpy())
+                print(j[1000000])
+
             for i, train_x in enumerate(self.train_ds, starting_step):
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
@@ -158,18 +168,12 @@ class Training():
                 if i % epoch_percent_train == 0 and i != 0:
                     progbar.add(1)
 
-                if i % (epoch_percent_train*2) == 0 and i != 0:
+                if i % (epoch_percent_train*25) == 0 and i != 0:
                     for val_x in self.val_ds.take(epoch_percent_val):
                         v_loss_mean(self.model.compute_loss(val_x))
                         v_acc_mean(self.model.compute_accuracy(val_x))
 
-                    for test in self.test_ds:
-                        j, f = image_saver.KAST_JF(self.model, test)
-                        j_mean(j)
-                        f_mean(f)
-                    print("\nJ : ", j_mean.result().numpy())
-                    print("\nF : ", f_mean.result().numpy())
-                    print(j[1000000])
+
                     self.js.append(j_mean.result().numpy())
                     self.fs.append(f_mean.result().numpy())
                     self.t_loss.append(t_loss_mean.result().numpy())

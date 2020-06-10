@@ -125,6 +125,7 @@ class KAST(tf.keras.Model):
             corr_sim = tf.expand_dims(tf.nn.softmax(corr_prev, -1), -2)
             output_v_i = corr_sim @ patch_v
 
+            print("V shape : ", v.shape)
 
             previous_v = tf.where(tf.reshape(seq_mask[:, i], [bs, 1, 1, 1]), v[:, i], tf.reshape(output_v_i, [-1, h, w, cv]))
             all_previous_v.append(previous_v)
