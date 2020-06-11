@@ -330,16 +330,16 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         os.makedirs(path)
 
     #IMAGES
-    fig = plt.figure(figsize=(4, 3))
-    for i in range(4):
+    fig = plt.figure(figsize=(seq_size, 3))
+    for i in range(seq_size):
         plt.subplot(3, seq_size, 1+i)
-        plt.imshow(output_v[i*5])
+        plt.imshow(output_v[i])
         plt.axis('off')
         plt.subplot(3, seq_size, 1+i+seq_size)
-        plt.imshow(v_j[i*5])
+        plt.imshow(v_j[i])
         plt.axis('off')
         plt.subplot(3, seq_size, i+1+(seq_size*2))
-        plt.imshow(raw[i*5])
+        plt.imshow(raw[i])
         plt.axis('off')
 
 
