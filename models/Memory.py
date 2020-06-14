@@ -1,4 +1,5 @@
 import tensorflow as tf
+from sklearn.mixture import GaussianMixture
 
 class Memory(tf.keras.layers.Layer):
     def __init__(self, unit=100, decay=0.99, threshold=0.1*1000,  k=256, c=3, kernel=15, **kwargs):
@@ -40,7 +41,12 @@ class Memory(tf.keras.layers.Layer):
         m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
         m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
-        s = tf.nn.softmax(k @ tf.transpose(tf.reshape(self.m_k, [self.batch_shape, self.m, 256]), [0, 2, 1]))  # (bs, hw, 256) @ (bs, size_patch*256, m) = (bs, hw, m)
+        #s = tf.nn.softmax(k @ tf.transpose(tf.reshape(self.m_k, [self.batch_shape, self.m, 256]), [0, 2, 1]))  # (bs, hw, 256) @ (bs, size_patch*256, m) = (bs, hw, m)
+        k_normalized = k / tf.expand_dims(tf.math.sqrt(tf.reduce_sum(tf.math.square(k), -1)), -1)
+        m_k_normalized = self.m_k / tf.expand_dims(tf.math.sqrt(tf.reduce_sum(tf.math.square(self.m_k), -1)), -1)
+        s = k_normalized @ tf.transpose(tf.reshape(m_k_normalized, [self.batch_shape, self.m, 256]), [0, 2, 1])
+        #s = s / tf.expand_dims(tf.math.sqrt(tf.reduce_sum(tf.math.square(k), -1)) * tf.math.sqrt(tf.reduce_sum(tf.math.square(self.m_k), -1)), -1)
+        s = tf.nn.softmax(s)
         max_s_hw = tf.reduce_max(s, axis=-1)  # (bs, HW)
         max_s_m = tf.reduce_max(s, axis=-2)  # (bs, M)
 
@@ -74,8 +80,13 @@ class Memory(tf.keras.layers.Layer):
         m_k_sorted = tf.gather(self.m_k, idx, batch_dims=1, axis=1)
         m_v_sorted = tf.gather(self.m_v, idx, batch_dims=1, axis=1)
 
-        s = tf.reduce_sum(k @ tf.transpose(k, [0, 2, 1]), -1)  # (bs, hw, 256) @ (bs, 256, hw) = (bs, hw, hw)
+        #s = tf.reduce_sum(k @ tf.transpose(k, [0, 2, 1]), -1)  # (bs, hw, 256) @ (bs, 256, hw) = (bs, hw, hw)
+
+        s = tf.random.uniform(shape=[self.batch_shape, self.hw_shape])
         max_s_m, idx = tf.math.top_k(s, k=self.m)
+
+
+
         wv_bool = tf.cast(tf.ones_like(idx), dtype=tf.bool)
         #idx = tf.ragged.boolean_mask(idx, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m])
 
@@ -89,7 +100,7 @@ class Memory(tf.keras.layers.Layer):
         write_k = tf.ragged.boolean_mask(k_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.k_shape])
         write_v = tf.ragged.boolean_mask(v_sorted, wv_bool).to_tensor(default_value=0., shape=[self.batch_shape, self.m, self.v_shape])
 
-        self.m_u = (self.decay * m_u_sorted + max_s_m) * (1 - write_ones) + write_ones
+        self.m_u = (self.decay * m_u_sorted) * (1 - write_ones) + write_ones
         write_ones = tf.expand_dims(write_ones, -1)
         self.m_k = m_k_sorted * (1. - write_ones) + write_k  # (bs, m, k)
         self.m_v = m_v_sorted * (1. - write_ones) + write_v  # (bs, m, v)

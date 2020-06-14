@@ -171,7 +171,7 @@ class Training():
                         f_mean(f)
 
                     print("\nJ : ", j_mean.result().numpy())
-                    print("\nF : ", f_mean.result().numpy())
+                    print("F : ", f_mean.result().numpy())
 
 
                     self.js.append(j_mean.result().numpy())
