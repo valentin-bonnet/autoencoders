@@ -315,7 +315,7 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     max_value = tf.argmax(v_j, -1)
     v_j = tf.gather(palette_DAVIS, max_value).numpy()
     seq_size = output_v.shape[0]
-    all_white = np.ones([1, 256, 256, 3]) * [255, 255, 255]
+    all_white = np.ones([1, 256, 256, 3], dtype=np.uint8) * [255, 255, 255]
     output_v = np.concatenate([all_white, output_v], axis=0)
     #LAB to RGB
     for i in range(seq_size):
@@ -352,8 +352,8 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     plt.close(fig)
 
     Image.fromarray(np.uint8(raw[1]*[255.0, 255.0, 255.0])).save(file_path+"_DAVIS_Raw_1.png")
-    Image.fromarray(np.uint8(v_j[1])).save(file_path+"_DAVIS_gt_0.png")
-    Image.fromarray(np.uint8(output_v[1])).save(file_path+"_DAVIS_out_0.png")
+    Image.fromarray(np.uint8(v_j[1])).save(file_path+"_DAVIS_gt_1.png")
+    Image.fromarray(np.uint8(output_v[1])).save(file_path+"_DAVIS_out_1.png")
     Image.fromarray(np.uint8(raw[5]*[255.0, 255.0, 255.0])).save(file_path + "_DAVIS_Raw_5.png")
     Image.fromarray(np.uint8(v_j[5])).save(file_path + "_DAVIS_gt_5.png")
     Image.fromarray(np.uint8(output_v[5])).save(file_path + "_DAVIS_out_5.png")

@@ -111,27 +111,3 @@ def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS_VAL/'):
 
     return davis_ds
 
-ds = davis_loader('/media/valentin/DATA1/Programmation/Datasets/DAVIS_TFRecords/')
-AUTOTUNE = tf.data.experimental.AUTOTUNE
-test_ds = ds.batch(1, drop_remainder=False).prefetch(buffer_size=AUTOTUNE)
-
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-
-for test in test_ds.take(1):
-    i_raw, v = tf.nest.flatten(test)
-    t = i_raw[0].numpy()
-    seq_size = t.shape[0]
-
-    for i in range(seq_size):
-        t[i] = cv2.cvtColor(np.float32((t[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
-
-    fig = plt.figure(figsize=(seq_size, 1))
-    for i in range(seq_size):
-        plt.subplot(1, seq_size, 1 + i)
-        plt.axis('off')
-        plt.imshow(t[i])
-    plt.show()
-
-    print("imshow")
