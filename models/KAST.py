@@ -400,13 +400,19 @@ class KAST(tf.keras.Model):
         h = H//4
         w = W//4
         v = tf.reshape(inputs, [-1, H, W, cv])
-        v = tf.image.resize(v, [h, w])
-        v = tf.reshape(v, [-1, seq_size, h, w, cv])
+        v_input = tf.image.resize(v, [h, w])
+        v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=True)
-        output_v, v_j, _ = self.call((inputs, v), training=True)
+        output_v, v_j, _ = self.call((inputs, v_input), training=True)
+        output_v = tf.reshape(output_v, [-1, h, w, cv])
+        output_v = tf.image.resize(output_v, [H, W])
+        output_v = tf.reshape(output_v, [-1, seq_size - 1, H, W, cv])
+        v = tf.reshape(v, [-1, seq_size, H, W, cv])[:, 1:]
+
         #rkn_k, k = self.call_RKN((inputs, v), training=True)
         #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=True)
-        abs = tf.math.abs(output_v - v_j)
+
+        abs = tf.math.abs(output_v - v)
         loss = tf.reduce_mean(tf.where(abs < 1., 0.5*abs*abs, abs-0.5))
         #loss = -tf.reduce_mean(self.log_normal_pdf(rkn_k, k, tf.math.log(0.001)))
         #loss = tf.reduce_mean(tf.square(rkn_score - m_rkn_score))
@@ -424,9 +430,13 @@ class KAST(tf.keras.Model):
         v = tf.reshape(v, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=False)
         output_v, v_j, _ = self.call((inputs, v), training=False)
+        output_v = tf.reshape(output_v, [-1, h, w, cv])
+        output_v = tf.image.resize(output_v, [H, W])
+        output_v = tf.reshape(output_v, [-1, seq_size - 1, H, W, cv])
+        v = tf.reshape(v, [-1, seq_size, H, W, cv])[:, 1:]
         #rkn_k, k = self.call_RKN((inputs, v), training=False)
         #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=False)
-        return tf.reduce_mean(tf.square(output_v - v_j))
+        return tf.reduce_mean(tf.square(output_v - v))
 
     def compute_apply_gradients(self, x, optimizer):
         with tf.GradientTape() as tape:
@@ -458,10 +468,15 @@ class KAST(tf.keras.Model):
         h = H // 4
         w = W // 4
         v = tf.reshape(inputs, [-1, H, W, cv])
-        v = tf.image.resize(v, [h, w])
-        v = tf.reshape(v, [-1, seq_size, h, w, cv])
-        output_v, v_j, drop_out = self.call((inputs, v), training=training)
-        drop_out = tf.reshape(drop_out, [-1, H, W, cv])
-        drop_out = tf.image.resize(drop_out, [h, w])
-        drop_out = tf.reshape(drop_out, [-1, seq_size, h, w, cv])
+        if training:
+            v_input = tf.image.resize(v, [h, w])
+        else:
+            v_input = tf.image.resize(v, [h, w], 'nearest')
+        v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
+        output_v, v_j, drop_out = self.call((inputs, v_input), training=training)
+        drop_out = tf.reshape(drop_out, [-1, seq_size, h, w, cv])[:, 1:]
+        output_v = tf.reshape(output_v, [-1, h, w, cv])
+        output_v = tf.image.resize(output_v, [H, W])
+        output_v = tf.reshape(output_v, [-1, seq_size-1, H, W, cv])
+        v = tf.reshape(v, [-1, seq_size, H, W, cv])[:, 1:]
         return output_v, v, drop_out

@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 class Transformation(tf.keras.layers.Layer):
-    def __init__(self, p=0.5, p_seq=0.99, **kwargs):
+    def __init__(self, p=0.3, p_seq=0.7, **kwargs):
         self.p = p
         self.p_seq = p_seq
         super(Transformation, self).__init__(**kwargs)
@@ -25,7 +25,7 @@ class Transformation(tf.keras.layers.Layer):
             if np.random.random() < self.p:
                 return inputs, mask
 
-            drop_ch_ind = np.random.choice(np.arange(3), 1, replace=False)
+            drop_ch_ind = np.random.choice(np.arange(3), 1, replace=False, p=[0.6, 0.2, 0.2])
             drop_out = 1 - tf.reduce_sum(tf.one_hot(drop_ch_ind, 3), -2)
             return inputs * drop_out, mask
         else:

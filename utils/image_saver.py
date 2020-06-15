@@ -252,7 +252,7 @@ def KAST_test_ResNet(kast, davis, file_name_head='image', path='./'):
 
 def KAST_JF(kast, davis):
     i_raw, v = tf.nest.flatten(davis)
-    output_v, v_j, i_drop = kast.call(davis, training=False)
+    output_v, v_j, i_drop = kast.reconstruct(davis, training=False)
     output_v = output_v[0]
     seq_size = output_v.shape[0]
     max_value_output = tf.argmax(output_v, -1)
@@ -302,7 +302,7 @@ def KAST_JF(kast, davis):
 
 def KAST_test(kast, davis, file_name_head='image', path='./'):
     #output_v, v_j, i_drop = kast.call(davis, training=False)
-    output_v, v_j, i_drop = kast.call(davis, training=False)
+    output_v, v_j, i_drop = kast.reconstruct(davis, training=False)
     raw = tf.image.resize(i_drop[0][1:], [64, 64]).numpy()
     #output_v = output_v[0].numpy()
     output_v = output_v[0]

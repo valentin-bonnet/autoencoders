@@ -31,7 +31,7 @@ def DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre):
                     k = k + size//10
                 anno_string = open(images_anno[idx], 'rb').read()
                 anno_tf = tf.io.decode_png(anno_string)
-                resized_anno_tf = tf.cast(tf.image.resize(anno_tf, (64, 64), method='nearest'), tf.uint8)  # RESIZE
+                resized_anno_tf = tf.cast(tf.image.resize(anno_tf, (256, 256), method='nearest'), tf.uint8)  # RESIZE
                 anno_resized_byte = tf.image.encode_png(resized_anno_tf)
                 jpeg_string = open(images_jpeg[idx], 'rb').read()
                 jpeg_tf = tf.io.decode_jpeg(jpeg_string)
