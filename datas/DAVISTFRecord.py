@@ -2,6 +2,7 @@ import tensorflow as tf
 import glob
 from PIL import Image
 import os
+import re
 
 def DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre):
     print("#####")
@@ -14,7 +15,9 @@ def DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre):
         sub_anno = sub[0]
         sub_jpeg = sub[1]
         images_jpeg = glob.glob(sub_jpeg+"/*.jpg")
+        images_jpeg.sort(key=lambda f: int(f[-9:-4]))
         images_anno = glob.glob(sub_anno+"/*.png")
+        images_anno.sort(key=lambda f: int(f[-9:-4]))
         tfre_options = tf.io.TFRecordOptions(compression_type="GZIP")
         folder_name = os.path.basename(os.path.normpath(sub_anno+'/'))
         record_file = path_tfre+folder_name+'.tfrecords'

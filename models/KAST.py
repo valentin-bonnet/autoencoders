@@ -38,7 +38,7 @@ class KAST(tf.keras.Model):
         w = inputs[1].shape[3]
         cv = inputs[1].shape[4]
         output_v = []
-        ground_truth = []
+
         i_raw, v = tf.nest.flatten(inputs)
         #print("i.shape: ", i.shape)
         #print("v.shape: ", v.shape)
@@ -59,6 +59,7 @@ class KAST(tf.keras.Model):
         self.memory.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv])))
         all_m_kv = []
         all_previous_v = [previous_v]
+        ground_truth = [tf.reshape(v[:, 0], [-1, 1, h, w, cv])]
         for i in range(1, seq_size):
             if i < 7:
                 with tf.name_scope('Memory'):

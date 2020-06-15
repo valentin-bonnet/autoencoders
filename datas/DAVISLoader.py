@@ -1,7 +1,8 @@
 import tensorflow as tf
 import glob
 
-frames_delta = 4
+#frames_delta = 4
+#frames_delta = 4
 #sequence_size = 10
 palette = tf.constant([[0, 0, 0], [128, 0, 0], [0, 128, 0], [128, 128, 0], [0, 0, 128], [128, 0, 128], [0, 128, 128], [128, 128, 128], [64, 0, 0]])
 new_palette = tf.reduce_sum(palette * [1, 10, 100], -1)
@@ -102,10 +103,35 @@ def _files_to_ds(f):
     ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(105)
     return ds
 
-def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS_VAL/', seq_size=8):
+def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS_VAL/'):
     files = glob.glob(path+'*.tfrecords')
     ds_files = tf.data.Dataset.from_tensor_slices(files).shuffle(90)
     davis_ds = ds_files.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     # davis_ds = ds_files.map(_files_to_ds, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     return davis_ds
+
+ds = davis_loader('/media/valentin/DATA1/Programmation/Datasets/DAVIS_TFRecords/')
+AUTOTUNE = tf.data.experimental.AUTOTUNE
+test_ds = ds.batch(1, drop_remainder=False).prefetch(buffer_size=AUTOTUNE)
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+for test in test_ds.take(1):
+    i_raw, v = tf.nest.flatten(test)
+    t = i_raw[0].numpy()
+    seq_size = t.shape[0]
+
+    for i in range(seq_size):
+        t[i] = cv2.cvtColor(np.float32((t[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
+
+    fig = plt.figure(figsize=(seq_size, 1))
+    for i in range(seq_size):
+        plt.subplot(1, seq_size, 1 + i)
+        plt.axis('off')
+        plt.imshow(t[i])
+    plt.show()
+
+    print("imshow")

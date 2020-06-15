@@ -351,7 +351,7 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     plt.savefig(file_path + '_DAVIS.png')
     plt.close(fig)
 
-    Image.fromarray(np.uint8(raw[1]*[255.0, 255.0, 255.0])).save(file_path+"_DAVIS_Raw_0.png")
+    Image.fromarray(np.uint8(raw[1]*[255.0, 255.0, 255.0])).save(file_path+"_DAVIS_Raw_1.png")
     Image.fromarray(np.uint8(v_j[1])).save(file_path+"_DAVIS_gt_0.png")
     Image.fromarray(np.uint8(output_v[1])).save(file_path+"_DAVIS_out_0.png")
     Image.fromarray(np.uint8(raw[5]*[255.0, 255.0, 255.0])).save(file_path + "_DAVIS_Raw_5.png")
