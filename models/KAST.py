@@ -425,15 +425,15 @@ class KAST(tf.keras.Model):
         cv = inputs.shape[4]
         h = H // 4
         w = W // 4
-        v = tf.reshape(inputs, [-1, H, W, cv])
-        v = tf.image.resize(v, [h, w])
-        v = tf.reshape(v, [-1, seq_size, h, w, cv])
+        v_input = tf.reshape(inputs, [-1, H, W, cv])
+        v_input = tf.image.resize(v_input, [h, w])
+        v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=False)
-        output_v, v_j, _ = self.call((inputs, v), training=False)
+        output_v, v_j, _ = self.call((inputs, v_input), training=False)
         output_v = tf.reshape(output_v, [-1, h, w, cv])
         output_v = tf.image.resize(output_v, [H, W])
         output_v = tf.reshape(output_v, [-1, seq_size - 1, H, W, cv])
-        v = tf.reshape(v, [-1, seq_size, H, W, cv])[:, 1:]
+        v = tf.reshape(inputs, [-1, seq_size, H, W, cv])[:, 1:]
         #rkn_k, k = self.call_RKN((inputs, v), training=False)
         #rkn_score, m_rkn_score = self.call_Score((inputs, v), training=False)
         return tf.reduce_mean(tf.square(output_v - v))
