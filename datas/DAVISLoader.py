@@ -90,7 +90,7 @@ def _preprocess_once(example_proto):
     #anno_lab = anno_lab + [0., 128.0, 128.0]
     #anno_lab = (anno_lab / [50.0, 127.5, 127.5]) - 1.0
     jpeg_lab = tf.reshape(jpeg_lab, [256, 256, 3])
-    anno_hot = tf.reshape(anno_hot, [64, 64, 9])
+    anno_hot = tf.reshape(anno_hot, [256, 256, 9])
     return jpeg_lab, anno_hot
 
 

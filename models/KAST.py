@@ -474,9 +474,9 @@ class KAST(tf.keras.Model):
             v_input = tf.image.resize(v, [h, w], 'nearest')
         v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
         output_v, v_j, drop_out = self.call((inputs, v_input), training=training)
-        drop_out = tf.reshape(drop_out, [-1, seq_size, h, w, cv])[:, 1:]
+        drop_out = tf.reshape(drop_out, [-1, seq_size, h, w, cv])
         output_v = tf.reshape(output_v, [-1, h, w, cv])
         output_v = tf.image.resize(output_v, [H, W])
         output_v = tf.reshape(output_v, [-1, seq_size-1, H, W, cv])
-        v = tf.reshape(v, [-1, seq_size, H, W, cv])[:, 1:]
+        v = tf.reshape(v, [-1, seq_size, H, W, cv])
         return output_v, v, drop_out

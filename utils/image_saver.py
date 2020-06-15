@@ -252,11 +252,11 @@ def KAST_test_ResNet(kast, davis, file_name_head='image', path='./'):
 
 def KAST_JF(kast, davis):
     i_raw, v = tf.nest.flatten(davis)
-    output_v, v_j, i_drop = kast.reconstruct(davis, training=False)
+    output_v, v_j, _ = kast.reconstruct(davis, training=False)
     output_v = output_v[0]
     seq_size = output_v.shape[0]
     max_value_output = tf.argmax(output_v, -1)
-    v_j = v_j[0]
+    v_j = v_j[0][1:]
     max_value = tf.argmax(v_j, -1)
 
     number_size = tf.reduce_max(max_value)
@@ -303,7 +303,7 @@ def KAST_JF(kast, davis):
 def KAST_test(kast, davis, file_name_head='image', path='./'):
     #output_v, v_j, i_drop = kast.call(davis, training=False)
     output_v, v_j, i_drop = kast.reconstruct(davis, training=False)
-    raw = tf.image.resize(i_drop[0][1:], [64, 64]).numpy()
+    raw = i_drop.numpy()
     #output_v = output_v[0].numpy()
     output_v = output_v[0]
     max_value_output = tf.argmax(output_v, -1)
@@ -313,7 +313,8 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     max_value = tf.argmax(v_j, -1)
     v_j = tf.gather(palette_DAVIS, max_value).numpy()
     seq_size = output_v.shape[0]
-
+    all_white = np.ones([1, 256, 256, 3]) * [256, 256, 256]
+    output_v = np.concatenate([all_white, output_v], axis=0)
     #LAB to RGB
     for i in range(seq_size):
         #output_v[i] = cv2.cvtColor(np.float32((output_v[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
@@ -379,7 +380,7 @@ def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', pa
     output_v = output_v[0].numpy()
     v_j = v_j[0].numpy()
     v_0 = v_0[0].numpy()
-    all_white = np.ones([64, 64, 3]) * [1.0, 0., 0.]
+    all_white = np.ones([256, 256, 3]) * [1.0, 0., 0.]
 
 
     # LAB to RGB
@@ -419,7 +420,7 @@ def KAST_View(kast, input_data, training=True, file_name_head='image', path='./'
 
 
     # Input / output / drop_out to LAB
-    all_white = np.ones([1, 64, 64, 3]) * [1.0, 0., 0.]
+    all_white = np.ones([1, 256, 256, 3]) * [1.0, 0., 0.]
     output = np.concatenate([all_white, output], axis=0)
     for i in range(seq_size):
         ground_truth[i] = cv2.cvtColor(np.float32((ground_truth[i] + 1.0) * [50.0, 127.5, 127.5] - [0., 128., 128.]), cv2.COLOR_Lab2RGB)
