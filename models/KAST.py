@@ -464,19 +464,21 @@ class KAST(tf.keras.Model):
         seq_size = inputs.shape[1]
         H = inputs.shape[2]
         W = inputs.shape[3]
-        cv = inputs.shape[4]
+        c_inp = inputs.shape[4]
         h = H // 4
         w = W // 4
         if v_inputs is None:
+            cv = c_inp
             v = tf.reshape(inputs, [-1, H, W, cv])
             v_input = tf.image.resize(v, [h, w])
             v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
         else:
+            cv = v_inputs.shape[4]
             v = tf.reshape(v_inputs, [-1, H, W, cv])
             v_input = tf.image.resize(v, [h, w])
             v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
         output_v, v_j, drop_out = self.call((inputs, v_input), training=training)
-        drop_out = tf.reshape(drop_out, [-1, seq_size, h, w, cv])
+        drop_out = tf.reshape(drop_out, [-1, seq_size, h, w, c_inp])
         output_v = tf.reshape(output_v, [-1, h, w, cv])
         output_v = tf.image.resize(output_v, [H, W])
         output_v = tf.reshape(output_v, [-1, seq_size-1, H, W, cv])
