@@ -63,7 +63,7 @@ class Dataset():
             self.sequence_length = 20
 
         elif dataset_name == 'oxuva':
-            self.sequence_length = 10
+            self.sequence_length = 2
             self.train_ds, self.val_ds, self.train_size, self.val_size = OxuvaLoader.oxuva_loader_v2('/content/drive/My Drive/Colab Data/Datasets/oxuva_256/', seq_size=self.sequence_length)
             self.shape = 256
             self.test_ds = DAVISLoader.davis_loader(seq_size=self.sequence_length)

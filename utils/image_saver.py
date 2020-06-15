@@ -304,13 +304,14 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     #output_v, v_j, i_drop = kast.call(davis, training=False)
     i_raw, v = tf.nest.flatten(davis)
     output_v, v_j, i_drop = kast.reconstruct(i_raw, v, training=False)
-    raw = i_drop.numpy()
+
     #output_v = output_v[0].numpy()
     output_v = output_v[0]
     max_value_output = tf.argmax(output_v, -1)
     output_v = tf.gather(palette_DAVIS, max_value_output).numpy()
     #v_j = v_j[0].numpy()
     v_j = v_j[0]
+    raw = i_drop[0].numpy()
     max_value = tf.argmax(v_j, -1)
     v_j = tf.gather(palette_DAVIS, max_value).numpy()
     seq_size = output_v.shape[0]
