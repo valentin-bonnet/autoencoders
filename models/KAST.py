@@ -460,19 +460,21 @@ class KAST(tf.keras.Model):
         output_v, v_j, v_0 = self.call_ResNet_Local((inputs, v), training=training)
         return output_v, v_j, v_0
 
-    def reconstruct(self, inputs, training=True):
+    def reconstruct(self, inputs, v_inputs=None, training=True):
         seq_size = inputs.shape[1]
         H = inputs.shape[2]
         W = inputs.shape[3]
         cv = inputs.shape[4]
         h = H // 4
         w = W // 4
-        v = tf.reshape(inputs, [-1, H, W, cv])
-        if training:
+        if v_inputs is None:
+            v = tf.reshape(inputs, [-1, H, W, cv])
             v_input = tf.image.resize(v, [h, w])
+            v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
         else:
-            v_input = tf.image.resize(v, [h, w], 'nearest')
-        v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
+            v = tf.reshape(v_inputs, [-1, H, W, cv])
+            v_input = tf.image.resize(v, [h, w])
+            v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
         output_v, v_j, drop_out = self.call((inputs, v_input), training=training)
         drop_out = tf.reshape(drop_out, [-1, seq_size, h, w, cv])
         output_v = tf.reshape(output_v, [-1, h, w, cv])
