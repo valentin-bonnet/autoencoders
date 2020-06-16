@@ -231,8 +231,8 @@ class Training():
                     self.ckpt.step.assign(i+1)
                     if self.redone:
                         self.save_redone()
-                    #else:
-                        #self.save()
+                    else:
+                        self.save()
 
                     t_loss_mean.reset_states()
                     t_acc_mean.reset_states()
