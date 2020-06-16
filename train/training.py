@@ -142,8 +142,9 @@ class Training():
             progbar = tf.keras.utils.Progbar(1000)
             progbar.update(starting_step//epoch_percent_train)
 
-            self.lr = self.lr_fn(self.lr, epoch)
-            self.optimizer.lr = self.lr
+            lr = self.optimizer.lr
+            lr = self.lr_fn(lr, epoch)
+            self.optimizer.lr = lr
 
             # One epoch on TRAIN dataset
             #train_enum = self.train_ds.enumerate()
@@ -160,7 +161,7 @@ class Training():
                 if i % epoch_percent_train == 0 and i != 0:
                     progbar.add(1)
 
-                if i % (epoch_percent_train*50) == 0 and i != 0:
+                if i % (epoch_percent_train*100) == 0 and i != 0:
                     for val_x in self.val_ds.take(epoch_percent_val):
                         v_loss_mean(self.model.compute_loss(val_x))
                         v_acc_mean(self.model.compute_accuracy(val_x))
