@@ -373,6 +373,7 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     output_v_gif = output_v[1:]
     alpha_gif = np.zeros([seq_size, 256, 256])
     alpha_gif[np.sum(output_v_gif, -1) > 0] = 0.8
+    alpha_gif = alpha_gif[..., np.newaxis]
     finals = raw_gif * (1.0 - alpha_gif) + alpha_gif * output_v_gif
     im = []
     for image in finals:
