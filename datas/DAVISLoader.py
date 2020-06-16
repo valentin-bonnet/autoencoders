@@ -67,13 +67,19 @@ def tf_rgb2lab(image):
 def _preprocess_once(example_proto):
     image_feature_description = {
         'image_jpeg': tf.io.FixedLenFeature([], tf.string),
-        'annotation': tf.io.FixedLenFeature([], tf.string)
+        'annotation': tf.io.FixedLenFeature([], tf.string),
+        'h': tf.io.FixedLenFeature([], tf.int64),
+        'w': tf.io.FixedLenFeature([], tf.int64)
+
     }
     parsed_data = tf.io.parse_single_example(example_proto, image_feature_description)
     #jpeg= parsed_data['image_jpeg'][::frames_delta]
+
     jpeg= parsed_data['image_jpeg']
     #anno= parsed_data['annotation'][::frames_delta]
     anno= parsed_data['annotation']
+    h = parsed_data['h']
+    w = parsed_data['w']
     jpeg = tf.map_fn(tf.image.decode_jpeg, tf.reshape(jpeg, [-1]), dtype=tf.uint8)
     anno = tf.map_fn(tf.image.decode_png, tf.reshape(anno, [-1]), dtype=tf.uint8)
     anno = tf.cast(anno, tf.int32)
@@ -90,8 +96,8 @@ def _preprocess_once(example_proto):
     jpeg_lab = (jpeg_lab / [50.0, 127.5, 127.5]) - 1.0
     #anno_lab = anno_lab + [0., 128.0, 128.0]
     #anno_lab = (anno_lab / [50.0, 127.5, 127.5]) - 1.0
-    jpeg_lab = tf.reshape(jpeg_lab, [256, 256, 3])
-    anno_hot = tf.reshape(anno_hot, [256, 256, 9])
+    jpeg_lab = tf.reshape(jpeg_lab, [h, w, 3])
+    anno_hot = tf.reshape(anno_hot, [h, w, 9])
     return jpeg_lab, anno_hot
 
 

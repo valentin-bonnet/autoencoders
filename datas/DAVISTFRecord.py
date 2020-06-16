@@ -34,21 +34,27 @@ def DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre):
                     k = k + size//10
                 anno_string = open(images_anno[idx], 'rb').read()
                 anno_tf = tf.io.decode_png(anno_string)
-                resized_anno_tf = tf.cast(tf.image.resize(anno_tf, (256, 256), method='nearest'), tf.uint8)  # RESIZE
+                #resized_anno_tf = tf.cast(tf.image.resize(anno_tf, (256, 256), method='nearest'), tf.uint8)  # RESIZE
+                resized_anno_tf = tf.cast(anno_tf, tf.uint8)  # RESIZE
                 anno_resized_byte = tf.image.encode_png(resized_anno_tf)
                 jpeg_string = open(images_jpeg[idx], 'rb').read()
                 jpeg_tf = tf.io.decode_jpeg(jpeg_string)
-                resized_jpeg_tf = tf.cast(tf.image.resize(jpeg_tf, (256, 256)), tf.uint8)  # RESIZE
+                h = jpeg_tf.shape[0]
+                w = jpeg_tf.shape[1]
+                #resized_jpeg_tf = tf.cast(tf.image.resize(jpeg_tf, (256, 256)), tf.uint8)  # RESIZE
+                resized_jpeg_tf = tf.cast(jpeg_tf, tf.uint8)  # RESIZE
                 jpeg_resized_byte = tf.io.encode_jpeg(resized_jpeg_tf)
-                tf_example = image_example(anno_resized_byte, jpeg_resized_byte)
+                tf_example = image_example(anno_resized_byte, jpeg_resized_byte, h, w)
                 writer.write(tf_example.SerializeToString())
                 i = i + 1
 
-def image_example(anno_string, jpeg_string):
+def image_example(anno_string, jpeg_string, h, w):
 
     feature = {
         'image_jpeg': _bytes_feature(jpeg_string),
-        'annotation': _bytes_feature(anno_string)
+        'annotation': _bytes_feature(anno_string),
+        'h': _int64_feature(h),
+        'w': _int64_feature(w)
     }
     return tf.train.Example(features=tf.train.Features(feature=feature))
 
