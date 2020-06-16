@@ -14,7 +14,8 @@ class KAST(tf.keras.Model):
         self.transformation = Transformation(trainable=False)
         self.resnet = ResNet()
         self.rkn = RKNModel()
-        self.memory = Memory(unit=200, kernel=self.kernel)
+        self.units = 200
+        self.memory = Memory(unit=self.units, kernel=self.kernel)
         self.corr_cost = tfa.layers.CorrelationCost(kernel_size=1, max_displacement=self.kernel // 2, stride_1=1, stride_2=1, pad=self.kernel // 2, data_format="channels_last")
         self.corr_cost_stride = tfa.layers.CorrelationCost(kernel_size=1, max_displacement=(self.kernel // 2)*2, stride_1=1, stride_2=2, pad=(self.kernel // 2)*2, data_format="channels_last")
         #self.memory = tf.keras.Sequential()
@@ -72,15 +73,15 @@ class KAST(tf.keras.Model):
             patch_v = tf.reshape(patch_v1, [bs, h*w, self.kernel**2, cv])
 
             m_k0, m_v0 = tf.nest.flatten(all_m_kv[0])
-            ref_transpose = tf.transpose(m_k0, [0, 2, 1])  # (bs, k, m)
-            inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
+            #ref_transpose = tf.transpose(m_k0, [0, 2, 1])  # (bs, k, m)
+            #inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
 
-            idx_top0 = tf.argmax(inner_product, axis=-1)
-            top_k0 = tf.gather(m_k0, idx_top0, batch_dims=1, axis=1)  # (bs, hw, k)
-            top_v0 = tf.gather(m_v0, idx_top0, batch_dims=1, axis=1)  # (bs, hw, v)
+            #idx_top0 = tf.argmax(inner_product, axis=-1)
+            #top_k0 = tf.gather(m_k0, idx_top0, batch_dims=1, axis=1)  # (bs, hw, k)
+            #top_v0 = tf.gather(m_v0, idx_top0, batch_dims=1, axis=1)  # (bs, hw, v)
 
-            top_mk = tf.reshape(top_k0, [bs, h*w, 1, ck])
-            top_mv = tf.reshape(top_v0, [bs, h*w, 1, cv])
+            top_mk = tf.reshape(m_k0, [bs, h*w, self.units, ck])
+            top_mv = tf.reshape(m_v0, [bs, h*w, self.units, cv])
 
             if i >= 3:
                 #corr_prev_three = self.corr_cost_stride([k[:, i], k[:, i-3]])*2.0  # (bs, hw, kernel**2)
@@ -103,18 +104,18 @@ class KAST(tf.keras.Model):
                     patch_v = tf.concat([patch_v, patch_v5], axis=-2)
                     if i >= 6:
                         m_k5, m_v5 = tf.nest.flatten(all_m_kv[5])
-                        ref_transpose = tf.transpose(m_k5, [0, 2, 1])  # (bs, k, m)
-                        inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
+                        #ref_transpose = tf.transpose(m_k5, [0, 2, 1])  # (bs, k, m)
+                        #inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
 
-                        idx_top5 = tf.argmax(inner_product, axis=-1)
-                        top_k5 = tf.gather(m_k5, idx_top5, batch_dims=1, axis=1)  # (bs, hw, 1, k)
-                        top_v5 = tf.gather(m_v5, idx_top5, batch_dims=1, axis=1)  # (bs, hw, 1, v)
+                        #idx_top5 = tf.argmax(inner_product, axis=-1)
+                        #top_k5 = tf.gather(m_k5, idx_top5, batch_dims=1, axis=1)  # (bs, hw, 1, k)
+                        #top_v5 = tf.gather(m_v5, idx_top5, batch_dims=1, axis=1)  # (bs, hw, 1, v)
 
-                        top_mk5 = tf.reshape(top_k5, [bs, h * w, 1, ck])
-                        top_mv5 = tf.reshape(top_v5, [bs, h * w, 1, cv])
+                        top_mk5 = tf.reshape(m_k5, [bs, h * w, self.units, ck])
+                        top_mv5 = tf.reshape(m_v5, [bs, h * w, self.units, cv])
 
-                        top_mk = tf.concat([top_mk, top_mk5], axis=-2)
-                        top_mv = tf.concat([top_mv, top_mv5], axis=-2)
+                        top_mk = tf.concat([top_mk, m_k5], axis=-2)
+                        top_mv = tf.concat([top_mv, m_v5], axis=-2)
 
             # top_mk: (bs, hw, nb_memory, k)
             # top_mv: (bs, hw, nb_memory, v)
