@@ -371,7 +371,7 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     #images = tf.concat([output_v, v_j], axis=2).numpy()
     raw_gif = raw[1:] * [255.0, 255.0, 255.0]
     output_v_gif = output_v[1:]
-    alpha_gif = np.zeros([256, 256])
+    alpha_gif = np.zeros([seq_size-1, 256, 256])
     alpha_gif[np.sum(output_v, -1) > 0] = 0.8
     finals = raw_gif * (1.0 - alpha_gif) + alpha_gif * output_v_gif
     im = []
