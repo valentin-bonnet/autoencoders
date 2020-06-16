@@ -292,7 +292,7 @@ if KAST:
     lrs_fn = [lr_fn]
     batch_size = 32
     epochs_max = [20]
-    saves_epochs = [100]
+    saves_epochs = [10]
     #directory_path = './content/drive/My Drive/Colab Data/AE/'
     directory_path = '/content/drive/My Drive/Colab Data/AE/'
     path_to_directory = directory_path+'KAST_Retrain_with_memory'
