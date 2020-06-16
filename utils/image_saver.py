@@ -380,7 +380,7 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
         im.append(Image.fromarray(np.uint8(image)))
 
     file_path = os.path.join(path, file_name_head)
-    im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=raw_gif.shape[0]*10)
+    im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=150)
 
 def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', path='./'):
     output_v, v_j, v_0 = kast.reconstruct_ResNet(input_data, training=training)
