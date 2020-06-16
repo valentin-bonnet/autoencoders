@@ -351,30 +351,35 @@ def KAST_test(kast, davis, file_name_head='image', path='./'):
     plt.savefig(file_path + '_DAVIS.png')
     plt.close(fig)
 
-    Image.fromarray(np.uint8(raw[1]*[255.0, 255.0, 255.0])).save(file_path+"_DAVIS_Raw_1.png")
-    Image.fromarray(np.uint8(v_j[1])).save(file_path+"_DAVIS_gt_1.png")
-    Image.fromarray(np.uint8(output_v[1])).save(file_path+"_DAVIS_out_1.png")
-    Image.fromarray(np.uint8(raw[5]*[255.0, 255.0, 255.0])).save(file_path + "_DAVIS_Raw_5.png")
-    Image.fromarray(np.uint8(v_j[5])).save(file_path + "_DAVIS_gt_5.png")
-    Image.fromarray(np.uint8(output_v[5])).save(file_path + "_DAVIS_out_5.png")
-    Image.fromarray(np.uint8(raw[10]*[255.0, 255.0, 255.0])).save(file_path + "_DAVIS_Raw_10.png")
-    Image.fromarray(np.uint8(v_j[10])).save(file_path + "_DAVIS_gt_10.png")
-    Image.fromarray(np.uint8(output_v[10])).save(file_path + "_DAVIS_out_10.png")
-    Image.fromarray(np.uint8(raw[15]*[255.0, 255.0, 255.0])).save(file_path + "_DAVIS_Raw_15.png")
-    Image.fromarray(np.uint8(v_j[15])).save(file_path + "_DAVIS_gt_15.png")
-    Image.fromarray(np.uint8(output_v[15])).save(file_path + "_DAVIS_out_15.png")
-    Image.fromarray(np.uint8(raw[20]*[255.0, 255.0, 255.0])).save(file_path + "_DAVIS_Raw_20.png")
-    Image.fromarray(np.uint8(v_j[20])).save(file_path + "_DAVIS_gt_20.png")
-    Image.fromarray(np.uint8(output_v[20])).save(file_path + "_DAVIS_out_20.png")
+    #Image.fromarray(np.uint8(raw[1]*[255.0, 255.0, 255.0])).save(file_path+"_DAVIS_Raw_1.png")
+    #Image.fromarray(np.uint8(v_j[1])).save(file_path+"_DAVIS_gt_1.png")
+    #Image.fromarray(np.uint8(output_v[1])).save(file_path+"_DAVIS_out_1.png")
+    #Image.fromarray(np.uint8(raw[5]*[255.0, 255.0, 255.0])).save(file_path + "_DAVIS_Raw_5.png")
+    #Image.fromarray(np.uint8(v_j[5])).save(file_path + "_DAVIS_gt_5.png")
+    #Image.fromarray(np.uint8(output_v[5])).save(file_path + "_DAVIS_out_5.png")
+    #Image.fromarray(np.uint8(raw[10]*[255.0, 255.0, 255.0])).save(file_path + "_DAVIS_Raw_10.png")
+    #Image.fromarray(np.uint8(v_j[10])).save(file_path + "_DAVIS_gt_10.png")
+    #Image.fromarray(np.uint8(output_v[10])).save(file_path + "_DAVIS_out_10.png")
+    #Image.fromarray(np.uint8(raw[15]*[255.0, 255.0, 255.0])).save(file_path + "_DAVIS_Raw_15.png")
+    #Image.fromarray(np.uint8(v_j[15])).save(file_path + "_DAVIS_gt_15.png")
+    #Image.fromarray(np.uint8(output_v[15])).save(file_path + "_DAVIS_out_15.png")
+    #Image.fromarray(np.uint8(raw[20]*[255.0, 255.0, 255.0])).save(file_path + "_DAVIS_Raw_20.png")
+    #Image.fromarray(np.uint8(v_j[20])).save(file_path + "_DAVIS_gt_20.png")
+    #Image.fromarray(np.uint8(output_v[20])).save(file_path + "_DAVIS_out_20.png")
 
     # GIF
     #images = tf.concat([output_v, v_j], axis=2).numpy()
-    #im = []
-    #for image in images:
-    #    im.append(Image.fromarray(np.uint8(image*[255.0, 255.0, 255.0])))
+    raw_gif = raw[1:] * [255.0, 255.0, 255.0]
+    output_v_gif = output_v[1:]
+    alpha_gif = np.zeros([256, 256])
+    alpha_gif[np.sum(output_v, -1) > 0] = 0.8
+    finals = raw_gif * (1.0 - alpha_gif) + alpha_gif * output_v_gif
+    im = []
+    for image in finals:
+        im.append(Image.fromarray(np.uint8(image)))
 
-    #file_path = os.path.join(path, file_name_head)
-    #im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=150)
+    file_path = os.path.join(path, file_name_head)
+    im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=raw_gif.shape[0]*10)
 
 def KAST_View_Resnet(kast, input_data, training=True, file_name_head='image', path='./'):
     output_v, v_j, v_0 = kast.reconstruct_ResNet(input_data, training=training)
