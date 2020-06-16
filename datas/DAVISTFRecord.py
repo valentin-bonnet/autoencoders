@@ -45,7 +45,7 @@ def DAVIS_to_tfrecord(path_davis_jpeg, path_davis_anno, path_tfre):
                 resized_jpeg_tf = tf.cast(jpeg_tf, tf.uint8)  # RESIZE
                 jpeg_resized_byte = tf.io.encode_jpeg(resized_jpeg_tf)
                 tf_example = image_example(anno_resized_byte, jpeg_resized_byte, h, w)
-                writer.write(tf_example.SerializeToString())
+                #writer.write(tf_example.SerializeToString())
                 i = i + 1
 
 def image_example(anno_string, jpeg_string, h, w):
