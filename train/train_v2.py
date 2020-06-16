@@ -324,7 +324,7 @@ else:
     lrs_fn = [lr_fn]
     batch_size = 1024
     epochs_max = [70]
-    saves_epochs = [10]
+    saves_epochs = [1]
     #directory_path = './content/drive/My Drive/Colab Data/AE/'
     directory_path = '/content/drive/My Drive/Colab Data/AE/'
     path_to_directory = directory_path+'AE_redo'
