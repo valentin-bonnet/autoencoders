@@ -73,14 +73,14 @@ class KAST(tf.keras.Model):
 
             m_k0, m_v0 = tf.nest.flatten(all_m_kv[0])
             ref_transpose = tf.transpose(m_k0, [0, 2, 1])  # (bs, k, m)
-            inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
+            corr_memory = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
 
-            idx_top0 = tf.argmax(inner_product, axis=-1)
-            top_k0 = tf.gather(m_k0, idx_top0, batch_dims=1, axis=1)  # (bs, hw, k)
-            top_v0 = tf.gather(m_v0, idx_top0, batch_dims=1, axis=1)  # (bs, hw, v)
+            #idx_top0 = tf.argmax(inner_product, axis=-1)
+            #top_k0 = tf.gather(m_k0, idx_top0, batch_dims=1, axis=1)  # (bs, hw, k)
+            #top_v0 = tf.gather(m_v0, idx_top0, batch_dims=1, axis=1)  # (bs, hw, v)
 
-            top_mk = tf.reshape(top_k0, [bs, h*w, 1, ck])
-            top_mv = tf.reshape(top_v0, [bs, h*w, 1, cv])
+            #top_mk = tf.reshape(top_k0, [bs, h*w, 1, ck])
+            top_mv = tf.reshape(m_v0, [bs, 200, cv])
 
             if i >= 3:
                 #corr_prev_three = self.corr_cost_stride([k[:, i], k[:, i-3]])*2.0  # (bs, hw, kernel**2)
@@ -105,15 +105,16 @@ class KAST(tf.keras.Model):
                         m_k5, m_v5 = tf.nest.flatten(all_m_kv[5])
                         ref_transpose = tf.transpose(m_k5, [0, 2, 1])  # (bs, k, m)
                         inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
+                        corr_memory = tf.concat([corr_memory, inner_product])
 
-                        idx_top5 = tf.argmax(inner_product, axis=-1)
-                        top_k5 = tf.gather(m_k5, idx_top5, batch_dims=1, axis=1)  # (bs, hw, 1, k)
-                        top_v5 = tf.gather(m_v5, idx_top5, batch_dims=1, axis=1)  # (bs, hw, 1, v)
+                        #idx_top5 = tf.argmax(inner_product, axis=-1)
+                        #top_k5 = tf.gather(m_k5, idx_top5, batch_dims=1, axis=1)  # (bs, hw, 1, k)
+                        #top_v5 = tf.gather(m_v5, idx_top5, batch_dims=1, axis=1)  # (bs, hw, 1, v)
 
-                        top_mk5 = tf.reshape(top_k5, [bs, h * w, 1, ck])
-                        top_mv5 = tf.reshape(top_v5, [bs, h * w, 1, cv])
+                        #top_mk5 = tf.reshape(top_k5, [bs, h * w, 1, ck])
+                        top_mv5 = tf.reshape(m_v5, [bs, 200, cv])
 
-                        top_mk = tf.concat([top_mk, top_mk5], axis=-2)
+                        #top_mk = tf.concat([top_mk, top_mk5], axis=-2)
                         top_mv = tf.concat([top_mv, top_mv5], axis=-2)
 
             # top_mk: (bs, hw, nb_memory, k)
@@ -122,12 +123,15 @@ class KAST(tf.keras.Model):
             # patch_v: (bs, hw, nb_patches * kernel**2, v)
 
 
-            ref_transpose = tf.transpose(top_mk, [0, 1, 3, 2])  # (bs, hw, k, nb_memory)
-            corr_memory = tf.squeeze(tf.reshape(k[:, i], [bs, h*w, 1, ck]) @ ref_transpose, axis=[2])  # (bs, hw, 1, k) @ (bs, hw, k, nb_memory) = (bs, hw, 1, nb_memory)
+            #ref_transpose = tf.transpose(top_mk, [0, 1, 3, 2])  # (bs, hw, k, nb_memory)
+            #corr_memory = tf.squeeze(tf.reshape(k[:, i], [bs, h*w, 1, ck]) @ ref_transpose, axis=[2])  # (bs, hw, 1, k) @ (bs, hw, k, nb_memory) = (bs, hw, 1, nb_memory)
             all_corr = tf.concat([corr_prev, corr_memory], axis=-1)  # (bs, hw, nb_memory+nb_patches*kernel**2)
-            all_v = tf.concat([patch_v, top_mv], axis=-2)  # (bs, hw, nb_memory+nb_patches*kernel**2, v)
-            all_sim = tf.expand_dims(tf.nn.softmax(all_corr, axis=-1), axis=-2)  # (bs, hw, 1, nb_memory+nb_patches*kernel**2)
-            output_v_i = all_sim @ all_v  # (bs, hw, 1, nb_memory+nb_patches*kernel**2) @ (bs, hw, nb_memory+nb_patches*kernel**2, v) = (bs, hw, 1, v)
+            #all_v = tf.concat([patch_v, top_mv], axis=-2)  # (bs, hw, nb_memory+nb_patches*kernel**2, v)
+            all_sim = tf.nn.softmax(all_corr, axis=-1)  # (bs, hw, 1, nb_memory+nb_patches*kernel**2)
+            sim_mem, sim_patch = tf.split(all_sim, [top_mv.shape[2], patch_v.shape[2]], -1)
+            output_mem = sim_mem @ top_mv  # (bs, hw, nb_mem*200) @ (bs, nb_mem*200, v) = (bs, hw, v)
+            output_patch = tf.expand_dims(sim_patch, -2) @ patch_v  # (bs, hw, 1, nb_patches*kernel**2) @ (bs, hw, nb_memory+nb_patches*kernel**2, v) = (bs, hw, 1, v)
+            output_v_i = tf.expand_dims(output_mem, -2) + output_patch
 
             #corr_sim = tf.expand_dims(tf.nn.softmax(corr_prev, -1), -2)
             #output_v_i = corr_sim @ patch_v
