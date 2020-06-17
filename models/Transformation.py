@@ -25,7 +25,7 @@ class Transformation(tf.keras.layers.Layer):
             if np.random.random() < self.p:
                 return inputs, mask
 
-            drop_ch_ind = np.random.choice(np.arange(3), 1, replace=False, p=[0.8, 0.1, 0.1])
+            drop_ch_ind = np.random.choice(np.arange(3), 1, replace=False)
             drop_out = 1 - tf.reduce_sum(tf.one_hot(drop_ch_ind, 3), -2)
             return inputs * drop_out, mask
         else:
