@@ -282,7 +282,7 @@ if KAST:
 
 
     models = [model1]
-    lrs = [1e-3]
+    lrs = [1e-5]
     optimizers = [tf.keras.optimizers.Adam(lr) for lr in lrs]
     def lr_fn(lr, step):
         if step == 8 or step == 12 or step == 16:
@@ -290,9 +290,9 @@ if KAST:
         else:
             return lr
     lrs_fn = [lr_fn]
-    batch_size = 32
-    epochs_max = [30]
-    saves_epochs = [100]
+    batch_size = 4
+    epochs_max = [35]
+    saves_epochs = [50]
     #directory_path = './content/drive/My Drive/Colab Data/AE/'
     directory_path = '/content/drive/My Drive/Colab Data/AE/'
     path_to_directory = directory_path+'KAST_Retrain_with_memory'
