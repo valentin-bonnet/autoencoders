@@ -142,13 +142,14 @@ def _files_to_ds(f):
     #ds = ds.map(_parse_image_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)  # .batch(sequence_size*frames_delta, drop_remainder=True)
     #ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(105)
     ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE).window(35, 30)
+    ds = ds.flat_map(lambda x: x.batch(35))
     return ds
 
 def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS_VAL_BIG/'):
     files = glob.glob(path+'*.tfrecords')
     ds_files = tf.data.Dataset.from_tensor_slices(files)
-    davis_ds = ds_files.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    #davis_ds = ds_files.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    davis_ds = ds_files.flat_map(_files_to_ds)
     # davis_ds = ds_files.map(_files_to_ds, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-
     return davis_ds
 

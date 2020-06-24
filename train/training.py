@@ -153,11 +153,10 @@ class Training():
 
 
             for i, train_x in enumerate(self.train_ds, starting_step):
-                for seq_test in self.test_ds:
-                    for test in seq_test:
-                        j, f = image_saver.KAST_JF(self.model, test)
-                        j_mean(j)
-                        f_mean(f)
+                for test in self.test_ds:
+                    j, f = image_saver.KAST_JF(self.model, test)
+                    j_mean(j)
+                    f_mean(f)
                     self.model.reset_mem()
 
                 print("\nJ : ", j_mean.result().numpy())
