@@ -22,9 +22,14 @@ class KAST(tf.keras.Model):
         #self.memory.add(tf.keras.layers.RNN(self.memory_cell, stateful=True))
         self.coef_memory = coef_memory
         self.description = 'KAST'
+        self.mem0 = None
+        self.mem5 = None
+        self.k0 = None
+        self.v0 = None
 
     def call(self, inputs, **kwargs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
+        keep = kwargs['keep'] if 'keep' in kwargs else False
         bs = inputs[1].shape[0]
         self.memory.batch_shape = bs
 
@@ -54,14 +59,22 @@ class KAST(tf.keras.Model):
         #with tf.name_scope('Rkn'):
         #    score = self.rkn((k, tf.reshape(seq_mask, [bs, seq_size, 1])))
 
+
+
         previous_v = v[:, 0]
         self.memory.get_init_state(bs, cv)
         self.memory.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv])))
         all_m_kv = []
         all_previous_v = [previous_v]
         ground_truth = [tf.reshape(v[:, 0], [-1, 1, h, w, cv])]
+
+        if self.k0 is None:
+            self.k0 = k[:, 0]
+        if self.v0 is None:
+            self.v0 = v[:, 0]
+
         for i in range(1, seq_size):
-            if i < 7:
+            if i < 7 and self.mem0 is None:
                 with tf.name_scope('Memory'):
                     m_kv = self.memory.call((tf.reshape(k[:, i-1], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv])))
                     all_m_kv.append(m_kv)
@@ -71,7 +84,9 @@ class KAST(tf.keras.Model):
             patch_v1 = tf.image.extract_patches(images=tf.reshape(all_previous_v[i-1], [-1, 64, 64, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
             patch_v = tf.reshape(patch_v1, [bs, h*w, self.kernel**2, cv])
 
-            m_k0, m_v0 = tf.nest.flatten(all_m_kv[0])
+            if self.mem0 is None:
+                self.mem0 = all_m_kv[0]
+            m_k0, m_v0 = tf.nest.flatten(self.mem0)
             ref_transpose = tf.transpose(m_k0, [0, 2, 1])  # (bs, k, m)
             inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
 
@@ -93,16 +108,19 @@ class KAST(tf.keras.Model):
                 patch_v = tf.concat([patch_v, patch_v3], axis=-2)
 
                 if i >= 5:
-                    corr_prev_five = self.corr_cost_stride([k[:, i], k[:, 0]])*256.0 # (bs, hw, kernel**2)
+                    corr_prev_five = self.corr_cost_stride([k[:, i], self.k0])*256.0 # (bs, hw, kernel**2)
                     #corr_prev_five = self.corr_cost([k[:, i], k[:, i-5]])*2.0  # (bs, hw, kernel**2)
                     corr_prev_five = tf.reshape(corr_prev_five, [bs, h*w, self.kernel ** 2])
                     corr_prev = tf.concat([corr_prev, corr_prev_five], axis=-1)
-                    patch_v5 = tf.image.extract_patches(images=tf.reshape(all_previous_v[0], [-1, 64, 64, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 2, 2, 1], padding="SAME")
+                    patch_v5 = tf.image.extract_patches(images=tf.reshape(self.v0, [-1, 64, 64, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 2, 2, 1], padding="SAME")
                     #patch_v5 = tf.image.extract_patches(images=tf.reshape(all_previous_v[i-5], [-1, 64, 64, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
                     patch_v5 = tf.reshape(patch_v5, [bs, h * w, self.kernel ** 2, cv])
                     patch_v = tf.concat([patch_v, patch_v5], axis=-2)
                     if i >= 6:
-                        m_k5, m_v5 = tf.nest.flatten(all_m_kv[5])
+                        if self.mem5 is None:
+                            self.mem5 = all_m_kv[5]
+                        m_k5, m_v5 = tf.nest.flatten(self.mem5)
+                        #m_k5, m_v5 = tf.nest.flatten(all_m_kv[5])
                         ref_transpose = tf.transpose(m_k5, [0, 2, 1])  # (bs, k, m)
                         inner_product = tf.reshape(k[:, i], [bs, h*w, ck]) @ ref_transpose  # (bs, hw, k) @ (bs, k, m) = (bs, hw, m)
 
@@ -145,6 +163,8 @@ class KAST(tf.keras.Model):
         # print("ground_truth[0].shape: ", ground_truth[0].shape)
 
         # self.memory.get_initial_state()
+        if not keep:
+            self.reset_mem()
 
         return tf.concat(output_v, 1), tf.concat(ground_truth, 1), i_drop
 
@@ -404,7 +424,7 @@ class KAST(tf.keras.Model):
         v_input = tf.image.resize(v, [h, w])
         v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=True)
-        output_v, v_j, _ = self.call((inputs, v_input), training=True)
+        output_v, v_j, _, _ = self.call((inputs, v_input, None), training=True)
         output_v = tf.reshape(output_v, [-1, h, w, cv])
         output_v = tf.image.resize(output_v, [H, W])
         output_v = tf.reshape(output_v, [-1, seq_size - 1, H, W, cv])
@@ -430,7 +450,7 @@ class KAST(tf.keras.Model):
         v_input = tf.image.resize(v_input, [h, w])
         v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
         #output_v, v_j, _ = self.call((inputs, v), training=False)
-        output_v, v_j, _ = self.call((inputs, v_input), training=False)
+        output_v, v_j, _, _ = self.call((inputs, v_input, None), training=False)
         output_v = tf.reshape(output_v, [-1, h, w, cv])
         output_v = tf.image.resize(output_v, [H, W])
         output_v = tf.reshape(output_v, [-1, seq_size - 1, H, W, cv])
@@ -461,7 +481,7 @@ class KAST(tf.keras.Model):
         output_v, v_j, v_0 = self.call_ResNet_Local((inputs, v), training=training)
         return output_v, v_j, v_0
 
-    def reconstruct(self, inputs, v_inputs=None, training=True):
+    def reconstruct(self, inputs, v_inputs=None, training=True, keep=False):
         seq_size = inputs.shape[1]
         H = inputs.shape[2]
         W = inputs.shape[3]
@@ -478,10 +498,16 @@ class KAST(tf.keras.Model):
             v = tf.reshape(v_inputs, [-1, H, W, cv])
             v_input = tf.image.resize(v, [h, w], 'nearest')
             v_input = tf.reshape(v_input, [-1, seq_size, h, w, cv])
-        output_v, v_j, drop_out = self.call((inputs, v_input), training=training)
+        output_v, v_j, drop_out = self.call((inputs, v_input), training=training, keep=keep)
         drop_out = tf.reshape(drop_out, [-1, seq_size, H, W, c_inp])
         output_v = tf.reshape(output_v, [-1, h, w, cv])
         output_v = tf.image.resize(output_v, [H, W])
         output_v = tf.reshape(output_v, [-1, seq_size-1, H, W, cv])
         v = tf.reshape(v, [-1, seq_size, H, W, cv])
         return output_v, v, drop_out
+
+    def reset_mem(self):
+        self.mem0 = None
+        self.mem5 = None
+        self.k0 = None
+        self.v0 = None

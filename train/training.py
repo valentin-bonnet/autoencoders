@@ -153,6 +153,17 @@ class Training():
 
 
             for i, train_x in enumerate(self.train_ds, starting_step):
+                for seq_test in self.test_ds:
+                    for test in seq_test:
+                        j, f = image_saver.KAST_JF(self.model, test)
+                        j_mean(j)
+                        f_mean(f)
+                    self.model.reset_mem()
+
+                print("\nJ : ", j_mean.result().numpy())
+                print("F : ", f_mean.result().numpy())
+
+                print(j[100000000000000])
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
                 if i > (epoch_percent_train*1000):
@@ -166,10 +177,12 @@ class Training():
                         v_loss_mean(self.model.compute_loss(val_x))
                         v_acc_mean(self.model.compute_accuracy(val_x))
 
-                    for test in self.test_ds:
-                        j, f = image_saver.KAST_JF(self.model, test)
-                        j_mean(j)
-                        f_mean(f)
+                    for seq_test in self.test_ds:
+                        for test in seq_test:
+                            j, f = image_saver.KAST_JF(self.model, test)
+                            j_mean(j)
+                            f_mean(f)
+                        self.model.reset_mem()
 
                     print("\nJ : ", j_mean.result().numpy())
                     print("F : ", f_mean.result().numpy())

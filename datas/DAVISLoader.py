@@ -64,7 +64,7 @@ def tf_rgb2lab(image):
         return tf.reshape(lab_pixels, tf.shape(srgb))
 
 
-def _preprocess_once(example_proto):
+def _preprocess_once_256(example_proto):
     image_feature_description = {
         'image_jpeg': tf.io.FixedLenFeature([], tf.string),
         'annotation': tf.io.FixedLenFeature([], tf.string),
@@ -97,13 +97,51 @@ def _preprocess_once(example_proto):
     anno_hot = tf.reshape(anno_hot, [256, 256, 9])
     return jpeg_lab, anno_hot
 
+def _preprocess_once(example_proto):
+    image_feature_description = {
+        'image_jpeg': tf.io.FixedLenFeature([], tf.string),
+        'annotation': tf.io.FixedLenFeature([], tf.string),
+        'h': tf.io.FixedLenFeature([], tf.int64),
+        'w': tf.io.FixedLenFeature([], tf.int64)
+
+    }
+    parsed_data = tf.io.parse_single_example(example_proto, image_feature_description)
+    #jpeg= parsed_data['image_jpeg'][::frames_delta]
+
+    jpeg = parsed_data['image_jpeg']
+    #anno= parsed_data['annotation'][::frames_delta]
+    anno = parsed_data['annotation']
+    h = parsed_data['h']
+    w = parsed_data['w']
+
+    jpeg = tf.map_fn(tf.image.decode_jpeg, tf.reshape(jpeg, [-1]), dtype=tf.uint8)
+    anno = tf.map_fn(tf.image.decode_png, tf.reshape(anno, [-1]), dtype=tf.uint8)
+    anno = tf.cast(anno, tf.int32)
+    anno = table.lookup(tf.reduce_sum(anno * [1, 10, 100], -1))
+    anno_hot = tf.one_hot(anno, 9)
+    anno_hot = tf.cast(anno_hot, tf.float32)
+    jpeg = tf.cast(jpeg, tf.float32) / 255.0
+    #anno = tf.cast(anno, tf.float32) / 255.0
+    jpeg_lab = tf_rgb2lab(jpeg)
+    #anno_lab = tf_rgb2lab(anno)
+    jpeg_lab = tf.cast(jpeg_lab, tf.float32)
+    #anno_lab = tf.cast(anno_lab, tf.float32)
+    jpeg_lab = jpeg_lab + [0., 128.0, 128.0]
+    jpeg_lab = (jpeg_lab / [50.0, 127.5, 127.5]) - 1.0
+    #anno_lab = anno_lab + [0., 128.0, 128.0]
+    #anno_lab = (anno_lab / [50.0, 127.5, 127.5]) - 1.0
+    jpeg_lab = tf.reshape(jpeg_lab, [h, w, 3])
+    anno_hot = tf.reshape(anno_hot, [h, w, 9])
+    return jpeg_lab, anno_hot
+
 
 
 
 def _files_to_ds(f):
     ds = tf.data.TFRecordDataset(f, compression_type="GZIP")
     #ds = ds.map(_parse_image_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)  # .batch(sequence_size*frames_delta, drop_remainder=True)
-    ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(105)
+    #ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(105)
+    ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE).window(35, 30)
     return ds
 
 def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS_VAL/'):
