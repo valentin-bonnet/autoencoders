@@ -22,6 +22,7 @@ class KAST(tf.keras.Model):
         #self.memory.add(tf.keras.layers.RNN(self.memory_cell, stateful=True))
         self.coef_memory = coef_memory
         self.description = 'KAST'
+        self.mem_write = True
         self.mem0 = None
         self.mem5 = None
         self.k0 = None
@@ -75,7 +76,7 @@ class KAST(tf.keras.Model):
             self.v0 = v[:, 0]
 
         for i in range(1, seq_size):
-            if i < 7 and self.mem0 is None:
+            if i < 7 and self.mem_write:
                 with tf.name_scope('Memory'):
                     m_kv = self.memory.call((tf.reshape(k[:, i-1], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv])))
                     all_m_kv.append(m_kv)
@@ -164,6 +165,8 @@ class KAST(tf.keras.Model):
         # print("ground_truth[0].shape: ", ground_truth[0].shape)
 
         # self.memory.get_initial_state()
+        self.mem_write = False
+
         if not keep:
             self.reset_mem()
 
@@ -508,6 +511,7 @@ class KAST(tf.keras.Model):
         return output_v, v, drop_out
 
     def reset_mem(self):
+        self.mem_write = True
         self.mem0 = None
         self.mem5 = None
         self.k0 = None
