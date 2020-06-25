@@ -25,7 +25,7 @@ class Training():
         else:
             self.train_ds = dataset.train_ds.batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
             self.val_ds = dataset.val_ds.batch(batch_size, drop_remainder=True).prefetch(buffer_size=AUTOTUNE)
-            self.test_ds = dataset.test_ds.batch(1, drop_remainder=False).prefetch(buffer_size=AUTOTUNE)
+            self.test_ds = dataset.test_ds
         self.train_size = dataset.train_size//batch_size
 
         self.val_size = dataset.val_size//batch_size
@@ -153,10 +153,11 @@ class Training():
 
 
             for i, train_x in enumerate(self.train_ds, starting_step):
-                for test in self.test_ds:
-                    j, f = image_saver.KAST_JF(self.model, test)
-                    j_mean(j)
-                    f_mean(f)
+                for test_pack in self.test_ds:
+                    for test in test_pack:
+                        j, f = image_saver.KAST_JF(self.model, test)
+                        j_mean(j)
+                        f_mean(f)
                     self.model.reset_mem()
 
                 print("\nJ : ", j_mean.result().numpy())
