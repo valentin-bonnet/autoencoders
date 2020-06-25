@@ -142,7 +142,7 @@ def _files_to_ds(f):
     #ds = ds.map(_parse_image_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)  # .batch(sequence_size*frames_delta, drop_remainder=True)
     #ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(105)
     ds = ds.map(_preprocess_once, num_parallel_calls=tf.data.experimental.AUTOTUNE).window(35, 30)
-    ds = ds.flat_map(lambda x: x.batch(35))
+    ds = ds.flat_map(lambda x,y: tf.data.Dataset.zip((x, y)).batch(35))
     return ds
 
 def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS_VAL_BIG/'):
