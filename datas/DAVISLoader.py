@@ -149,7 +149,7 @@ def davis_loader(path='/content/drive/My Drive/Colab Data/Datasets/DAVIS_VAL_BIG
     files = glob.glob(path+'*.tfrecords')
     ds_files = tf.data.Dataset.from_tensor_slices(files)
     #davis_ds = ds_files.interleave(_files_to_ds, cycle_length=tf.data.experimental.AUTOTUNE, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    davis_ds = ds_files.flat_map(_files_to_ds)
+    davis_ds = ds_files.map(_files_to_ds)
     # davis_ds = ds_files.map(_files_to_ds, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     return davis_ds
 
