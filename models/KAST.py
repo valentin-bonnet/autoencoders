@@ -42,6 +42,7 @@ class KAST(tf.keras.Model):
         h = inputs[1].shape[2]
         w = inputs[1].shape[3]
         cv = inputs[1].shape[4]
+        self.memory.hw_shape = h*w
         output_v = []
 
         i_raw, v = tf.nest.flatten(inputs)
@@ -81,7 +82,7 @@ class KAST(tf.keras.Model):
 
             corr_prev_one = self.corr_cost([k[:, i], k[:, i-1]])*256.0  # (bs, hw, patch)
             corr_prev = tf.reshape(corr_prev_one, [bs, h*w, self.kernel**2])
-            patch_v1 = tf.image.extract_patches(images=tf.reshape(all_previous_v[i-1], [-1, 64, 64, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
+            patch_v1 = tf.image.extract_patches(images=tf.reshape(all_previous_v[i-1], [-1, h, w, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
             patch_v = tf.reshape(patch_v1, [bs, h*w, self.kernel**2, cv])
 
             if self.mem0 is None:
@@ -103,7 +104,7 @@ class KAST(tf.keras.Model):
                 corr_prev_three = tf.reshape(corr_prev_three, [bs, h*w, self.kernel ** 2])
                 corr_prev = tf.concat([corr_prev, corr_prev_three], axis=-1)
                 #patch_v3 = tf.image.extract_patches(images=tf.reshape(all_previous_v[i-3], [-1, 64, 64, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 2, 2, 1], padding="SAME")
-                patch_v3 = tf.image.extract_patches(images=tf.reshape(all_previous_v[i-3], [-1, 64, 64, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
+                patch_v3 = tf.image.extract_patches(images=tf.reshape(all_previous_v[i-3], [-1, h, w, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
                 patch_v3 = tf.reshape(patch_v3, [bs, h * w, self.kernel ** 2, cv])
                 patch_v = tf.concat([patch_v, patch_v3], axis=-2)
 
@@ -112,7 +113,7 @@ class KAST(tf.keras.Model):
                     #corr_prev_five = self.corr_cost([k[:, i], k[:, i-5]])*2.0  # (bs, hw, kernel**2)
                     corr_prev_five = tf.reshape(corr_prev_five, [bs, h*w, self.kernel ** 2])
                     corr_prev = tf.concat([corr_prev, corr_prev_five], axis=-1)
-                    patch_v5 = tf.image.extract_patches(images=tf.reshape(self.v0, [-1, 64, 64, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 2, 2, 1], padding="SAME")
+                    patch_v5 = tf.image.extract_patches(images=tf.reshape(self.v0, [-1, h, w, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 2, 2, 1], padding="SAME")
                     #patch_v5 = tf.image.extract_patches(images=tf.reshape(all_previous_v[i-5], [-1, 64, 64, cv]), sizes=[1, self.kernel, self.kernel, 1], strides=[1, 1, 1, 1], rates=[1, 1, 1, 1], padding="SAME")
                     patch_v5 = tf.reshape(patch_v5, [bs, h * w, self.kernel ** 2, cv])
                     patch_v = tf.concat([patch_v, patch_v5], axis=-2)
