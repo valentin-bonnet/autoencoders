@@ -8,6 +8,7 @@ palette = tf.constant([[0, 0, 0], [128, 0, 0], [0, 128, 0], [128, 128, 0], [0, 0
 new_palette = tf.reduce_sum(palette * [1, 10, 100], -1)
 
 table = tf.lookup.StaticHashTable(tf.lookup.KeyValueTensorInitializer(new_palette, [0, 1, 2, 3, 4, 5, 6, 7, 8]), -1)
+M = 4
 
 def check_image(image):
     assertion = tf.assert_equal(tf.shape(image)[-1], 3, message='image must have 3 color channels')
@@ -131,7 +132,13 @@ def _preprocess_once(example_proto):
     #anno_lab = anno_lab + [0., 128.0, 128.0]
     #anno_lab = (anno_lab / [50.0, 127.5, 127.5]) - 1.0
     jpeg_lab = tf.reshape(jpeg_lab, [h, w, 3])
+    if h%M != 0: jpeg_lab = jpeg_lab[:-(h % M), :, :]
+    if w%M != 0: jpeg_lab = jpeg_lab[:, :-(w % M), :]
+
     anno_hot = tf.reshape(anno_hot, [h, w, 9])
+    if h%M != 0: anno_hot = anno_hot[:-(h % M), :, :]
+    if w%M != 0: anno_hot = anno_hot[:, :-(w % M), :]
+
     return jpeg_lab, anno_hot
 
 
