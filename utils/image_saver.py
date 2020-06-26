@@ -250,15 +250,17 @@ def KAST_test_ResNet(kast, davis, file_name_head='image', path='./'):
     #file_path = os.path.join(path, file_name_head)
     #im[0].save(file_path + '_DAVIS.gif', save_all=True, append_images=im[1:], duration=150)
 
-def KAST_JF(kast, davis):
+def KAST_JF(kast, davis, first):
     i_raw, v = tf.nest.flatten(davis)
     output_v, v_j, _ = kast.reconstruct(i_raw, v, training=False, keep=True)
     output_v = output_v[0]
-    output_v = output_v[:30] # CUT THE DATASET IN 30 seq
+    if not first:
+        output_v = output_v[4:] # CUT THE DATASET IN 30 seq
     seq_size = output_v.shape[0]
     max_value_output = tf.argmax(output_v, -1)
     v_j = v_j[0][1:]
-    v_j = v_j[:30] # CUT THE DATASET IN 30 seq
+    if not first:
+        v_j = v_j[4:] # CUT THE DATASET IN 30 seq
     max_value = tf.argmax(v_j, -1)
     number_size = tf.reduce_max(max_value)
 

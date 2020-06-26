@@ -27,6 +27,7 @@ class KAST(tf.keras.Model):
         self.mem5 = None
         self.k0 = None
         self.v0 = None
+        self.last_v = None
 
     def call(self, inputs, **kwargs):
         # inputs: [(bs, T, H, W, 3), (bs, T, h, w, 3)]
@@ -61,19 +62,20 @@ class KAST(tf.keras.Model):
         #with tf.name_scope('Rkn'):
         #    score = self.rkn((k, tf.reshape(seq_mask, [bs, seq_size, 1])))
 
-
-
-        previous_v = v[:, 0]
+        if self.k0 is None:
+            self.k0 = k[:, 0]
+        if self.v0 is None:
+            self.v0 = v[:, 0]
+        if self.last_v is None:
+            previous_v = v[:, 0]
         self.memory.get_init_state(bs, cv)
         self.memory.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv])))
         all_m_kv = []
         all_previous_v = [previous_v]
         ground_truth = [tf.reshape(v[:, 0], [-1, 1, h, w, cv])]
 
-        if self.k0 is None:
-            self.k0 = k[:, 0]
-        if self.v0 is None:
-            self.v0 = v[:, 0]
+
+
 
         for i in range(1, seq_size):
             if i < 7 and self.mem_write:
@@ -152,6 +154,8 @@ class KAST(tf.keras.Model):
             #corr_sim = tf.expand_dims(tf.nn.softmax(corr_prev, -1), -2)
             #output_v_i = corr_sim @ patch_v
 
+            #output_v_i = tf.one_hot(tf.argmax(output_v_i, -1), 9)
+
             previous_v = tf.where(tf.reshape(seq_mask[:, i], [bs, 1, 1, 1]), v[:, i], tf.reshape(output_v_i, [-1, h, w, cv]))
             all_previous_v.append(previous_v)
             output_v_i = tf.reshape(output_v_i, [-1, 1, h, w, cv])
@@ -166,6 +170,7 @@ class KAST(tf.keras.Model):
 
         # self.memory.get_initial_state()
         self.mem_write = False
+        self.last_v = output_v_i
 
         if not keep:
             self.reset_mem()
@@ -516,3 +521,4 @@ class KAST(tf.keras.Model):
         self.mem5 = None
         self.k0 = None
         self.v0 = None
+        self.last_v = None

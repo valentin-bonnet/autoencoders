@@ -154,8 +154,10 @@ class Training():
 
             for i, train_x in enumerate(self.train_ds, starting_step):
                 for test_pack in self.test_ds:
+                    first = True
                     for test in test_pack:
-                        j, f = image_saver.KAST_JF(self.model, test)
+                        j, f = image_saver.KAST_JF(self.model, test, first)
+                        first = False
                         j_mean(j)
                         f_mean(f)
                     self.model.reset_mem()
