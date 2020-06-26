@@ -67,11 +67,11 @@ class KAST(tf.keras.Model):
         if self.v0 is None:
             self.v0 = v[:, 0]
         if self.last_v is None:
-            previous_v = v[:, 0]
+            self.last_v = v[:, 0]
         self.memory.get_init_state(bs, cv)
-        self.memory.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(previous_v, [bs, h * w, cv])))
+        self.memory.call_init((tf.reshape(k[:, 0], [bs, h * w, ck]), tf.reshape(self.last_v, [bs, h * w, cv])))
         all_m_kv = []
-        all_previous_v = [previous_v]
+        all_previous_v = [self.last_v]
         ground_truth = [tf.reshape(v[:, 0], [-1, 1, h, w, cv])]
 
 
@@ -80,7 +80,7 @@ class KAST(tf.keras.Model):
         for i in range(1, seq_size):
             if i < 7 and self.mem_write:
                 with tf.name_scope('Memory'):
-                    m_kv = self.memory.call((tf.reshape(k[:, i-1], [bs, h*w, ck]), tf.reshape(previous_v, [bs, h*w, cv])))
+                    m_kv = self.memory.call((tf.reshape(k[:, i-1], [bs, h*w, ck]), tf.reshape(all_previous_v[i-1], [bs, h*w, cv])))
                     all_m_kv.append(m_kv)
 
             corr_prev_one = self.corr_cost([k[:, i], k[:, i-1]])*256.0  # (bs, hw, patch)
