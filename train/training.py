@@ -158,8 +158,9 @@ class Training():
                     for test in test_pack:
                         j, f = image_saver.KAST_JF(self.model, test, first)
                         first = False
-                        j_mean(j)
-                        f_mean(f)
+                        if j >= 0.:
+                            j_mean(j)
+                            f_mean(f)
                     self.model.reset_mem()
 
                 print("\nJ : ", j_mean.result().numpy())

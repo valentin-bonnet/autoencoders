@@ -257,6 +257,8 @@ def KAST_JF(kast, davis, first):
     if not first:
         output_v = output_v[4:] # CUT THE DATASET IN 30 seq
     seq_size = output_v.shape[0]
+    if seq_size == 0:
+        return -1.0, -1.0
     max_value_output = tf.argmax(output_v, -1)
     v_j = v_j[0][1:]
     if not first:
