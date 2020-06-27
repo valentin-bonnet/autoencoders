@@ -153,20 +153,16 @@ class Training():
 
 
             for i, train_x in enumerate(self.train_ds, starting_step):
-                for test_pack in self.test_ds:
-                    first = True
-                    for test in test_pack:
-                        j, f = image_saver.KAST_JF(self.model, test, first)
-                        first = False
-                        if j >= 0.:
-                            j_mean(j)
-                            f_mean(f)
-                    self.model.reset_mem()
+                #for test_pack in self.test_ds:
+                #    first = True
+                #    for test in test_pack:
+                #        j, f = image_saver.KAST_JF(self.model, test, first)
+                #        first = False
+                #        if j >= 0.:
+                #            j_mean(j)
+                #            f_mean(f)
+                #    self.model.reset_mem()
 
-                print("\nJ : ", j_mean.result().numpy())
-                print("F : ", f_mean.result().numpy())
-
-                print(j[100000000000000])
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
                 if i > (epoch_percent_train*1000):
@@ -180,6 +176,19 @@ class Training():
                         v_loss_mean(self.model.compute_loss(val_x))
                         v_acc_mean(self.model.compute_accuracy(val_x))
 
+
+                    self.t_loss.append(t_loss_mean.result().numpy())
+                    self.t_acc.append(t_acc_mean.result().numpy())
+                    self.v_loss.append(v_loss_mean.result().numpy())
+                    self.v_acc.append(v_acc_mean.result().numpy())
+
+                    t_loss_mean.reset_states()
+                    t_acc_mean.reset_states()
+                    v_loss_mean.reset_states()
+                    v_acc_mean.reset_states()
+
+
+                if i % (epoch_percent_train * 500) == 0 and i != 0:
                     for seq_test in self.test_ds:
                         for test in seq_test:
                             j, f = image_saver.KAST_JF(self.model, test)
@@ -193,15 +202,6 @@ class Training():
 
                     self.js.append(j_mean.result().numpy())
                     self.fs.append(f_mean.result().numpy())
-                    self.t_loss.append(t_loss_mean.result().numpy())
-                    self.t_acc.append(t_acc_mean.result().numpy())
-                    self.v_loss.append(v_loss_mean.result().numpy())
-                    self.v_acc.append(v_acc_mean.result().numpy())
-
-                    t_loss_mean.reset_states()
-                    t_acc_mean.reset_states()
-                    v_loss_mean.reset_states()
-                    v_acc_mean.reset_states()
                     j_mean.reset_states()
                     f_mean.reset_states()
 
@@ -229,8 +229,12 @@ class Training():
                             image_saver.generate_and_save_images_compare_lab(self.model, train_x,
                                                                          self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
                     if not self.redone:
-                        for test in self.test_ds.take(1):
-                            image_saver.KAST_test(self.model, test, self.name + '_epoch_{:03d}_step_{:03d}_train'.format(epoch, i//epoch_percent_train), self.img_path)
+                        for test_seq in self.test_ds.take(1):
+                            nb_seq = 1
+                            for test in test_seq:
+                                image_saver.KAST_test(self.model, test, self.name + '_epoch_{:03d}_step_{:03d}_train_DAVISseq{:01d}'.format(epoch, i//epoch_percent_train, nb_seq), self.img_path)
+                                nb_seq = nb_seq+1
+                            self.model.reset_mem()
 
 
 
@@ -238,12 +242,13 @@ class Training():
                     print('epoch percent train: ', epoch_percent_train)
                     print('save step: ', self.save_steps)
                     x_axis = np.linspace(0, len(self.t_loss) / 1000, len(self.t_loss))
+                    x_jf_axis = np.linspace(0, len(self.js) / 1000, len(self.js))
                     image_saver.curves([self.t_loss, self.v_loss], ['Training', 'Validation'],
                                        'training_validation_loss', self.img_path, 'Steps', 'Loss', x_axis)
                     image_saver.curves([self.t_acc, self.v_acc], ['Training', 'Validation'],
                                        'training_validation_accuracy', self.img_path, 'Steps', 'Accuracy', x_axis)
                     image_saver.curves([self.js, self.fs], ['J', 'F'],
-                                       'j_f', self.img_path, 'Steps', 'Metrics', x_axis)
+                                       'j_f', self.img_path, 'Steps', 'Metrics', x_jf_axis)
                     self.ckpt.step.assign(i+1)
                     if self.redone:
                         self.save_redone()

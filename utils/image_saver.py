@@ -307,7 +307,7 @@ def KAST_JF(kast, davis, first):
 def KAST_test(kast, davis, file_name_head='image', path='./'):
     #output_v, v_j, i_drop = kast.call(davis, training=False)
     i_raw, v = tf.nest.flatten(davis)
-    output_v, v_j, i_drop = kast.reconstruct(i_raw, v, training=False)
+    output_v, v_j, i_drop = kast.reconstruct(i_raw, v, training=False, keep=True)
 
     #output_v = output_v[0].numpy()
     output_v = output_v[0]
