@@ -255,14 +255,14 @@ def KAST_JF(kast, davis, first):
     output_v, v_j, _ = kast.reconstruct(i_raw, v, training=False, keep=True)
     output_v = output_v[0]
     if not first:
-        output_v = output_v[4:] # CUT THE DATASET IN 30 seq
+        output_v = output_v[9:] # CUT THE DATASET IN 30 seq
     seq_size = output_v.shape[0]
     if seq_size == 0:
         return -1.0, -1.0
     max_value_output = tf.argmax(output_v, -1)
     v_j = v_j[0][1:]
     if not first:
-        v_j = v_j[4:] # CUT THE DATASET IN 30 seq
+        v_j = v_j[9:] # CUT THE DATASET IN 30 seq
     max_value = tf.argmax(v_j, -1)
     number_size = tf.reduce_max(max_value)
 
