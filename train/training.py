@@ -190,8 +190,9 @@ class Training():
 
                 if i % (epoch_percent_train * 500) == 0 and i != 0:
                     for seq_test in self.test_ds:
+                        first = True
                         for test in seq_test:
-                            j, f = image_saver.KAST_JF(self.model, test)
+                            j, f = image_saver.KAST_JF(self.model, test, first)
                             j_mean(j)
                             f_mean(f)
                         self.model.reset_mem()
