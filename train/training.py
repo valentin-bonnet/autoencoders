@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import os
 import sys
+import time
 
 curr_dir = os.getcwd()
 path = os.path.abspath(os.path.join(curr_dir, '..'))
@@ -162,6 +163,23 @@ class Training():
                 #            j_mean(j)
                 #            f_mean(f)
                 #    self.model.reset_mem()
+                start_full_time = time.time()
+                for seq_test in self.test_ds:
+                    first = True
+                    for test in seq_test:
+                        j, f = image_saver.KAST_JF(self.model, test, first)
+                        j_mean(j)
+                        f_mean(f)
+                    self.model.reset_mem()
+
+                print("\nJ : ", j_mean.result().numpy())
+                print("F : ", f_mean.result().numpy())
+
+                full_time = time.time() - start_full_time
+                minutes = int(full_time //60)
+                seconds = full_time%60
+                print("Full time: {:2d} minutes {:.4f}".format(minutes, seconds))
+                print(self.js[1000000])
 
                 t_loss_mean(self.model.compute_apply_gradients(train_x, self.optimizer))
                 t_acc_mean(self.model.compute_accuracy(train_x))
